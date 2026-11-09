@@ -684,7 +684,7 @@ impl ArriModel for ObjectWithEveryType {
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/array.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionExternal.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.");
         println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithEveryType/any.");
         _query_parts_.join("&")
@@ -1688,7 +1688,7 @@ impl ArriModel for ObjectWithOptionalFields {
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithOptionalFields/array.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/record.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithOptionalFields/unionExternal.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithOptionalFields/unionAdjacent.");
         println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithOptionalFields/any.");
         _query_parts_.join("&")
@@ -2299,7 +2299,7 @@ impl ArriModel for ObjectWithNullableFields {
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithNullableFields/array.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/record.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithNullableFields/unionExternal.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithNullableFields/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithNullableFields/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithNullableFields/unionAdjacent.");
         println!("[WARNING] cannot serialize any's to query params. Skipping field at /ObjectWithNullableFields/any.");
         _query_parts_.join("&")

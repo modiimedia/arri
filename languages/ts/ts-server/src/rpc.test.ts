@@ -129,11 +129,86 @@ describe('union params on GET procedures', () => {
         expect(() => rpc('legacy', 'get', Discriminator)).not.toThrow();
         expect(() => stream('internal', 'get', Internal)).not.toThrow();
     });
+    it('rejects internally tagged unions with unsupported fields', () => {
+        const NestedObject = a.union(
+            { user: a.object({ id: a.string(), tags: a.array(a.string()) }) },
+            { tagKey: 'kind' },
+        );
+        expect(() => rpc('nested', 'get', NestedObject)).toThrow(
+            /"\/user\/tags" cannot be passed through url query params/,
+        );
+        const LegacyNested = a.discriminator('kind', {
+            USER: a.object({ id: a.string(), data: a.object({}) }),
+        });
+        expect(() => rpc('legacyNested', 'get', LegacyNested)).toThrow(
+            /"\/USER\/data" cannot be passed through url query params/,
+        );
+    });
     it('allows every union style on other methods', () => {
         expect(() => rpc('external', 'post', External)).not.toThrow();
         expect(() => rpc('adjacent', 'post', Adjacent)).not.toThrow();
         expect(() => stream('external', 'post', External)).not.toThrow();
         expect(() => stream('external', undefined, External)).not.toThrow();
+    });
+});
+
+describe('object params on GET procedures', () => {
+    function rpc(method: 'get' | 'post', params: any) {
+        new ArriApp().rpc(
+            'params',
+            defineRpc({ method, params, response: undefined, handler() {} }),
+        );
+    }
+    function stream(method: 'get' | 'post', params: any) {
+        new ArriApp().rpc(
+            'params',
+            defineEventStreamRpc({
+                method,
+                params,
+                response: a.object({ id: a.string() }),
+                handler() {},
+            }),
+        );
+    }
+
+    it('allows strings, booleans, numbers, timestamps, and enums', () => {
+        const Params = a.object({
+            string: a.string(),
+            boolean: a.boolean(),
+            float64: a.float64(),
+            int64: a.int64(),
+            timestamp: a.timestamp(),
+            enum: a.stringEnum(['A', 'B']),
+            nullable: a.nullable(a.string()),
+            optional: a.optional(a.int32()),
+        });
+        expect(() => rpc('get', Params)).not.toThrow();
+        expect(() => stream('get', Params)).not.toThrow();
+    });
+    it.each([
+        ['array', a.array(a.string())],
+        ['object', a.object({ id: a.string() })],
+        ['record', a.record(a.string())],
+        ['any', a.any()],
+        ['union', a.union({ id: a.string() })],
+    ])('rejects %s fields', (_, field) => {
+        const Params = a.object({ id: a.string(), field });
+        expect(() => rpc('get', Params)).toThrow(
+            /"\/field" cannot be passed through url query params/,
+        );
+        expect(() => stream('get', Params)).toThrow(
+            /"\/field" cannot be passed through url query params/,
+        );
+        expect(() => rpc('post', Params)).not.toThrow();
+    });
+    it('rejects unsupported optional fields', () => {
+        const Params = a.object({
+            id: a.string(),
+            tags: a.optional(a.array(a.string())),
+        });
+        expect(() => rpc('get', Params)).toThrow(
+            /"\/tags" cannot be passed through url query params/,
+        );
     });
 });
 

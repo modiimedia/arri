@@ -533,9 +533,9 @@ public struct ObjectWithEveryType: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithEveryType/any.")
         return __queryParts
     }
@@ -1405,9 +1405,9 @@ var __queryParts: [URLQueryItem] = []
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionExternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionAdjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionExternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionAdjacent.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/any.")
         return __queryParts
     }
@@ -1831,9 +1831,9 @@ public struct ObjectWithNullableFields: ArriClientModel {
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/object.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionExternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionInternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionAdjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionExternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionInternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionAdjacent.")
         print("[WARNING] any's cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/any.")
         return __queryParts
     }

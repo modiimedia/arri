@@ -1319,7 +1319,7 @@ impl ArriModel for FooObjectWithEveryType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/record.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionExternal.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryType/nestedArray.");
@@ -2333,7 +2333,7 @@ impl ArriModel for FooObjectWithKebabCaseKeys {
             }
         };
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.");
         match &self.email_address {
             Some(email_address_val) => {
@@ -3547,7 +3547,7 @@ impl ArriModel for FooObjectWithEveryNullableType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/record.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.");
@@ -4749,7 +4749,7 @@ impl ArriModel for FooObjectWithPascalCaseKeys {
             }
         };
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.");
         match &self.email_address {
             Some(email_address_val) => {
@@ -5413,7 +5413,7 @@ impl ArriModel for FooObjectWithSnakeCaseKeys {
             }
         };
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.");
         match &self.email_address {
             Some(email_address_val) => {
@@ -6606,7 +6606,7 @@ impl ArriModel for FooObjectWithEveryOptionalType {
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/object.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/record.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.");
         println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.");
         println!("[WARNING] cannot serialize arrays to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.");
@@ -8496,7 +8496,7 @@ impl ArriModel for FooUnionVariantShapes {
     }
     fn to_query_params_string(&self) -> String {
         let mut _query_parts_: Vec<String> = Vec::new();
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UnionVariantShapes/internal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantShapes/internal.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantShapes/external.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantShapes/adjacent.");
         _query_parts_.join("&")
@@ -9561,7 +9561,7 @@ impl ArriModel for FooUnionVariantTypes {
         let mut _query_parts_: Vec<String> = Vec::new();
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/external.");
         println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/adjacent.");
-        println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UnionVariantTypes/internal.");
+        println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/internal.");
         _query_parts_.join("&")
     }
 }
@@ -10746,7 +10746,7 @@ impl ArriModel for FooUnionVariantTypesInternal {
             } => {
                 _query_parts_.push("kind=default".to_string());
                 _query_parts_.push(format!("class={}", encode_query_component(class)));
-                println!("[WARNING] cannot serialize nested objects to query params. Skipping field at /UnionVariantTypes/internal/internalUnion.");
+                println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/internal/internalUnion.");
                 println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/internal/adjacentUnion.");
                 println!("[WARNING] cannot serialize nested unions to query params. Skipping field at /UnionVariantTypes/internal/externalUnion.");
             }

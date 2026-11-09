@@ -1460,7 +1460,7 @@ class FooObjectWithEveryType implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.",
@@ -3193,7 +3193,7 @@ class FooObjectWithKebabCaseKeys implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.",
@@ -4499,7 +4499,7 @@ class FooObjectWithEveryNullableType implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.",
@@ -6298,7 +6298,7 @@ class FooObjectWithPascalCaseKeys implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.",
@@ -7456,7 +7456,7 @@ class FooObjectWithSnakeCaseKeys implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.",
@@ -8747,7 +8747,7 @@ class FooObjectWithEveryOptionalType implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.",
@@ -12091,7 +12091,7 @@ class FooUnionVariantShapes implements ArriModel {
   String toUrlQueryParams() {
     final _queryParts_ = <String>[];
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/external.",
@@ -13685,7 +13685,7 @@ class FooUnionVariantTypes implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/adjacent.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.",
     );
     return _queryParts_.join("&");
   }
@@ -16620,7 +16620,7 @@ class FooUnionVariantTypesInternalDefault
     _queryParts_.add("kind=default");
     _queryParts_.add("class=${Uri.encodeQueryComponent(k_class)}");
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/adjacentUnion.",

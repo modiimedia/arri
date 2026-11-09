@@ -115,7 +115,7 @@ export function kotlinInternallyTaggedSealedInterface(
             return `${target} += ${input}.toJson()`;
         },
         toQueryString() {
-            return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `__logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: '',
     };

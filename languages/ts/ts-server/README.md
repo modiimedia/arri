@@ -21,6 +21,8 @@ Parameters and responses are defined using [@arrirpc/schema](/languages/ts/ts-sc
 - [Key Concepts](#key-concepts)
     - [Arri Definition File](#arri-definition-file)
     - [How Procedures Map To Endpoints](#how-procedures-map-to-endpoints)
+        - [GET Requests](#get-requests)
+    - [Validator Compilation](#validator-compilation)
     - [H3 Support](#h3-support)
 - [Arri CLI](#arri-cli)
 
@@ -557,7 +559,35 @@ The supported HTTP methods are as follows:
 - patch
 - put
 
-When using a get method the RPC params will be mapped as query parameters which will be coerced into their type using the `a.coerce` method from `arri-validate`. Get methods support all basic scalar types however arrays and nested objects are not supported.
+#### GET Requests
+
+Procedures using the GET method receive their params through url query params instead of the request body. The values are coerced into their types using `a.coerce()` from `@arrirpc/schema`. Because of this their params must be one of the following:
+
+- An object where every field is a string, boolean, number, timestamp, or enum. (Fields can be optional or nullable.)
+- An internally tagged union (`a.union()` with a `tagKey` but no `valueKey`) where every variant meets the above requirement. The tag is passed as its own query param. For example: `?shape=rectangle&width=10&height=20`
+
+Arri will throw an error when registering a GET procedure that doesn't meet these requirements. Use a different HTTP method such as POST if you need to send arrays, records, nested objects, or other unions.
+
+### Validator Compilation
+
+Arri compiles the validators for each procedure's params and response using the [JIT compiler](/languages/ts/ts-schema/README.md#compiled-validators) from `@arrirpc/schema`. Compiled validators are much faster, but they rely on `new Function()`.
+
+- If the runtime doesn't allow code generation from strings (such as Cloudflare Workers, Vercel Edge, or Node with `--disallow-code-generation-from-strings`) Arri logs a single warning and uses the slower runtime validators for every procedure.
+- If a validator fails to compile for any other reason Arri logs a warning and uses the runtime validator for that procedure only.
+
+You can change this behavior with the following options:
+
+```ts
+const app = new ArriApp({
+    // Throw an error instead of falling back when a validator fails to compile.
+    // This stops the server from starting. (Runtimes that don't allow code generation are not affected.)
+    strictValidatorCompilation: true,
+    // Skip compilation and always use runtime validators. This trades slower validation
+    // for faster startup, which can be useful in environments with frequent cold starts
+    // such as AWS Lambda. Takes priority over `strictValidatorCompilation`.
+    disableValidatorCompilation: true,
+});
+```
 
 ### H3 Support
 

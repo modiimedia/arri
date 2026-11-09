@@ -103,7 +103,7 @@ export function dartInternallyTaggedSealedClass(
         },
         toQueryString() {
             return `print(
-        "[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+        "[WARNING] nested unions cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: '',
     };

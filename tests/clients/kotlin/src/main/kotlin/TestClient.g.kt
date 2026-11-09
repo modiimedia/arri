@@ -1460,7 +1460,7 @@ data class ObjectWithEveryType(
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.")
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.")
@@ -2939,7 +2939,7 @@ data class ObjectWithKebabCaseKeys(
         queryParts.add("display-name=${__encodeQueryValue(displayName)}")
         queryParts.add("phone-number=${__encodeQueryValue(phoneNumber)}")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.")
         if (emailAddress != null) {
             queryParts.add("email-address=${__encodeQueryValue(emailAddress)}")
@@ -3863,7 +3863,7 @@ data class ObjectWithEveryNullableType(
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.")
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.")
@@ -5373,7 +5373,7 @@ data class ObjectWithPascalCaseKeys(
         queryParts.add("DisplayName=${__encodeQueryValue(displayName)}")
         queryParts.add("PhoneNumber=${__encodeQueryValue(phoneNumber)}")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.")
         if (emailAddress != null) {
             queryParts.add("EmailAddress=${__encodeQueryValue(emailAddress)}")
@@ -6178,7 +6178,7 @@ data class ObjectWithSnakeCaseKeys(
         queryParts.add("display_name=${__encodeQueryValue(displayName)}")
         queryParts.add("phone_number=${__encodeQueryValue(phoneNumber)}")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.")
         if (emailAddress != null) {
             queryParts.add("email_address=${__encodeQueryValue(emailAddress)}")
@@ -7184,7 +7184,7 @@ data class ObjectWithEveryOptionalType(
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.")
         __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.")
         __logError("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.")
@@ -9936,7 +9936,7 @@ data class UnionVariantShapes(
 
     override fun toUrlQueryParams(): String {
         val queryParts = mutableListOf<String>()
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/external.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/adjacent.")
         return queryParts.joinToString("&")
@@ -11175,7 +11175,7 @@ data class UnionVariantTypes(
         val queryParts = mutableListOf<String>()
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/external.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/adjacent.")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.")
         return queryParts.joinToString("&")
     }
 
@@ -13434,7 +13434,7 @@ data class UnionVariantTypesInternalDefault(
         val queryParts = mutableListOf<String>()
         queryParts.add("kind=default")
         queryParts.add("class=${__encodeQueryValue(`class`)}")
-        __logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.")
+        __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/adjacentUnion.")
         __logError("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/externalUnion.")
         return queryParts.joinToString("&")

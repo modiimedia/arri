@@ -651,7 +651,7 @@ class ObjectWithEveryType implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.",
@@ -1700,7 +1700,7 @@ class ObjectWithOptionalFields implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionExternal.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionInternal.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithOptionalFields/unionAdjacent.",
@@ -2020,7 +2020,7 @@ class ObjectWithNullableFields implements ArriModel {
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionExternal.",
     );
     print(
-      "[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionInternal.",
+      "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionInternal.",
     );
     print(
       "[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithNullableFields/unionAdjacent.",

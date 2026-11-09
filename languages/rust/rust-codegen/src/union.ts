@@ -91,7 +91,7 @@ export function rustInternallyTaggedEnumFromSchema(
             return `${target}.push_str(${input}.to_json_string().as_str())`;
         },
         toQueryStringTemplate() {
-            return `println!("[WARNING] cannot serialize nested objects to query params. Skipping field at ${context.instancePath}.")`;
+            return `println!("[WARNING] cannot serialize nested unions to query params. Skipping field at ${context.instancePath}.")`;
         },
         content: '',
     };

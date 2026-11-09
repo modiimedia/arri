@@ -108,7 +108,7 @@ function unionEnumProperty(
             return `        ${target} += ${input}.toJSONString()`;
         },
         toQueryPartTemplate(_, __, ___) {
-            return `        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
+            return `        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;
         },
         cloneTemplate(input, _) {
             return {

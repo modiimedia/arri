@@ -1049,9 +1049,9 @@ public struct FooObjectWithEveryType: ArriClientModel {
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/object.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionExternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionInternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryType/unionAdjacent.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedObject.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryType/nestedArray.")
         return __queryParts
@@ -2110,9 +2110,9 @@ __json += "\(self.isAdmin!)"
                 } else {
                     __queryParts.append(URLQueryItem(name: "phone-number", value: "null")) 
                 }
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/external-event.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/internal-event.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithKebabCaseKeys/adjacent-event.")
         if self.emailAddress != nil {
                     __queryParts.append(URLQueryItem(name: "email-address", value: self.emailAddress!))
                 }
@@ -3140,9 +3140,9 @@ if self.record != nil {
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/object.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionExternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionInternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/unionAdjacent.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedObject.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryNullableType/nestedArray.")
         return __queryParts
@@ -4335,9 +4335,9 @@ __json += "\(self.isAdmin!)"
                 } else {
                     __queryParts.append(URLQueryItem(name: "PhoneNumber", value: "null")) 
                 }
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/ExternalEvent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/InternalEvent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithPascalCaseKeys/AdjacentEvent.")
         if self.emailAddress != nil {
                     __queryParts.append(URLQueryItem(name: "EmailAddress", value: self.emailAddress!))
                 }
@@ -5021,9 +5021,9 @@ __json += "\(self.isAdmin!)"
                 } else {
                     __queryParts.append(URLQueryItem(name: "phone_number", value: "null")) 
                 }
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/external_event.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/internal_event.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithSnakeCaseKeys/adjacent_event.")
         if self.emailAddress != nil {
                     __queryParts.append(URLQueryItem(name: "email_address", value: self.emailAddress!))
                 }
@@ -6046,9 +6046,9 @@ __numKeys += 1
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/array.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/object.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/record.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionExternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionInternal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/unionAdjacent.")
         print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedObject.")
         print("[WARNING] arrays cannot be serialized to query params. Skipping field at /ObjectWithEveryOptionalType/nestedArray.")
         return __queryParts
@@ -8185,9 +8185,9 @@ public struct FooUnionVariantShapes: ArriClientModel {
     }
     public func toURLQueryParts() -> [URLQueryItem] {
         
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/external.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantShapes/adjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/internal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/external.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantShapes/adjacent.")
         return []
     }
     public func clone() -> FooUnionVariantShapes {
@@ -9350,9 +9350,9 @@ public struct FooUnionVariantTypes: ArriClientModel {
     }
     public func toURLQueryParts() -> [URLQueryItem] {
         
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/external.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/adjacent.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/external.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/adjacent.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypes/internal.")
         return []
     }
     public func clone() -> FooUnionVariantTypes {
@@ -10601,9 +10601,9 @@ public struct FooUnionVariantTypesInternalDefault: ArriClientModel {
         var __queryParts: [URLQueryItem] = []
         __queryParts.append(URLQueryItem(name: "kind", value: "default"))
         __queryParts.append(URLQueryItem(name: "class", value: self.`class`))
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/adjacentUnion.")
-        print("[WARNING] nested objects cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/externalUnion.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/internalUnion.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/adjacentUnion.")
+        print("[WARNING] nested unions cannot be serialized to query params. Skipping field at /UnionVariantTypesInternalDefault/externalUnion.")
         return __queryParts
     }
     public func clone() -> FooUnionVariantTypesInternalDefault {

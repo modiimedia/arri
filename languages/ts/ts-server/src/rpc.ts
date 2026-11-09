@@ -15,7 +15,9 @@ import {
     InferType,
     isADiscriminatorSchema,
     isAObjectSchema,
+    isAScalarSchema,
     isASchema,
+    isAStringEnumSchema,
     isAUnionSchema,
     Result,
     ValueError,
@@ -243,11 +245,59 @@ export function assertValidGetParams(
     httpMethod: RpcHttpMethod,
     params: unknown,
 ) {
-    if (httpMethod !== 'get' || !isAUnionSchema(params)) return;
-    if (params.tagKey && !params.valueKey) return;
+    if (httpMethod !== 'get' || !isASchema(params)) return;
+    const err = getUrlQueryParamsError(params);
+    if (!err) return;
     throw new Error(
-        `Error registering ${rpcName}. GET requests receive params through url query params and only internally tagged unions can be used as url query params. Use a different http method such as POST for these params.`,
+        `Error registering ${rpcName}. GET requests receive params through url query params. ${err}. Use a different http method such as POST for these params.`,
     );
+}
+
+/**
+ * Url query params must be an object or an internally tagged union whose fields are all
+ * strings, booleans, numbers, timestamps, or enums. (Matches the rules enforced by the go server.)
+ */
+function getUrlQueryParamsError(schema: ASchema): string | undefined {
+    if (isAUnionSchema(schema)) {
+        if (!schema.tagKey || schema.valueKey) {
+            return 'Only internally tagged unions can be used as url query params';
+        }
+        for (const [tag, variant] of Object.entries(schema.union)) {
+            const err = getUrlQueryPropertiesError(variant, `/${tag}`);
+            if (err) return err;
+        }
+        return undefined;
+    }
+    if (isADiscriminatorSchema(schema)) {
+        for (const [tag, variant] of Object.entries(schema.mapping)) {
+            const err = getUrlQueryPropertiesError(variant, `/${tag}`);
+            if (err) return err;
+        }
+        return undefined;
+    }
+    if (!isAObjectSchema(schema)) {
+        return 'Url query params must be an object or an internally tagged union';
+    }
+    return getUrlQueryPropertiesError(schema, '');
+}
+
+function getUrlQueryPropertiesError(
+    schema: ASchema,
+    path: string,
+): string | undefined {
+    if (!isAObjectSchema(schema)) {
+        return `"${path}" cannot be passed through url query params. Union variants must be objects`;
+    }
+    const properties = {
+        ...schema.properties,
+        ...schema.optionalProperties,
+    };
+    for (const [key, prop] of Object.entries(properties)) {
+        if (!isAScalarSchema(prop) && !isAStringEnumSchema(prop)) {
+            return `"${path}/${key}" cannot be passed through url query params. Only strings, booleans, numbers, timestamps, and enums are supported`;
+        }
+    }
+    return undefined;
 }
 
 export function registerRpc(

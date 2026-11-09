@@ -1037,6 +1037,13 @@ a.coerce(A, {
 // { success: true, value: { a: '1', b: true, c: 500.24 } };
 ```
 
+For nullable types the string `"null"` is coerced to `null`. This includes nullable strings.
+
+```ts
+a.coerce(a.nullable(a.string()), 'null');
+// { success: true, value: null }
+```
+
 ### Coerce Unsafe
 
 `a.coerceUnsafe()` is an alternative to `a.coerce()` that will throw an error if coercion fails
