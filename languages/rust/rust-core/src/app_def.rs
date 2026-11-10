@@ -1,6 +1,9 @@
 use indexmap::IndexMap;
 
-use crate::encoder::{Encodable, maybe_encode_field};
+use crate::{
+    encoder::{Encodable, maybe_encode_field},
+    type_def::TypeDef,
+};
 
 pub enum Transport {
     Http,
@@ -64,14 +67,14 @@ impl Encodable for RpcHttpMethod {
 
 pub const SCHEMA_VERSION: &str = "0.0.8";
 
-pub struct AppDefinition {
+pub struct AppDef {
     pub schema_version: String,
     pub info: Option<AppDefinitionInfo>,
-    pub procedures: Option<IndexMap<String, RpcDefinition>>,
-    pub definitions: Option<IndexMap<String, String>>,
+    pub procedures: Option<IndexMap<String, RpcDef>>,
+    pub definitions: Option<IndexMap<String, TypeDef>>,
 }
 
-impl Encodable for AppDefinition {
+impl Encodable for AppDef {
     fn encode<T: crate::encoder::Encoder>(&self, encoder: &mut T) {
         encoder.begin_object();
         encoder.encode_field("schemaVersion");
@@ -93,7 +96,7 @@ impl Encodable for AppDefinitionInfo {
     fn encode<T: crate::encoder::Encoder>(&self, encoder: &mut T) {}
 }
 
-pub struct RpcDefinition {
+pub struct RpcDef {
     pub transport: Transport,
     pub transports: Vec<Transport>,
     pub path: String,
@@ -107,7 +110,7 @@ pub struct RpcDefinition {
     pub deprecation_note: Option<String>,
 }
 
-impl Encodable for RpcDefinition {
+impl Encodable for RpcDef {
     fn encode<T: crate::encoder::Encoder>(&self, encoder: &mut T) {
         encoder.begin_object();
         encoder.encode_field("transport");

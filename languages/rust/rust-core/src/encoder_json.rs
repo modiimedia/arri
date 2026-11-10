@@ -209,7 +209,7 @@ mod test {
     use crate::{
         encoder::Encodable,
         encoder_json::JsonEncoder,
-        type_definition::{Schema, Type},
+        type_def::{Type, TypeDef},
     };
 
     #[cfg(feature = "chrono")]
@@ -412,7 +412,7 @@ mod test {
 
     fn test_encode_type_definition() {
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
-        let schema = Schema::Type {
+        let schema = TypeDef::Type {
             r#type: Type::String,
             metadata: None,
         };

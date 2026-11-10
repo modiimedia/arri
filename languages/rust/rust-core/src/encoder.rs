@@ -4,7 +4,7 @@ use indexmap::IndexMap;
 
 use crate::{
     any_type::AnyType,
-    type_definition::{Schema, SchemaMetadata, Type},
+    type_def::{Type, TypeDef, TypeDefMetadata},
 };
 
 pub trait Encodable: Sized {
@@ -374,36 +374,36 @@ pub fn maybe_encode_field<E: Encoder, T: Encodable>(
     }
 }
 
-impl Encodable for Schema {
+impl Encodable for TypeDef {
     fn encode<E: Encoder>(&self, encoder: &mut E) {
         match self {
-            Schema::Empty { metadata } => {
+            TypeDef::Empty { metadata } => {
                 encoder.begin_object();
                 maybe_encode_field(encoder, "metadata", metadata);
                 encoder.end_object();
             }
-            Schema::Type { r#type, metadata } => {
+            TypeDef::Type { r#type, metadata } => {
                 encoder.begin_object();
                 encoder.encode_field("type");
                 r#type.encode(encoder);
                 maybe_encode_field(encoder, "metadata", metadata);
                 encoder.end_object();
             }
-            Schema::Enum { r#enum, metadata } => {
+            TypeDef::Enum { r#enum, metadata } => {
                 encoder.begin_object();
                 encoder.encode_field("enum");
                 r#enum.encode(encoder);
                 maybe_encode_field(encoder, "metadata", metadata);
                 encoder.end_object();
             }
-            Schema::Elements { elements, metadata } => {
+            TypeDef::Elements { elements, metadata } => {
                 encoder.begin_object();
                 encoder.encode_field("elements");
                 elements.encode(encoder);
                 maybe_encode_field(encoder, "metadata", metadata);
                 encoder.end_object();
             }
-            Schema::Properties {
+            TypeDef::Properties {
                 properties,
                 optional_properties,
                 metadata,
@@ -429,24 +429,31 @@ impl Encodable for Schema {
                 maybe_encode_field(encoder, "isStrict", is_strict);
                 encoder.end_object();
             }
-            Schema::Values { values, metadata } => {
+            TypeDef::Values { values, metadata } => {
                 encoder.begin_object();
                 encoder.encode_field("values");
                 values.encode(encoder);
                 maybe_encode_field(encoder, "metadata", metadata);
                 encoder.end_object();
             }
-            Schema::Discriminator {
-                discriminator,
-                mapping,
+            TypeDef::Union {
+                tag_key,
+                value_key,
+                union,
                 metadata,
             } => {
                 encoder.begin_object();
-                encoder.encode_field("discriminator");
-                discriminator.encode(encoder);
-                encoder.encode_field("mapping");
+                if let Some(tag_key) = tag_key {
+                    encoder.encode_field("tagKey");
+                    tag_key.encode(encoder);
+                }
+                if let Some(value_key) = value_key {
+                    encoder.encode_field("valueKey");
+                    value_key.encode(encoder);
+                }
+                encoder.encode_field("union");
                 encoder.begin_object();
-                for (key, val) in mapping {
+                for (key, val) in union {
                     encoder.encode_field(key);
                     val.encode(encoder);
                 }
@@ -454,7 +461,7 @@ impl Encodable for Schema {
                 maybe_encode_field(encoder, "metadata", metadata);
                 encoder.end_object();
             }
-            Schema::Ref { r#ref } => {
+            TypeDef::Ref { r#ref } => {
                 encoder.begin_object();
                 encoder.encode_field("ref");
                 r#ref.encode(encoder);
@@ -464,7 +471,7 @@ impl Encodable for Schema {
     }
 }
 
-impl Encodable for SchemaMetadata {
+impl Encodable for TypeDefMetadata {
     fn encode<T: Encoder>(&self, encoder: &mut T) {
         encoder.encode_field("metadata");
         encoder.begin_object();

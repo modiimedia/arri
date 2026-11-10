@@ -1,42 +1,43 @@
 use indexmap::IndexMap;
 
-pub enum Schema {
+pub enum TypeDef {
     Empty {
-        metadata: Option<SchemaMetadata>,
+        metadata: Option<TypeDefMetadata>,
     },
     Type {
         r#type: Type,
-        metadata: Option<SchemaMetadata>,
+        metadata: Option<TypeDefMetadata>,
     },
     Enum {
         r#enum: Vec<String>,
-        metadata: Option<SchemaMetadata>,
+        metadata: Option<TypeDefMetadata>,
     },
     Elements {
-        elements: Box<Schema>,
-        metadata: Option<SchemaMetadata>,
+        elements: Box<TypeDef>,
+        metadata: Option<TypeDefMetadata>,
     },
     Properties {
-        properties: IndexMap<String, Box<Schema>>,
-        optional_properties: Option<IndexMap<String, Box<Schema>>>,
-        metadata: Option<SchemaMetadata>,
+        properties: IndexMap<String, Box<TypeDef>>,
+        optional_properties: Option<IndexMap<String, Box<TypeDef>>>,
+        metadata: Option<TypeDefMetadata>,
         is_strict: Option<bool>,
     },
     Values {
-        values: Box<Schema>,
-        metadata: Option<SchemaMetadata>,
+        values: Box<TypeDef>,
+        metadata: Option<TypeDefMetadata>,
     },
-    Discriminator {
-        discriminator: String,
-        mapping: IndexMap<String, Box<Schema>>,
-        metadata: Option<SchemaMetadata>,
+    Union {
+        tag_key: Option<String>,
+        value_key: Option<String>,
+        union: IndexMap<String, Box<TypeDef>>,
+        metadata: Option<TypeDefMetadata>,
     },
     Ref {
         r#ref: String,
     },
 }
 
-pub struct SchemaMetadata {
+pub struct TypeDefMetadata {
     pub id: Option<String>,
     pub description: Option<String>,
     pub is_deprecated: Option<bool>,
