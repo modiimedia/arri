@@ -89,8 +89,9 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 ///
 /// # Metadata
 ///
-/// - The type name becomes `metadata.id`. For generic types the ids of each type argument are
-///   appended (`Page<User>` becomes `PageUser`).
+/// - The type name becomes `metadata.id`. For generic types the [generic name](ArriSchema::generic_name)
+///   of each type argument is appended (`Page<User>` becomes `PageUser` and `Page<Nullable<User>>`
+///   becomes `PageNullableUser`).
 /// - Doc comments become `metadata.description` (on types, fields, and union variants)
 /// - `#[deprecated]` becomes `metadata.isDeprecated`, and the deprecation note becomes `metadata.deprecatedNote`
 ///

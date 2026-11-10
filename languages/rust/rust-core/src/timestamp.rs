@@ -479,7 +479,7 @@ impl From<Timestamp> for SystemTime {
 }
 
 impl ArriSchema for Timestamp {
-    fn type_name() -> Cow<'static, str> {
+    fn generic_name() -> Cow<'static, str> {
         Cow::Borrowed("Timestamp")
     }
 

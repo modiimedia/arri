@@ -7,8 +7,8 @@ use crate::{
 };
 
 impl<V: ArriSchema, S> ArriSchema for IndexMap<String, V, S> {
-    fn type_name() -> Cow<'static, str> {
-        Cow::Owned(format!("{}Record", V::type_name()))
+    fn generic_name() -> Cow<'static, str> {
+        Cow::Owned(format!("{}Record", V::generic_name()))
     }
 
     fn type_def(ctx: &mut SchemaContext) -> TypeDef {

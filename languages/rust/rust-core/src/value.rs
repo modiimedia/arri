@@ -192,7 +192,7 @@ impl_value_from! {
 }
 
 impl ArriSchema for Value {
-    fn type_name() -> Cow<'static, str> {
+    fn generic_name() -> Cow<'static, str> {
         Cow::Borrowed("Any")
     }
 

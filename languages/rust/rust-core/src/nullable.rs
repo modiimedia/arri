@@ -167,10 +167,13 @@ impl<T> From<Nullable<T>> for Option<T> {
 }
 
 /// `Nullable<T>` has the same schema as `T` (including `metadata.id`) with `isNullable` set to `true`.
-/// It does not introduce a new type name.
+///
+/// Its generic name is prefixed with `Nullable` so that generic types instantiated with `T` and
+/// `Nullable<T>` (which have different schemas) get different ids. (`Page<User>` is `PageUser`
+/// while `Page<Nullable<User>>` is `PageNullableUser`.)
 impl<T: ArriSchema> ArriSchema for Nullable<T> {
-    fn type_name() -> Cow<'static, str> {
-        T::type_name()
+    fn generic_name() -> Cow<'static, str> {
+        Cow::Owned(format!("Nullable{}", T::generic_name()))
     }
 
     fn type_def(ctx: &mut SchemaContext) -> TypeDef {

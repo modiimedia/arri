@@ -15,14 +15,21 @@ use crate::{Type, TypeDef};
     note = "`Option<T>` is only supported as the type of a struct field. Use `arri::Nullable<T>` for values that can be `null`"
 )]
 pub trait ArriSchema {
-    /// A name for this type.
+    /// The name used for this type when it's a type argument of a generic type.
     ///
-    /// For named types (objects, enums, and unions) this is the `metadata.id`.
-    /// Other types return a descriptive name (e.g. `String`, `Int32Array`).
-    /// Wrappers that don't change the shape of the schema (`Nullable<T>`, `Box<T>`, `Rc<T>`, `Arc<T>`)
-    /// return the name of the inner type.
-    /// These names are used to build ids for generic types (`Page<User>` becomes `PageUser`).
-    fn type_name() -> Cow<'static, str>;
+    /// Generic types build their `metadata.id` by appending the generic name of each type argument
+    /// to their own name (`Page<User>` becomes `PageUser`). The generic name must describe the full
+    /// shape of the type so that instantiations with different schemas get different ids.
+    ///
+    /// - Named types (objects, enums, and unions) return their `metadata.id`
+    /// - Scalars return a descriptive name (`String`, `Int32`, `Timestamp`, etc.)
+    /// - Types that change the shape of their inner type add to its name:
+    ///   `Nullable<User>` is `NullableUser`, `Vec<User>` is `UserArray`, and `HashMap<String, User>` is `UserRecord`
+    /// - Types that don't change the shape of their inner type (`Box<T>`, `Rc<T>`, `Arc<T>`) return the inner type's name
+    ///
+    /// Only named types use this as their `metadata.id`. For every other type it's just a fragment of a
+    /// generic type's id. For example `Nullable<User>` still has the `metadata.id` of `User`.
+    fn generic_name() -> Cow<'static, str>;
 
     /// Build the type definition for this type.
     ///
@@ -79,7 +86,7 @@ macro_rules! impl_schema_scalar {
     ($($ty:ty => $variant:ident, $name:literal);* $(;)?) => {
         $(
             impl ArriSchema for $ty {
-                fn type_name() -> Cow<'static, str> {
+                fn generic_name() -> Cow<'static, str> {
                     Cow::Borrowed($name)
                 }
 
@@ -112,8 +119,8 @@ macro_rules! impl_schema_forward {
     ($($ty:ident),*) => {
         $(
             impl<T: ArriSchema + ?Sized> ArriSchema for $ty<T> {
-                fn type_name() -> Cow<'static, str> {
-                    T::type_name()
+                fn generic_name() -> Cow<'static, str> {
+                    T::generic_name()
                 }
 
                 fn type_def(ctx: &mut SchemaContext) -> TypeDef {
@@ -127,8 +134,8 @@ macro_rules! impl_schema_forward {
 impl_schema_forward!(Box, Rc, Arc);
 
 impl<T: ArriSchema + ?Sized> ArriSchema for &T {
-    fn type_name() -> Cow<'static, str> {
-        T::type_name()
+    fn generic_name() -> Cow<'static, str> {
+        T::generic_name()
     }
 
     fn type_def(ctx: &mut SchemaContext) -> TypeDef {
@@ -137,18 +144,18 @@ impl<T: ArriSchema + ?Sized> ArriSchema for &T {
 }
 
 fn list_name<T: ArriSchema + ?Sized>() -> Cow<'static, str> {
-    Cow::Owned(format!("{}Array", T::type_name()))
+    Cow::Owned(format!("{}Array", T::generic_name()))
 }
 
 fn record_name<T: ArriSchema + ?Sized>() -> Cow<'static, str> {
-    Cow::Owned(format!("{}Record", T::type_name()))
+    Cow::Owned(format!("{}Record", T::generic_name()))
 }
 
 macro_rules! impl_schema_list {
     ($($ty:ty),*) => {
         $(
             impl<T: ArriSchema> ArriSchema for $ty {
-                fn type_name() -> Cow<'static, str> {
+                fn generic_name() -> Cow<'static, str> {
                     list_name::<T>()
                 }
 
@@ -163,7 +170,7 @@ macro_rules! impl_schema_list {
 impl_schema_list!([T], Vec<T>, VecDeque<T>);
 
 impl<T: ArriSchema, const N: usize> ArriSchema for [T; N] {
-    fn type_name() -> Cow<'static, str> {
+    fn generic_name() -> Cow<'static, str> {
         list_name::<T>()
     }
 
@@ -173,7 +180,7 @@ impl<T: ArriSchema, const N: usize> ArriSchema for [T; N] {
 }
 
 impl<V: ArriSchema, S> ArriSchema for HashMap<String, V, S> {
-    fn type_name() -> Cow<'static, str> {
+    fn generic_name() -> Cow<'static, str> {
         record_name::<V>()
     }
 
@@ -183,7 +190,7 @@ impl<V: ArriSchema, S> ArriSchema for HashMap<String, V, S> {
 }
 
 impl<V: ArriSchema> ArriSchema for BTreeMap<String, V> {
-    fn type_name() -> Cow<'static, str> {
+    fn generic_name() -> Cow<'static, str> {
         record_name::<V>()
     }
 
@@ -212,14 +219,15 @@ mod tests {
     }
 
     #[test]
-    fn type_names() {
-        assert_eq!(<Vec<Vec<i32>>>::type_name(), "Int32ArrayArray");
+    fn generic_names() {
+        assert_eq!(<Vec<Vec<i32>>>::generic_name(), "Int32ArrayArray");
         assert_eq!(
-            <BTreeMap<String, Nullable<String>>>::type_name(),
-            "StringRecord"
+            <BTreeMap<String, Nullable<String>>>::generic_name(),
+            "NullableStringRecord"
         );
-        assert_eq!(<Nullable<Box<i8>>>::type_name(), "Int8");
-        assert_eq!(<Box<str>>::type_name(), "String");
+        assert_eq!(<Nullable<Box<i8>>>::generic_name(), "NullableInt8");
+        assert_eq!(<Vec<Nullable<i8>>>::generic_name(), "NullableInt8Array");
+        assert_eq!(<Box<str>>::generic_name(), "String");
     }
 
     #[test]

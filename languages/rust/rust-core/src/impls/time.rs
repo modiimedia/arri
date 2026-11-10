@@ -57,8 +57,8 @@ macro_rules! impl_time {
     ($($ty:ty),*) => {
         $(
             impl ArriSchema for $ty {
-                fn type_name() -> Cow<'static, str> {
-                    Timestamp::type_name()
+                fn generic_name() -> Cow<'static, str> {
+                    Timestamp::generic_name()
                 }
 
                 fn type_def(ctx: &mut SchemaContext) -> TypeDef {

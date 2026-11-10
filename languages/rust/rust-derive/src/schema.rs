@@ -9,8 +9,8 @@ pub fn expand(c: &Container) -> TokenStream {
     let generics = c.bounded_generics(quote!(#k::ArriSchema), &[]);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    let type_name = match &c.body {
-        Body::Newtype(inner) => quote!(<#inner as #k::ArriSchema>::type_name()),
+    let generic_name = match &c.body {
+        Body::Newtype(inner) => quote!(<#inner as #k::ArriSchema>::generic_name()),
         _ => {
             let id = &c.id;
             let params: Vec<_> = c.generics.type_params().map(|p| &p.ident).collect();
@@ -20,7 +20,7 @@ pub fn expand(c: &Container) -> TokenStream {
                 // generic types get the ids of their type arguments appended (Page<User> => PageUser)
                 quote! {
                     let mut name = #k::__private::String::from(#id);
-                    #( name.push_str(&<#params as #k::ArriSchema>::type_name()); )*
+                    #( name.push_str(&<#params as #k::ArriSchema>::generic_name()); )*
                     #k::__private::Cow::Owned(name)
                 }
             }
@@ -85,8 +85,8 @@ pub fn expand(c: &Container) -> TokenStream {
     quote! {
         #[automatically_derived]
         impl #impl_generics #k::ArriSchema for #ident #ty_generics #where_clause {
-            fn type_name() -> #k::__private::Cow<'static, str> {
-                #type_name
+            fn generic_name() -> #k::__private::Cow<'static, str> {
+                #generic_name
             }
 
             fn type_def(ctx: &mut #k::SchemaContext) -> #k::TypeDef {
@@ -100,7 +100,7 @@ pub fn expand(c: &Container) -> TokenStream {
 fn named(c: &Container, def: TokenStream) -> TokenStream {
     let k = &c.krate;
     quote! {
-        ctx.named(<Self as #k::ArriSchema>::type_name(), |ctx| {
+        ctx.named(<Self as #k::ArriSchema>::generic_name(), |ctx| {
             let _ = &ctx;
             #def
         })

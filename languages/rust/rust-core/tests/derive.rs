@@ -190,7 +190,7 @@ mod structs {
             type_def_of::<UserId>().to_json(),
             r#"{"type":"string","metadata":{"description":"A user id"}}"#
         );
-        assert_eq!(UserId::type_name(), "String");
+        assert_eq!(UserId::generic_name(), "String");
     }
 
     #[derive(ArriModel, Debug, PartialEq)]
@@ -549,10 +549,13 @@ mod generics {
 
     #[test]
     fn ids_include_type_arguments() {
-        assert_eq!(<Page<User>>::type_name(), "PageUser");
-        assert_eq!(<Page<Vec<User>>>::type_name(), "PageUserArray");
-        assert_eq!(<Pair<String, Nullable<u8>>>::type_name(), "PairStringUint8");
-        assert_eq!(<Page<Page<User>>>::type_name(), "PagePageUser");
+        assert_eq!(<Page<User>>::generic_name(), "PageUser");
+        assert_eq!(<Page<Vec<User>>>::generic_name(), "PageUserArray");
+        assert_eq!(
+            <Pair<String, Nullable<u8>>>::generic_name(),
+            "PairStringNullableUint8"
+        );
+        assert_eq!(<Page<Page<User>>>::generic_name(), "PagePageUser");
         assert_eq!(
             type_def_of::<Page<User>>().to_json(),
             concat!(
@@ -560,6 +563,21 @@ mod generics {
                 r#""next":{"type":"string","isNullable":true}},"metadata":{"id":"PageUser","description":"A page of results"}}"#
             )
         );
+    }
+
+    #[test]
+    fn instantiations_with_different_shapes_get_different_ids() {
+        let ids = [
+            type_def_of::<Page<User>>().metadata.id,
+            type_def_of::<Page<Nullable<User>>>().metadata.id,
+            type_def_of::<Page<Vec<User>>>().metadata.id,
+        ];
+        assert_eq!(
+            ids.map(Option::unwrap),
+            ["PageUser", "PageNullableUser", "PageUserArray"].map(String::from)
+        );
+        // Box doesn't change the schema so it doesn't change the id
+        assert_eq!(<Page<Box<User>>>::generic_name(), "PageUser");
     }
 
     #[derive(ArriModel, Debug, PartialEq)]
@@ -570,9 +588,8 @@ mod generics {
     }
 
     #[test]
-    fn option_and_nullable_do_not_create_new_ids() {
-        assert_eq!(<Page<Nullable<User>>>::type_name(), "PageUser");
-        assert_eq!(<Maybe<User>>::type_name(), "MaybeUser");
+    fn option_and_nullable_keep_the_inner_id() {
+        assert_eq!(<Maybe<User>>::generic_name(), "MaybeUser");
         // every field reuses User's schema (and id). Nullable only adds `isNullable`, and Option
         // only moves the field into `optionalProperties`.
         let user = r#"{"properties":{"id":{"type":"string"}}"#;
@@ -604,7 +621,7 @@ mod generics {
         let encoded = json::to_string(&event).unwrap();
         assert_eq!(encoded, r#"{"type":"Created","id":"1"}"#);
         assert_eq!(json::from_str::<Event<User>>(&encoded).unwrap(), event);
-        assert_eq!(<Event<User>>::type_name(), "EventUser");
+        assert_eq!(<Event<User>>::generic_name(), "EventUser");
     }
 }
 
