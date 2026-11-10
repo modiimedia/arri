@@ -1,0 +1,5 @@
+error: `strict` is not supported on enums where every variant is a unit variant (they are serialized as strings)
+ --> tests/ui/strict_enum.rs:4:8
+  |
+4 | #[arri(strict)]
+  |        ^^^^^^

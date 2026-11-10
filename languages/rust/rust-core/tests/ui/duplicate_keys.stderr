@@ -1,0 +1,5 @@
+error: multiple fields would be serialized with the key "b"
+ --> tests/ui/duplicate_keys.rs:7:5
+  |
+7 |     b: String,
+  |     ^

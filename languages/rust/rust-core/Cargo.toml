@@ -1,0 +1,31 @@
+[package]
+name = "arri"
+version = "0.1.0"
+edition = "2024"
+description = "Schema generation and encoding / decoding for Arri RPC models"
+license = "MIT"
+homepage = "https://github.com/modiimedia/arri"
+repository = "https://github.com/modiimedia/arri"
+keywords = ["arrirpc", "arri", "rpc", "schema"]
+categories = ["encoding", "web-programming"]
+include = ["/src"]
+
+[features]
+default = ["derive"]
+# Enables `#[derive(ArriModel)]`
+derive = ["dep:arri_derive"]
+# Implements the arri traits for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>`
+chrono = ["dep:chrono"]
+# Implements the arri traits for `time::OffsetDateTime` and `time::UtcDateTime`
+time = ["dep:time"]
+# Implements the arri traits for `indexmap::IndexMap<String, V>`
+indexmap = ["dep:indexmap"]
+
+[dependencies]
+arri_derive = { path = "../rust-derive", version = "0.1.0", optional = true }
+chrono = { version = "0.4", optional = true, default-features = false }
+time = { version = "0.3", optional = true, default-features = false }
+indexmap = { version = "2", optional = true }
+
+[dev-dependencies]
+trybuild = "1"

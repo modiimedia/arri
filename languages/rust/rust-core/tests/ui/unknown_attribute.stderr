@@ -1,0 +1,5 @@
+error: unknown arri attribute `skip` on a field. Supported attributes: `rename`
+ --> tests/ui/unknown_attribute.rs:5:12
+  |
+5 |     #[arri(skip)]
+  |            ^^^^

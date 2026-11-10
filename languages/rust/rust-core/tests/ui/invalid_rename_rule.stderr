@@ -1,0 +1,5 @@
+error: unknown rename rule "camel", expected one of "snake_case", "camelCase", "PascalCase", "SCREAMING_SNAKE_CASE", "kebab-case", "SCREAMING-KEBAB-CASE", "lowercase", "UPPERCASE"
+ --> tests/ui/invalid_rename_rule.rs:4:21
+  |
+4 | #[arri(rename_all = "camel")]
+  |                     ^^^^^^^

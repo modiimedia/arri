@@ -1,0 +1,5 @@
+error: tuple variants must have exactly one field. Use a struct variant instead
+ --> tests/ui/tuple_variant.rs:5:6
+  |
+5 |     A(String, String),
+  |      ^^^^^^^^^^^^^^^^

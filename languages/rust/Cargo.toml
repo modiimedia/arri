@@ -1,5 +1,5 @@
 [workspace]
-members = ["rust-client", "rust-codegen-reference"]
+members = ["rust-client", "rust-codegen-reference", "rust-core", "rust-derive"]
 
 resolver = "2"
 
