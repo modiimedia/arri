@@ -1,0 +1,5 @@
+ARRIRPC/0 INVOCATION users.getUser
+req-id:1
+accept: 	 application/json	 
+x-foo:	bar baz  
+

@@ -12,6 +12,7 @@ How these messages are carried over a specific transport is defined separately b
 - [Terminology](#terminology)
 - [Message Format](#message-format)
     - [Head](#head)
+    - [Canonical Encoding](#canonical-encoding)
     - [Body](#body)
 - [Headers](#headers)
     - [Reserved Headers](#reserved-headers)
@@ -96,6 +97,16 @@ Everything before the first empty line is the "head".
 - The end of the head is marked by an empty line (`\n\n`). The empty line is required even when the message has no body.
 
 Because the head can never contain `\n\n`, receivers can locate the body by scanning for the first `\n\n` byte sequence without decoding the message.
+
+### Canonical Encoding
+
+Receivers must accept headers in any order and with any casing or surrounding whitespace allowed above. Senders should produce the canonical encoding, so that every implementation encodes the same message to the same bytes:
+
+- Header keys are lowercase, followed by `: ` (a colon and a single space) and the trimmed value.
+- `req-id` comes first, followed by the other [reserved headers](#reserved-headers) in the order they are listed in that table, followed by custom headers in insertion order.
+- Headers without a value on the message are omitted entirely.
+
+Shared test fixtures for valid, non-canonical, and invalid messages live in [`/tests/test-files/messages`](/tests/test-files/messages/README.md).
 
 ### Body
 

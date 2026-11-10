@@ -3,3 +3,5 @@
 *.jar binary
 *.png binary
 *.jpg binary
+# raw byte fixtures (line endings are significant)
+tests/test-files/messages/*.arrimsg -text

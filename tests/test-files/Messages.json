@@ -1,0 +1,426 @@
+{
+  "description": "Arri RPC message fixtures. See /specifications/arri_rpc.md and the README.md in this directory.",
+  "valid": [
+    {
+      "name": "Invocation",
+      "description": "INVOCATION with every reserved header, custom headers, and a body",
+      "file": "messages/Invocation.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "users.getUser",
+        "reqId": "1",
+        "contentType": "application/json",
+        "accept": "application/json",
+        "clientVersion": "1.2.0",
+        "headers": [
+          ["authorization", "Bearer abc123"],
+          ["x-tenant-id", "tenant_1"]
+        ],
+        "body": "{\"id\":\"12345\"}"
+      }
+    },
+    {
+      "name": "Invocation_Minimal",
+      "description": "INVOCATION with only an rpc name",
+      "file": "messages/Invocation_Minimal.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "users.getUser",
+        "headers": []
+      }
+    },
+    {
+      "name": "Invocation_NoBody",
+      "description": "INVOCATION for a procedure with a streamed input (the body is omitted)",
+      "file": "messages/Invocation_NoBody.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "chat.sendMessages",
+        "reqId": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+        "headers": []
+      }
+    },
+    {
+      "name": "Invocation_LastMsgId",
+      "description": "INVOCATION resuming an output stream",
+      "file": "messages/Invocation_LastMsgId.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "users.watchUser",
+        "reqId": "2",
+        "accept": "application/json",
+        "lastMsgId": "42",
+        "headers": [],
+        "body": "{\"id\":\"12345\"}"
+      }
+    },
+    {
+      "name": "Invocation_SpecialHeaderValues",
+      "description": "header values containing tabs, colons, and other printable ASCII",
+      "file": "messages/Invocation_SpecialHeaderValues.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "sendObject",
+        "reqId": "3",
+        "headers": [
+          ["x-url", "https://example.com:8080/a?b=c"],
+          ["x-tabbed", "a\tb"],
+          ["x-symbols", "~!@#$%^&*()_+-={}[]|\\:\";'<>?,./"]
+        ],
+        "body": "{\"id\":\"1\",\"content\":\"hello world\"}"
+      }
+    },
+    {
+      "name": "Ok",
+      "description": "OK with custom headers and a body",
+      "file": "messages/Ok.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "OK",
+        "reqId": "1",
+        "contentType": "application/json",
+        "headers": [["x-cache", "HIT"]],
+        "body": "{\"id\":\"12345\",\"name\":\"John Doe\"}"
+      }
+    },
+    {
+      "name": "Ok_NoBody",
+      "description": "OK for a procedure without a response",
+      "file": "messages/Ok_NoBody.arrimsg",
+      "canonical": true,
+      "message": { "type": "OK", "reqId": "1", "headers": [] }
+    },
+    {
+      "name": "Error",
+      "description": "ERROR with a typed error body",
+      "file": "messages/Error.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "ERROR",
+        "reqId": "1",
+        "contentType": "application/json",
+        "headers": [],
+        "body": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"type\":\"USER_NOT_FOUND\",\"data\":{\"userId\":\"12345\"}}"
+      }
+    },
+    {
+      "name": "Error_ConnectionLevel",
+      "description": "ERROR without a req-id (connection-level error)",
+      "file": "messages/Error_ConnectionLevel.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "ERROR",
+        "headers": [],
+        "body": "{\"code\":\"PROTOCOL_ERROR\",\"message\":\"Invalid message. Missing empty line after headers.\"}"
+      }
+    },
+    {
+      "name": "StreamStart",
+      "description": "STREAM_START with a content type and custom headers",
+      "file": "messages/StreamStart.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "STREAM_START",
+        "reqId": "1",
+        "contentType": "application/json",
+        "headers": [["x-stream-name", "users"]]
+      }
+    },
+    {
+      "name": "StreamData",
+      "description": "STREAM_DATA with a msg-id",
+      "file": "messages/StreamData.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "STREAM_DATA",
+        "reqId": "1",
+        "msgId": "1",
+        "body": "{\"id\":\"12345\",\"name\":\"John Doe\"}"
+      }
+    },
+    {
+      "name": "StreamData_BodyWithEmptyLines",
+      "description": "STREAM_DATA whose body contains \"\\n\\n\" (only the first \"\\n\\n\" ends the head)",
+      "file": "messages/StreamData_BodyWithEmptyLines.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "STREAM_DATA",
+        "reqId": "1",
+        "body": "line one\n\nline two\n\n"
+      }
+    },
+    {
+      "name": "StreamData_BinaryBody",
+      "description": "STREAM_DATA whose body is arbitrary bytes (null bytes, invalid UTF-8, \"\\n\\n\", \"\\r\\n\")",
+      "file": "messages/StreamData_BinaryBody.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "STREAM_DATA",
+        "reqId": "1",
+        "bodyBase64": "AP/+CgoNCoB/AA=="
+      }
+    },
+    {
+      "name": "StreamEnd",
+      "description": "STREAM_END with a reason",
+      "file": "messages/StreamEnd.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "STREAM_END",
+        "reqId": "1",
+        "reason": "no more events"
+      }
+    },
+    {
+      "name": "StreamEnd_NoReason",
+      "description": "STREAM_END with only a req-id",
+      "file": "messages/StreamEnd_NoReason.arrimsg",
+      "canonical": true,
+      "message": { "type": "STREAM_END", "reqId": "1" }
+    },
+    {
+      "name": "Cancel",
+      "description": "CANCEL with a reason",
+      "file": "messages/Cancel.arrimsg",
+      "canonical": true,
+      "message": {
+        "type": "CANCEL",
+        "reqId": "1",
+        "reason": "user navigated away"
+      }
+    },
+    {
+      "name": "ConnectionStart",
+      "description": "CONNECTION_START with a heartbeat interval",
+      "file": "messages/ConnectionStart.arrimsg",
+      "canonical": true,
+      "message": { "type": "CONNECTION_START", "heartbeatInterval": 20000 }
+    },
+    {
+      "name": "Heartbeat",
+      "description": "HEARTBEAT with a heartbeat interval",
+      "file": "messages/Heartbeat.arrimsg",
+      "canonical": true,
+      "message": { "type": "HEARTBEAT", "heartbeatInterval": 20000 }
+    },
+    {
+      "name": "Heartbeat_NoInterval",
+      "description": "HEARTBEAT without any headers",
+      "file": "messages/Heartbeat_NoInterval.arrimsg",
+      "canonical": true,
+      "message": { "type": "HEARTBEAT" }
+    },
+    {
+      "name": "GoAway",
+      "description": "GOAWAY with a reason",
+      "file": "messages/GoAway.arrimsg",
+      "canonical": true,
+      "message": { "type": "GOAWAY", "reason": "server restarting" }
+    },
+    {
+      "name": "Invocation_MixedCaseHeaders",
+      "description": "header keys are case-insensitive and normalized to lowercase",
+      "file": "messages/Invocation_MixedCaseHeaders.arrimsg",
+      "canonical": false,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "users.getUser",
+        "reqId": "1",
+        "contentType": "application/json",
+        "headers": [["x-tenant-id", "tenant_1"]],
+        "body": "{\"id\":\"12345\"}"
+      }
+    },
+    {
+      "name": "Invocation_UntrimmedHeaderValues",
+      "description": "leading/trailing spaces and tabs are trimmed from header values, and the space after \":\" is optional",
+      "file": "messages/Invocation_UntrimmedHeaderValues.arrimsg",
+      "canonical": false,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "users.getUser",
+        "reqId": "1",
+        "accept": "application/json",
+        "headers": [["x-foo", "bar baz"]]
+      }
+    },
+    {
+      "name": "Invocation_HeaderOrder",
+      "description": "reserved and custom headers may appear in any order",
+      "file": "messages/Invocation_HeaderOrder.arrimsg",
+      "canonical": false,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "users.getUser",
+        "reqId": "1",
+        "contentType": "application/json",
+        "headers": [
+          ["x-foo", "1"],
+          ["x-bar", "2"]
+        ],
+        "body": "{\"id\":\"12345\"}"
+      }
+    },
+    {
+      "name": "Invocation_BindingHeaders",
+      "description": "headers starting with \"arri-\" are ignored",
+      "file": "messages/Invocation_BindingHeaders.arrimsg",
+      "canonical": false,
+      "message": {
+        "type": "INVOCATION",
+        "rpcName": "users.getUser",
+        "reqId": "1",
+        "headers": []
+      }
+    },
+    {
+      "name": "StreamEnd_IgnoredHeaders",
+      "description": "reserved headers that do not apply to the message type, and custom headers on message types without custom headers, are ignored",
+      "file": "messages/StreamEnd_IgnoredHeaders.arrimsg",
+      "canonical": false,
+      "message": { "type": "STREAM_END", "reqId": "1" }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "Empty",
+      "description": "empty input",
+      "file": "messages/Invalid_Empty.arrimsg"
+    },
+    {
+      "name": "MissingHeadEnd",
+      "description": "no empty line after the headers",
+      "file": "messages/Invalid_MissingHeadEnd.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "CrlfLineEndings",
+      "description": "\"\\r\\n\" line endings are not supported",
+      "file": "messages/Invalid_CrlfLineEndings.arrimsg"
+    },
+    {
+      "name": "NonAsciiHeaderValue",
+      "description": "header values must be ASCII",
+      "file": "messages/Invalid_NonAsciiHeaderValue.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "ControlCharacterInHead",
+      "description": "the head may not contain control characters other than tab and line feed",
+      "file": "messages/Invalid_ControlCharacterInHead.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "WrongPrefix",
+      "description": "first line does not start with \"ARRIRPC/\"",
+      "file": "messages/Invalid_WrongPrefix.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "UnsupportedVersion",
+      "description": "unsupported protocol version",
+      "file": "messages/Invalid_UnsupportedVersion.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "LowercaseMessageType",
+      "description": "message types are case-sensitive",
+      "file": "messages/Invalid_LowercaseMessageType.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "UnknownMessageType",
+      "description": "unknown message type",
+      "file": "messages/Invalid_UnknownMessageType.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "MissingMessageType",
+      "description": "first line has no message type",
+      "file": "messages/Invalid_MissingMessageType.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "EmptyFirstLine",
+      "description": "message starts with an empty line",
+      "file": "messages/Invalid_EmptyFirstLine.arrimsg"
+    },
+    {
+      "name": "Invocation_MissingRpcName",
+      "description": "INVOCATION without an rpc name",
+      "file": "messages/Invalid_Invocation_MissingRpcName.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "Invocation_ExtraTokens",
+      "description": "INVOCATION with more than one rpc name",
+      "file": "messages/Invalid_Invocation_ExtraTokens.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "Ok_ExtraTokens",
+      "description": "only INVOCATION may have content after the message type",
+      "file": "messages/Invalid_Ok_ExtraTokens.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "DuplicateHeader",
+      "description": "header keys may only appear once (case-insensitive)",
+      "file": "messages/Invalid_DuplicateHeader.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "HeaderMissingColon",
+      "description": "header line without a \":\"",
+      "file": "messages/Invalid_HeaderMissingColon.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "HeaderEmptyKey",
+      "description": "header line with an empty key",
+      "file": "messages/Invalid_HeaderEmptyKey.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "HeaderInvalidKey",
+      "description": "header keys must be HTTP token characters",
+      "file": "messages/Invalid_HeaderInvalidKey.arrimsg",
+      "reqId": "1"
+    },
+    {
+      "name": "ReqIdWithSpace",
+      "description": "req-id must be visible ASCII (no spaces)",
+      "file": "messages/Invalid_ReqIdWithSpace.arrimsg"
+    },
+    {
+      "name": "ReqIdEmpty",
+      "description": "req-id must not be empty",
+      "file": "messages/Invalid_ReqIdEmpty.arrimsg"
+    },
+    {
+      "name": "ReqIdTooLong",
+      "description": "req-id must be at most 128 characters",
+      "file": "messages/Invalid_ReqIdTooLong.arrimsg"
+    },
+    {
+      "name": "HeartbeatIntervalNotANumber",
+      "description": "heartbeat-interval must be a non-negative integer",
+      "file": "messages/Invalid_HeartbeatIntervalNotANumber.arrimsg"
+    },
+    {
+      "name": "HeartbeatIntervalNegative",
+      "description": "heartbeat-interval must be a non-negative integer",
+      "file": "messages/Invalid_HeartbeatIntervalNegative.arrimsg"
+    },
+    {
+      "name": "HeartbeatIntervalDecimal",
+      "description": "heartbeat-interval must be a non-negative integer",
+      "file": "messages/Invalid_HeartbeatIntervalDecimal.arrimsg"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+ARRIRPC/0 INVOCATION users.getUser
+req-id: 1
+arri-connection-id: abc123
+Arri-Foo: bar
+

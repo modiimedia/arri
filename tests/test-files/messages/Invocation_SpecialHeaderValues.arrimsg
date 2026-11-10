@@ -1,0 +1,7 @@
+ARRIRPC/0 INVOCATION sendObject
+req-id: 3
+x-url: https://example.com:8080/a?b=c
+x-tabbed: a	b
+x-symbols: ~!@#$%^&*()_+-={}[]|\:";'<>?,./
+
+{"id":"1","content":"hello world"}

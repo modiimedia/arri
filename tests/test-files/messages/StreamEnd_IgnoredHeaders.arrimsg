@@ -1,0 +1,6 @@
+ARRIRPC/0 STREAM_END
+req-id: 1
+content-type: application/json
+msg-id: 5
+x-foo: bar
+

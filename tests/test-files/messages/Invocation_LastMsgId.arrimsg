@@ -1,0 +1,6 @@
+ARRIRPC/0 INVOCATION users.watchUser
+req-id: 2
+accept: application/json
+last-msg-id: 42
+
+{"id":"12345"}

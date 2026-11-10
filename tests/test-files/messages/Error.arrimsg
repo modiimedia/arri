@@ -1,0 +1,5 @@
+ARRIRPC/0 ERROR
+req-id: 1
+content-type: application/json
+
+{"code":"NOT_FOUND","message":"User not found","type":"USER_NOT_FOUND","data":{"userId":"12345"}}

@@ -1,0 +1,6 @@
+ARRIRPC/0 INVOCATION users.getUser
+Req-Id: 1
+Content-Type: application/json
+X-Tenant-ID: tenant_1
+
+{"id":"12345"}

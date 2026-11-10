@@ -1,0 +1,5 @@
+ARRIRPC/0 STREAM_DATA
+req-id: 1
+msg-id: 1
+
+{"id":"12345","name":"John Doe"}

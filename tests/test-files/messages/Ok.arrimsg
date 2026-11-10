@@ -1,0 +1,6 @@
+ARRIRPC/0 OK
+req-id: 1
+content-type: application/json
+x-cache: HIT
+
+{"id":"12345","name":"John Doe"}

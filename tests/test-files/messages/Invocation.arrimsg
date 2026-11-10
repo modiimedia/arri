@@ -1,0 +1,9 @@
+ARRIRPC/0 INVOCATION users.getUser
+req-id: 1
+content-type: application/json
+accept: application/json
+client-version: 1.2.0
+authorization: Bearer abc123
+x-tenant-id: tenant_1
+
+{"id":"12345"}

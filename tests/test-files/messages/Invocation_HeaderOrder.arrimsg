@@ -1,0 +1,7 @@
+ARRIRPC/0 INVOCATION users.getUser
+x-foo: 1
+content-type: application/json
+x-bar: 2
+req-id: 1
+
+{"id":"12345"}

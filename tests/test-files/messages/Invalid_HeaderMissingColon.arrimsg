@@ -1,0 +1,4 @@
+ARRIRPC/0 INVOCATION users.getUser
+req-id: 1
+x-foo
+
