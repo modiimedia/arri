@@ -549,18 +549,18 @@ mod generics {
 
     #[test]
     fn ids_include_type_arguments() {
-        assert_eq!(<Page<User>>::generic_name(), "PageUser");
-        assert_eq!(<Page<Vec<User>>>::generic_name(), "PageUserArray");
+        assert_eq!(<Page<User>>::generic_name(), "UserPage");
+        assert_eq!(<Page<Vec<User>>>::generic_name(), "UserArrayPage");
         assert_eq!(
             <Pair<String, Nullable<u8>>>::generic_name(),
-            "PairStringNullableUint8"
+            "StringUint8NullablePair"
         );
-        assert_eq!(<Page<Page<User>>>::generic_name(), "PagePageUser");
+        assert_eq!(<Page<Page<User>>>::generic_name(), "UserPagePage");
         assert_eq!(
             type_def_of::<Page<User>>().to_json(),
             concat!(
                 r#"{"properties":{"items":{"elements":{"properties":{"id":{"type":"string"}},"metadata":{"id":"User"}}},"#,
-                r#""next":{"type":"string","isNullable":true}},"metadata":{"id":"PageUser","description":"A page of results"}}"#
+                r#""next":{"type":"string","isNullable":true}},"metadata":{"id":"UserPage","description":"A page of results"}}"#
             )
         );
     }
@@ -571,13 +571,40 @@ mod generics {
             type_def_of::<Page<User>>().metadata.id,
             type_def_of::<Page<Nullable<User>>>().metadata.id,
             type_def_of::<Page<Vec<User>>>().metadata.id,
+            type_def_of::<Page<Vec<Nullable<User>>>>().metadata.id,
+            type_def_of::<Page<Nullable<Vec<User>>>>().metadata.id,
         ];
         assert_eq!(
             ids.map(Option::unwrap),
-            ["PageUser", "PageNullableUser", "PageUserArray"].map(String::from)
+            [
+                "UserPage",
+                "UserNullablePage",
+                "UserArrayPage",
+                "UserNullableArrayPage",
+                "UserArrayNullablePage",
+            ]
+            .map(String::from)
         );
         // Box doesn't change the schema so it doesn't change the id
-        assert_eq!(<Page<Box<User>>>::generic_name(), "PageUser");
+        assert_eq!(<Page<Box<User>>>::generic_name(), "UserPage");
+    }
+
+    #[test]
+    fn arrays_records_and_nullable_values_have_no_id_of_their_own() {
+        use std::collections::HashMap;
+
+        assert_eq!(type_def_of::<Vec<User>>().metadata.id, None);
+        assert_eq!(type_def_of::<HashMap<String, User>>().metadata.id, None);
+        assert_eq!(type_def_of::<Vec<Nullable<String>>>().metadata.id, None);
+        // the named type inside keeps its own id
+        let arri::Form::Elements(inner) = type_def_of::<Vec<User>>().form else {
+            panic!("expected the elements form")
+        };
+        assert_eq!(inner.metadata.id.as_deref(), Some("User"));
+        // Nullable<T> has the same schema (and id) as T
+        let nullable = type_def_of::<Nullable<User>>();
+        assert!(nullable.is_nullable);
+        assert_eq!(nullable.metadata.id.as_deref(), Some("User"));
     }
 
     #[derive(ArriModel, Debug, PartialEq)]
@@ -589,7 +616,7 @@ mod generics {
 
     #[test]
     fn option_and_nullable_keep_the_inner_id() {
-        assert_eq!(<Maybe<User>>::generic_name(), "MaybeUser");
+        assert_eq!(<Maybe<User>>::generic_name(), "UserMaybe");
         // every field reuses User's schema (and id). Nullable only adds `isNullable`, and Option
         // only moves the field into `optionalProperties`.
         let user = r#"{"properties":{"id":{"type":"string"}}"#;
@@ -600,7 +627,7 @@ mod generics {
                     r#"{{"properties":{{"nullable":{user},"isNullable":true,"metadata":{{"id":"User"}}}}}},"#,
                     r#""optionalProperties":{{"optional":{user},"metadata":{{"id":"User"}}}},"#,
                     r#""both":{user},"isNullable":true,"metadata":{{"id":"User"}}}}}},"#,
-                    r#""metadata":{{"id":"MaybeUser"}}}}"#
+                    r#""metadata":{{"id":"UserMaybe"}}}}"#
                 ),
                 user = user
             )
@@ -621,7 +648,7 @@ mod generics {
         let encoded = json::to_string(&event).unwrap();
         assert_eq!(encoded, r#"{"type":"Created","id":"1"}"#);
         assert_eq!(json::from_str::<Event<User>>(&encoded).unwrap(), event);
-        assert_eq!(<Event<User>>::generic_name(), "EventUser");
+        assert_eq!(<Event<User>>::generic_name(), "UserEvent");
     }
 }
 
@@ -663,5 +690,28 @@ mod any {
             type_def_of::<Event>().to_json(),
             r#"{"properties":{"payload":{}},"metadata":{"id":"Event"}}"#
         );
+    }
+}
+
+mod prelude {
+    use arri::prelude::*;
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Profile {
+        name: Nullable<String>,
+        age: Nullable<u8>,
+    }
+
+    #[test]
+    fn variants_can_be_used_without_a_prefix() {
+        let profile = Profile {
+            name: Present("John".to_string()),
+            age: Null,
+        };
+        let encoded = arri::json::to_string(&profile).unwrap();
+        assert_eq!(encoded, r#"{"name":"John","age":null}"#);
+        let decoded: Profile = arri::json::from_str(&encoded).unwrap();
+        assert!(matches!(decoded.age, Null));
+        assert_eq!(decoded, profile);
     }
 }

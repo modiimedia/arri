@@ -16,6 +16,25 @@ use crate::{
 /// | `Option<Nullable<T>>`   | `T`, `null`, or an omitted field     |
 ///
 /// `Null` is ordered before `Present` (matching `Option`).
+///
+/// The variants are exported from the crate root so they can be used without the `Nullable::`
+/// prefix, the same way `Some` and `None` are used with `Option`:
+///
+/// ```
+/// use arri::{Null, Nullable, Present};
+///
+/// let name: Nullable<&str> = Present("John");
+/// let nickname: Nullable<&str> = Null;
+///
+/// match name {
+///     Present(name) => assert_eq!(name, "John"),
+///     Null => unreachable!(),
+/// }
+/// assert!(nickname.is_null());
+/// // values can also be converted with `into()`
+/// let age: Nullable<u8> = 30.into();
+/// assert_eq!(age, Present(30));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub enum Nullable<T> {
     #[default]
@@ -168,12 +187,12 @@ impl<T> From<Nullable<T>> for Option<T> {
 
 /// `Nullable<T>` has the same schema as `T` (including `metadata.id`) with `isNullable` set to `true`.
 ///
-/// Its generic name is prefixed with `Nullable` so that generic types instantiated with `T` and
-/// `Nullable<T>` (which have different schemas) get different ids. (`Page<User>` is `PageUser`
-/// while `Page<Nullable<User>>` is `PageNullableUser`.)
+/// Its generic name has a `Nullable` suffix so that generic types instantiated with `T` and
+/// `Nullable<T>` (which have different schemas) get different ids. (`Page<User>` is `UserPage`
+/// while `Page<Nullable<User>>` is `UserNullablePage`.)
 impl<T: ArriSchema> ArriSchema for Nullable<T> {
     fn generic_name() -> Cow<'static, str> {
-        Cow::Owned(format!("Nullable{}", T::generic_name()))
+        Cow::Owned(format!("{}Nullable", T::generic_name()))
     }
 
     fn type_def(ctx: &mut SchemaContext) -> TypeDef {

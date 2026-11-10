@@ -65,6 +65,8 @@ pub mod __private;
 pub use decode::{Decode, DecodeError, DecodeErrorKind, DecodeFields, Decoder, PathSegment};
 pub use encode::{Encode, EncodeError, EncodeFields, Encoder};
 pub use nullable::Nullable;
+/// The variants of [`Nullable`] are exported so they can be used without a prefix (like `Some` and `None`)
+pub use nullable::Nullable::{Null, Present};
 pub use schema::{ArriSchema, SchemaContext, type_def_of};
 pub use timestamp::{Timestamp, TimestampError};
 pub use type_def::{Form, Metadata, Properties, Type, TypeDef, Union};
@@ -90,8 +92,8 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// # Metadata
 ///
 /// - The type name becomes `metadata.id`. For generic types the [generic name](ArriSchema::generic_name)
-///   of each type argument is appended (`Page<User>` becomes `PageUser` and `Page<Nullable<User>>`
-///   becomes `PageNullableUser`).
+///   of each type argument comes first (`Page<User>` becomes `UserPage` and `Page<Vec<User>>`
+///   becomes `UserArrayPage`).
 /// - Doc comments become `metadata.description` (on types, fields, and union variants)
 /// - `#[deprecated]` becomes `metadata.isDeprecated`, and the deprecation note becomes `metadata.deprecatedNote`
 ///
@@ -125,3 +127,26 @@ pub use arri_derive::ArriModel;
 pub trait ArriModel: ArriSchema + Encode + Decode {}
 
 impl<T: ArriSchema + Encode + Decode> ArriModel for T {}
+
+/// Commonly used items.
+///
+/// ```
+/// use arri::prelude::*;
+///
+/// #[derive(ArriModel)]
+/// struct User {
+///     id: String,
+///     name: Nullable<String>,
+///     created_at: Timestamp,
+/// }
+///
+/// let user = User {
+///     id: "1".to_string(),
+///     name: Null,
+///     created_at: Timestamp::now(),
+/// };
+/// assert!(matches!(user.name, Null));
+/// ```
+pub mod prelude {
+    pub use crate::{ArriModel, Null, Nullable, Present, Timestamp, Value};
+}

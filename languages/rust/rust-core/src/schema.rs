@@ -17,18 +17,21 @@ use crate::{Type, TypeDef};
 pub trait ArriSchema {
     /// The name used for this type when it's a type argument of a generic type.
     ///
-    /// Generic types build their `metadata.id` by appending the generic name of each type argument
-    /// to their own name (`Page<User>` becomes `PageUser`). The generic name must describe the full
-    /// shape of the type so that instantiations with different schemas get different ids.
+    /// Generic types build their `metadata.id` from the generic names of their type arguments
+    /// followed by their own name (`Page<User>` becomes `UserPage`). The generic name must describe
+    /// the full shape of the type so that instantiations with different schemas get different ids.
     ///
     /// - Named types (objects, enums, and unions) return their `metadata.id`
     /// - Scalars return a descriptive name (`String`, `Int32`, `Timestamp`, etc.)
-    /// - Types that change the shape of their inner type add to its name:
-    ///   `Nullable<User>` is `NullableUser`, `Vec<User>` is `UserArray`, and `HashMap<String, User>` is `UserRecord`
+    /// - Types that change the shape of their inner type add a suffix to its name:
+    ///   `Nullable<User>` is `UserNullable`, `Vec<User>` is `UserArray`, and `HashMap<String, User>` is `UserRecord`
     /// - Types that don't change the shape of their inner type (`Box<T>`, `Rc<T>`, `Arc<T>`) return the inner type's name
     ///
+    /// Because every part is a suffix, nested types are unambiguous: `Vec<Nullable<User>>` is
+    /// `UserNullableArray` while `Nullable<Vec<User>>` is `UserArrayNullable`.
+    ///
     /// Only named types use this as their `metadata.id`. For every other type it's just a fragment of a
-    /// generic type's id. For example `Nullable<User>` still has the `metadata.id` of `User`.
+    /// generic type's id. Arrays, records, and nullable values never set a `metadata.id` of their own.
     fn generic_name() -> Cow<'static, str>;
 
     /// Build the type definition for this type.
@@ -223,10 +226,11 @@ mod tests {
         assert_eq!(<Vec<Vec<i32>>>::generic_name(), "Int32ArrayArray");
         assert_eq!(
             <BTreeMap<String, Nullable<String>>>::generic_name(),
-            "NullableStringRecord"
+            "StringNullableRecord"
         );
-        assert_eq!(<Nullable<Box<i8>>>::generic_name(), "NullableInt8");
-        assert_eq!(<Vec<Nullable<i8>>>::generic_name(), "NullableInt8Array");
+        assert_eq!(<Nullable<Box<i8>>>::generic_name(), "Int8Nullable");
+        assert_eq!(<Vec<Nullable<i8>>>::generic_name(), "Int8NullableArray");
+        assert_eq!(<Nullable<Vec<i8>>>::generic_name(), "Int8ArrayNullable");
         assert_eq!(<Box<str>>::generic_name(), "String");
     }
 

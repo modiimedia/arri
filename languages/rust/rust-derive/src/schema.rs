@@ -17,10 +17,13 @@ pub fn expand(c: &Container) -> TokenStream {
             if params.is_empty() {
                 quote!(#k::__private::Cow::Borrowed(#id))
             } else {
-                // generic types get the ids of their type arguments appended (Page<User> => PageUser)
+                // the generic names of the type arguments come first, followed by the type's
+                // own name (Page<User> => UserPage). Every part of a generic name is a suffix
+                // so that nested types are unambiguous.
                 quote! {
-                    let mut name = #k::__private::String::from(#id);
+                    let mut name = #k::__private::String::new();
                     #( name.push_str(&<#params as #k::ArriSchema>::generic_name()); )*
+                    name.push_str(#id);
                     #k::__private::Cow::Owned(name)
                 }
             }
