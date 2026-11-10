@@ -17,8 +17,9 @@ export function tsArrayFromSchema(
         discriminatorKey: '',
         discriminatorValue: '',
         versionNumber: context.versionNumber,
-        usedFeatures: context.usedFeatures,
+        useRpcTypes: context.useRpcTypes,
         rpcGenerators: context.rpcGenerators,
+        features: context.features,
     });
     const typeName = `(${innerType.typeName})[]`;
     const defaultValue = schema.isNullable ? 'null' : '[]';
@@ -35,6 +36,22 @@ export function tsArrayFromSchema(
                 ${input} === null)`;
             }
             return mainPart;
+        },
+        cloneTemplate(input, target) {
+            const main = `${target} = [];
+            for (const ${target}El of ${input}) {
+                let ${target}ElValue: ${innerType.typeName};
+                ${innerType.cloneTemplate(`${target}El`, `${target}ElValue`)}
+                ${target}.push(${target}ElValue);
+            }`;
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${main}
+                } else {
+                    ${target} = null;
+                }`;
+            }
+            return main;
         },
         fromJsonTemplate(input, target) {
             return `if (Array.isArray(${input})) {
@@ -56,7 +73,7 @@ export function tsArrayFromSchema(
                     ${target} += '[';
                     for (let i = 0; i < ${input}.length; i++) {
                         if (i !== 0) ${target} += ',';
-                        const ${elVar} = ${input}[i];
+                        const ${elVar} = ${input}[i]!;
                         ${innerType.toJsonTemplate(elVar, target, elKeyVar)}
                     }
                     ${target} += ']';
@@ -67,12 +84,12 @@ export function tsArrayFromSchema(
             return `${target} += '[';
             for (let i = 0; i < ${input}.length; i++) {
                 if (i !== 0) ${target} += ',';
-                const ${elVar} = ${input}[i];
+                const ${elVar} = ${input}[i]!;
                 ${innerType.toJsonTemplate(elVar, target, elKeyVar)}
             }
             ${target} += ']';`;
         },
-        toQueryStringTemplate(_input, _target, _key) {
+        setSearchParamTemplate(_input, _target, _key) {
             return `console.warn('[WARNING] Cannot serialize arrays to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: innerType.content,

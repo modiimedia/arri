@@ -1,4 +1,8 @@
-import { getRpcMetaFromPath, TsServerConfig } from './tsServer';
+import {
+    createServerEntryTemplate,
+    getRpcMetaFromPath,
+    TsServerConfig,
+} from './tsServer';
 
 describe('Naming RPCs', () => {
     test('Basic route', () => {
@@ -44,5 +48,31 @@ describe('Naming RPCs', () => {
         );
         expect(result?.id).toBe('users.getUser');
         expect(result?.httpPath).toBe('/users/get-user');
+    });
+});
+
+describe('Server Entry Generation', () => {
+    test('generates server entry with app.start and shutdown hooks', () => {
+        const config: Required<TsServerConfig> = {
+            port: 3000,
+            rootDir: '/test',
+            srcDir: 'src',
+            entry: 'app.ts',
+            procedureDir: 'procedures',
+            procedureGlobPatterns: ['**/*.rpc.ts'],
+            buildDir: '.arri',
+            esbuild: {},
+            serverEntry: '',
+            https: false,
+            http2: false,
+            devServer: {},
+        };
+
+        const template = createServerEntryTemplate(config);
+        expect(template).toContain('await app.start?.();');
+        expect(template).toContain('await app.stop?.();');
+        expect(template).toContain('await listener.close();');
+        expect(template).toContain("process.on('SIGTERM', handleShutdown);");
+        expect(template).toContain("process.on('SIGINT', handleShutdown);");
     });
 });

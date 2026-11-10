@@ -43,7 +43,7 @@ func (app *App[TEvent]) GetAppDefinition() AppDef {
 	}
 
 	return AppDef{
-		SchemaVersion: "0.0.8",
+		SchemaVersion: "0.0.9",
 		Info:          info,
 		Procedures:    *app.procedures,
 		Definitions:   *app.definitions,

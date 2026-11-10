@@ -22,12 +22,13 @@ export function kotlinRefFromSchema(
         defaultValue,
         fromJson(input, key) {
             return `when (${input}) {
-                is JsonObject -> ${prefixedTypeName}.fromJsonElement(
-                    ${input}!!,
-                    "$instancePath/${key}",
-                )
-                else -> ${defaultValue}
-            }`;
+    is JsonObject -> ${prefixedTypeName}.fromJsonElement(
+        ${input}!!,
+        "$instancePath/${key}",
+    )
+
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {

@@ -11,6 +11,7 @@ import { manualRouter, manualTestService } from './routes/other';
 
 const app = new ArriApp({
     rpcRoutePrefix: 'rpcs',
+    strictValidatorCompilation: true,
     appInfo: {
         version: '10',
     },
@@ -46,7 +47,7 @@ app.route({
 });
 
 app.registerDefinitions({
-    ManuallyAddedModel: a.object({
+    ManuallyAddedModel: a.object('ManuallyAddedModel', {
         hello: a.string(),
     }),
 });

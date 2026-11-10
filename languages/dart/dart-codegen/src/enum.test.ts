@@ -109,8 +109,8 @@ class MyClientUser implements ArriModel {
     @override
     String toUrlQueryParams() {
         final _queryParts_ = <String>[];
-        _queryParts_.add("id=$id");
-        _queryParts_.add("role=\${role.serialValue}");
+        _queryParts_.add("id=\${Uri.encodeQueryComponent(id)}");
+        _queryParts_.add("role=\${Uri.encodeQueryComponent(role.serialValue)}");
         return _queryParts_.join("&");
     }
     @override

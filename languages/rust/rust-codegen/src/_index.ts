@@ -11,6 +11,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     isServiceDefinition,
     type Schema,
@@ -47,6 +48,7 @@ import {
 import { rustRpcFromSchema, rustServiceFromSchema } from './procedures';
 import rustRecordFromSchema from './record';
 import rustRefFromSchema from './ref';
+import { rustUnionFromSchema } from './union';
 
 export interface RustClientGeneratorOptions {
     clientName?: string;
@@ -159,7 +161,7 @@ export function createRustClient(
 use arri_client::{
     chrono::{DateTime, FixedOffset},
     serde_json::{self},
-    utils::{serialize_date_time, serialize_string},
+    utils::{encode_query_component, serialize_date_time, serialize_string},
     ArriEnum, ArriModel,
 };
 use std::collections::{BTreeMap, HashMap};
@@ -181,7 +183,7 @@ use arri_client::{
     reqwest::{self, Request},
     serde_json::{self, Map},
     sse::{parsed_arri_sse_request, ArriParsedSseRequestOptions, SseController, SseEvent},
-    utils::{serialize_date_time, serialize_string},
+    utils::{encode_query_component, serialize_date_time, serialize_string},
     ArriClientConfig, ArriClientService, ArriEnum, ArriModel, ArriParsedRequestOptions,
     ArriError, EmptyArriModel, InternalArriClientConfig,
 };
@@ -267,6 +269,9 @@ export function rustTypeFromSchema(
     }
     if (isSchemaFormDiscriminator(schema)) {
         return rustTaggedUnionFromSchema(schema, context);
+    }
+    if (isSchemaFormUnion(schema)) {
+        return rustUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return rustRefFromSchema(schema, context);

@@ -17,8 +17,9 @@ export function tsRecordFromSchema(
         discriminatorKey: '',
         discriminatorValue: '',
         versionNumber: context.versionNumber,
-        usedFeatures: context.usedFeatures,
+        useRpcTypes: context.useRpcTypes,
         rpcGenerators: context.rpcGenerators,
+        features: context.features,
     });
     const typeName = `Record<string, ${innerType.typeName}>`;
     const defaultValue = schema.isNullable ? 'null' : '{}';
@@ -33,6 +34,22 @@ export function tsRecordFromSchema(
                 return `((${mainPart}) || ${input} === null)`;
             }
             return mainPart;
+        },
+        cloneTemplate(input, target) {
+            const main = `${target} = {};
+            for (const [_key, _value] of Object.entries(${input})) {
+                let ${target}Value: ${innerType.typeName};
+                ${innerType.cloneTemplate('_value', `${target}Value`)}
+                ${target}[_key] = ${target}Value;
+            }`;
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${main}
+                } else {
+                    ${target} = null;    
+                }`;
+            }
+            return main;
         },
         fromJsonTemplate(input, target) {
             return `if (isObject(${input})) {
@@ -78,7 +95,7 @@ export function tsRecordFromSchema(
             ${target} += '}';
             `;
         },
-        toQueryStringTemplate(_, __, ___) {
+        setSearchParamTemplate(_, __, ___) {
             return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: innerType.content,

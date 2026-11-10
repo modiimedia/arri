@@ -1,6 +1,6 @@
 import { SchemaFormType } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, TsProperty } from './common';
+import { CodegenContext, defaultCloneTemplate, TsProperty } from './common';
 
 export function tsStringFromSchema(
     schema: SchemaFormType,
@@ -17,6 +17,7 @@ export function tsStringFromSchema(
             }
             return `typeof ${input} === 'string'`;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableString(${input});`;
@@ -33,8 +34,11 @@ export function tsStringFromSchema(
             }
             return `${target} += serializeString(${input});`;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`);`;
+        setSearchParamTemplate(input, target, key) {
+            if (schema.isNullable) {
+                return `${target}.set('${key}', \`\${${input}}\`);`;
+            }
+            return `${target}.set('${key}', ${input});`;
         },
         content: '',
     };
@@ -55,6 +59,7 @@ export function tsBooleanFromSchema(
             }
             return `typeof ${input} === 'boolean'`;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableBoolean(${input});`;
@@ -64,8 +69,8 @@ export function tsBooleanFromSchema(
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\`;`;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`);`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };
@@ -82,9 +87,19 @@ export function tsDateFromSchema(
         defaultValue,
         validationTemplate(input) {
             if (schema.isNullable) {
-                return `(${input} instanceof Date || ${input} === null)`;
+                return `((${input} instanceof Date && !Number.isNaN(${input}.getTime())) || ${input} === null)`;
             }
-            return `${input} instanceof Date`;
+            return `(${input} instanceof Date && !Number.isNaN(${input}.getTime()))`;
+        },
+        cloneTemplate(input, target) {
+            if (schema.isNullable) {
+                return `if (${input} !== null) {
+                    ${target} = new Date(${input}.getTime());
+                } else {
+                    ${target} = null;    
+                }`;
+            }
+            return `${target} = new Date(${input}.getTime());`;
         },
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
@@ -102,11 +117,11 @@ export function tsDateFromSchema(
             }
             return `${target} += \`"\${${input}.toISOString()}"\``;
         },
-        toQueryStringTemplate(input, target, key) {
+        setSearchParamTemplate(input, target, key) {
             if (schema.isNullable) {
-                return `${target}.push(\`${key}=\${${input}?.toISOString()}\`)`;
+                return `${target}.set('${key}', \`\${${input}?.toISOString()}\`);`;
             }
-            return `${target}.push(\`${key}=\${${input}.toISOString()}\`)`;
+            return `${target}.set('${key}', ${input}.toISOString());`;
         },
         content: '',
     };
@@ -127,6 +142,7 @@ export function tsFloatFromSchema(
             }
             return `typeof ${input} === 'number'`;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableNumberFloat(${input});`;
@@ -136,8 +152,8 @@ export function tsFloatFromSchema(
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };
@@ -191,6 +207,7 @@ export function tsIntFromSchema(
             }
             return mainPart;
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (schema.isNullable) {
                 return `${target} = parseNullableNumberInt(${input}, ${min}, ${max});`;
@@ -200,8 +217,8 @@ export function tsIntFromSchema(
         toJsonTemplate(input, target) {
             return `${target} += \`\${${input}}\``;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };
@@ -226,7 +243,7 @@ export function tsBigIntFromSchema(
             }
             return mainPart;
         },
-
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             if (isUnsigned) {
                 if (schema.isNullable) {
@@ -249,8 +266,8 @@ export function tsBigIntFromSchema(
             }
             return `${target} += \`"\${${input}}"\``;
         },
-        toQueryStringTemplate(input, target, key) {
-            return `${target}.push(\`${key}=\${${input}}\`)`;
+        setSearchParamTemplate(input, target, key) {
+            return `${target}.set('${key}', \`\${${input}}\`);`;
         },
         content: '',
     };

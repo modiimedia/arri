@@ -64,7 +64,7 @@ class EventSource<T> {
   final FutureOr<Map<String, String>> Function()? _headers;
   String? lastEventId;
   StreamController<T>? _streamController;
-  StreamSubscription<List<int>>? _requestStream;
+  StreamSubscription<String>? _requestStream;
   final Duration _retryDelay;
   int _internalRetryDelay = 100;
   final int? _maxRetryCount;
@@ -146,11 +146,7 @@ class EventSource<T> {
       switch (method) {
         case HttpMethod.get:
         case HttpMethod.head:
-          final queryParts = <String>[];
-          _params.forEach((key, value) {
-            queryParts.add("$key=$value");
-          });
-          parsedUrl += "?${queryParts.join("&")}";
+          parsedUrl += "?${encodeQueryParams(_params)}";
           break;
         default:
           body = json.encode(_params);
@@ -207,22 +203,8 @@ class EventSource<T> {
       _retryCount = 0;
       _internalRetryDelay = 100;
 
-      List<int>? pendingBytes;
-
-      _requestStream = response.stream.listen(
-        (value) {
-          String input;
-          try {
-            if (pendingBytes != null) {
-              input = utf8.decode([...pendingBytes!, ...value]);
-            } else {
-              input = utf8.decode(value);
-            }
-            pendingBytes = null;
-          } catch (err) {
-            pendingBytes = value;
-            return;
-          }
+      _requestStream = response.stream.transform(utf8.decoder).listen(
+        (input) {
           final eventResult = parseSseEvents(pendingData + input, parser);
           pendingData = eventResult.leftoverData;
           for (final event in eventResult.events) {

@@ -87,7 +87,7 @@ describe('Parsing', () => {
     it('accepts good input', () => {
         const numberArr = [1, 2, 3, 4, 5];
         const numberArrResult = a.parse(NumberArray, numberArr);
-        expect(numberArrResult.success);
+        expect(numberArrResult.success).toBe(true);
         if (numberArrResult.success) {
             expect(numberArrResult.value).toStrictEqual(numberArr);
         }
@@ -95,7 +95,7 @@ describe('Parsing', () => {
             NumberArray,
             JSON.stringify(numberArr),
         );
-        expect(numberJsonArrResult.success);
+        expect(numberJsonArrResult.success).toBe(true);
         if (numberJsonArrResult.success) {
             expect(numberJsonArrResult.value).toStrictEqual(numberArr);
         }

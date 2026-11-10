@@ -9,7 +9,6 @@ import {
     type ArriRequestOptions,
     arriRequest,
     arriSseRequest,
-    arriWsRequest,
     type EventSourceController,
     INT8_MAX,
     INT8_MIN,
@@ -22,7 +21,6 @@ import {
     isObject,
     parseString,
     parseBoolean,
-    parseNumber,
     parseTimestamp,
     parseNumberInt,
     parseNumberBigInt,
@@ -49,7 +47,21 @@ import {
 } from '@arrirpc/client';
 
 type HeaderMap = Record<string, string | undefined>;
-
+export type ExampleClientValidator<T> = ArriModelValidator<
+    T,
+    | 'new'
+    | 'validate'
+    | 'clone'
+    | 'fromJson'
+    | 'fromJsonString'
+    | 'toJsonString'
+    | 'toUrlSearchParams'
+    | 'toUrlSearchParamsString'
+>;
+export type ExampleClientEnumValidator<T> = ArriEnumValidator<
+    T,
+    'new' | 'validate' | 'values' | 'fromSerialValue'
+>;
 export class ExampleClient {
     private readonly _baseUrl: string;
     private readonly _fetch?: $Fetch;
@@ -77,7 +89,6 @@ export class ExampleClient {
         this._options = config.options;
         this.books = new ExampleClientBooksService(config);
     }
-
     async sendObject(
         params: NestedObject,
         options?: ArriRequestOptions,
@@ -89,9 +100,9 @@ export class ExampleClient {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$NestedObject.fromJson,
-            responseFromString: $$NestedObject.fromJsonString,
-            serializer: $$NestedObject.toJsonString,
+            responseFromJson: NestedObjectFromJson,
+            responseFromString: NestedObjectFromJsonString,
+            serializer: NestedObjectToJsonString,
             clientVersion: '20',
             options: options ?? this._options,
         });
@@ -106,6 +117,7 @@ export class ExampleClientBooksService {
         | (() => HeaderMap | Promise<HeaderMap>);
     private readonly _onError?: (err: unknown) => void;
     private readonly _options?: ArriRequestOptions;
+
     constructor(
         config: {
             baseUrl?: string;
@@ -137,9 +149,9 @@ export class ExampleClientBooksService {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toUrlQueryString,
+            responseFromJson: BookFromJson,
+            responseFromString: BookFromJsonString,
+            serializer: BookParamsToUrlSearchParamsString,
             clientVersion: '20',
             options: options ?? this._options,
         });
@@ -159,9 +171,9 @@ export class ExampleClientBooksService {
             headers: this._headers,
             onError: this._onError,
             params: params,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$Book.toJsonString,
+            responseFromJson: BookFromJson,
+            responseFromString: BookFromJsonString,
+            serializer: BookToJsonString,
             clientVersion: '20',
             options: options ?? this._options,
         });
@@ -181,9 +193,9 @@ export class ExampleClientBooksService {
                 headers: this._headers,
                 onError: this._onError,
                 params: params,
-                responseFromJson: $$Book.fromJson,
-                responseFromString: $$Book.fromJsonString,
-                serializer: $$BookParams.toUrlQueryString,
+                responseFromJson: BookFromJson,
+                responseFromString: BookFromJsonString,
+                serializer: BookParamsToUrlSearchParamsString,
                 clientVersion: '20',
             },
             options,
@@ -192,46 +204,53 @@ export class ExampleClientBooksService {
     async createConnection(
         options: WsOptions<Book> = {},
     ): Promise<WsController<BookParams, Book>> {
-        return arriWsRequest<BookParams, Book>({
-            url: `${this._baseUrl}/books/create-connection`,
-            headers: this._headers,
-            responseFromJson: $$Book.fromJson,
-            responseFromString: $$Book.fromJsonString,
-            serializer: $$BookParams.toJsonString,
-            onOpen: options.onOpen,
-            onClose: options.onClose,
-            onError: options.onError,
-            onConnectionError: options.onConnectionError,
-            onMessage: options.onMessage,
-            clientVersion: '20',
-        });
+        throw new Error('not implemented');
     }
 }
 
 export interface EmptyObject {}
-export const $$EmptyObject: ArriModelValidator<EmptyObject> = {
-    new(): EmptyObject {
-        return {};
-    },
-    validate(input): input is EmptyObject {
-        return isObject(input);
-    },
-    fromJson(input): EmptyObject {
-        return {};
-    },
-    fromJsonString(input): EmptyObject {
-        return $$EmptyObject.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        let _hasKey = false;
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        return queryParts.join('&');
-    },
+export function EmptyObjectNew(): EmptyObject {
+    return {};
+}
+export function EmptyObjectValidate(input: unknown): input is EmptyObject {
+    return isObject(input);
+}
+export function EmptyObjectClone(input: EmptyObject): EmptyObject {
+    return {};
+}
+export function EmptyObjectFromJson(
+    input: Record<string, unknown>,
+): EmptyObject {
+    return {};
+}
+export function EmptyObjectFromJsonString(input: string): EmptyObject {
+    return EmptyObjectFromJson(JSON.parse(input));
+}
+export function EmptyObjectToJsonString(input: EmptyObject): string {
+    let json = '{';
+    let _hasKey = false;
+    json += '}';
+    return json;
+}
+export function EmptyObjectToUrlSearchParams(
+    input: EmptyObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+
+    return params;
+}
+export function EmptyObjectToUrlSearchParamsString(input: EmptyObject): string {
+    return EmptyObjectToUrlSearchParams(input).toString();
+}
+export const $$EmptyObject: ExampleClientValidator<EmptyObject> = {
+    new: EmptyObjectNew,
+    validate: EmptyObjectValidate,
+    clone: EmptyObjectClone,
+    fromJson: EmptyObjectFromJson,
+    fromJsonString: EmptyObjectFromJsonString,
+    toJsonString: EmptyObjectToJsonString,
+    toUrlSearchParams: EmptyObjectToUrlSearchParams,
+    toUrlSearchParamsString: EmptyObjectToUrlSearchParamsString,
 };
 
 /**
@@ -256,148 +275,224 @@ export interface Book {
      */
     updatedAt: Date;
 }
-export const $$Book: ArriModelValidator<Book> = {
-    new(): Book {
-        return {
-            id: '',
-            name: '',
-            createdAt: new Date(0),
-            updatedAt: new Date(0),
-        };
-    },
-    validate(input): input is Book {
-        return (
-            isObject(input) &&
-            typeof input.id === 'string' &&
-            typeof input.name === 'string' &&
-            input.createdAt instanceof Date &&
-            input.updatedAt instanceof Date
-        );
-    },
-    fromJson(input): Book {
-        let _id: string;
-        _id = parseString(input.id);
-        let _name: string;
-        _name = parseString(input.name);
-        let _createdAt: Date;
-        _createdAt = parseTimestamp(input.createdAt);
-        let _updatedAt: Date;
-        _updatedAt = parseTimestamp(input.updatedAt);
-        return {
-            id: _id,
-            name: _name,
-            createdAt: _createdAt,
-            updatedAt: _updatedAt,
-        };
-    },
-    fromJsonString(input): Book {
-        return $$Book.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"id":';
-        json += serializeString(input.id);
-        json += ',"name":';
-        json += serializeString(input.name);
-        json += ',"createdAt":';
-        json += `"${input.createdAt.toISOString()}"`;
-        json += ',"updatedAt":';
-        json += `"${input.updatedAt.toISOString()}"`;
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`id=${input.id}`);
-        queryParts.push(`name=${input.name}`);
-        queryParts.push(`createdAt=${input.createdAt.toISOString()}`);
-        queryParts.push(`updatedAt=${input.updatedAt.toISOString()}`);
-        return queryParts.join('&');
-    },
+export function BookNew(): Book {
+    return {
+        id: '',
+        name: '',
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+    };
+}
+export function BookValidate(input: unknown): input is Book {
+    return (
+        isObject(input) &&
+        typeof input.id === 'string' &&
+        typeof input.name === 'string' &&
+        input.createdAt instanceof Date &&
+        !Number.isNaN(input.createdAt.getTime()) &&
+        input.updatedAt instanceof Date &&
+        !Number.isNaN(input.updatedAt.getTime())
+    );
+}
+export function BookClone(input: Book): Book {
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    let _createdAt: Date;
+    _createdAt = new Date(input.createdAt.getTime());
+    let _updatedAt: Date;
+    _updatedAt = new Date(input.updatedAt.getTime());
+    return {
+        id: _id,
+        name: _name,
+        createdAt: _createdAt,
+        updatedAt: _updatedAt,
+    };
+}
+export function BookFromJson(input: Record<string, unknown>): Book {
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    let _createdAt: Date;
+    _createdAt = parseTimestamp(input.createdAt);
+    let _updatedAt: Date;
+    _updatedAt = parseTimestamp(input.updatedAt);
+    return {
+        id: _id,
+        name: _name,
+        createdAt: _createdAt,
+        updatedAt: _updatedAt,
+    };
+}
+export function BookFromJsonString(input: string): Book {
+    return BookFromJson(JSON.parse(input));
+}
+export function BookToJsonString(input: Book): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += ',"createdAt":';
+    json += `"${input.createdAt.toISOString()}"`;
+    json += ',"updatedAt":';
+    json += `"${input.updatedAt.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function BookToUrlSearchParams(input: Book): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('name', input.name);
+    params.set('createdAt', input.createdAt.toISOString());
+    params.set('updatedAt', input.updatedAt.toISOString());
+    return params;
+}
+export function BookToUrlSearchParamsString(input: Book): string {
+    return BookToUrlSearchParams(input).toString();
+}
+export const $$Book: ExampleClientValidator<Book> = {
+    new: BookNew,
+    validate: BookValidate,
+    clone: BookClone,
+    fromJson: BookFromJson,
+    fromJsonString: BookFromJsonString,
+    toJsonString: BookToJsonString,
+    toUrlSearchParams: BookToUrlSearchParams,
+    toUrlSearchParamsString: BookToUrlSearchParamsString,
 };
 
 export interface BookParams {
     bookId: string;
 }
-export const $$BookParams: ArriModelValidator<BookParams> = {
-    new(): BookParams {
-        return {
-            bookId: '',
-        };
-    },
-    validate(input): input is BookParams {
-        return isObject(input) && typeof input.bookId === 'string';
-    },
-    fromJson(input): BookParams {
-        let _bookId: string;
-        _bookId = parseString(input.bookId);
-        return {
-            bookId: _bookId,
-        };
-    },
-    fromJsonString(input): BookParams {
-        return $$BookParams.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"bookId":';
-        json += serializeString(input.bookId);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`bookId=${input.bookId}`);
-        return queryParts.join('&');
-    },
+export function BookParamsNew(): BookParams {
+    return {
+        bookId: '',
+    };
+}
+export function BookParamsValidate(input: unknown): input is BookParams {
+    return isObject(input) && typeof input.bookId === 'string';
+}
+export function BookParamsClone(input: BookParams): BookParams {
+    let _bookId: string;
+    _bookId = input.bookId;
+    return {
+        bookId: _bookId,
+    };
+}
+export function BookParamsFromJson(input: Record<string, unknown>): BookParams {
+    let _bookId: string;
+    _bookId = parseString(input.bookId);
+    return {
+        bookId: _bookId,
+    };
+}
+export function BookParamsFromJsonString(input: string): BookParams {
+    return BookParamsFromJson(JSON.parse(input));
+}
+export function BookParamsToJsonString(input: BookParams): string {
+    let json = '{';
+    json += '"bookId":';
+    json += serializeString(input.bookId);
+    json += '}';
+    return json;
+}
+export function BookParamsToUrlSearchParams(
+    input: BookParams,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('bookId', input.bookId);
+    return params;
+}
+export function BookParamsToUrlSearchParamsString(input: BookParams): string {
+    return BookParamsToUrlSearchParams(input).toString();
+}
+export const $$BookParams: ExampleClientValidator<BookParams> = {
+    new: BookParamsNew,
+    validate: BookParamsValidate,
+    clone: BookParamsClone,
+    fromJson: BookParamsFromJson,
+    fromJsonString: BookParamsFromJsonString,
+    toJsonString: BookParamsToJsonString,
+    toUrlSearchParams: BookParamsToUrlSearchParams,
+    toUrlSearchParamsString: BookParamsToUrlSearchParamsString,
 };
 
 export interface NestedObject {
     id: string;
     content: string;
 }
-export const $$NestedObject: ArriModelValidator<NestedObject> = {
-    new(): NestedObject {
-        return {
-            id: '',
-            content: '',
-        };
-    },
-    validate(input): input is NestedObject {
-        return (
-            isObject(input) &&
-            typeof input.id === 'string' &&
-            typeof input.content === 'string'
-        );
-    },
-    fromJson(input): NestedObject {
-        let _id: string;
-        _id = parseString(input.id);
-        let _content: string;
-        _content = parseString(input.content);
-        return {
-            id: _id,
-            content: _content,
-        };
-    },
-    fromJsonString(input): NestedObject {
-        return $$NestedObject.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"id":';
-        json += serializeString(input.id);
-        json += ',"content":';
-        json += serializeString(input.content);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`id=${input.id}`);
-        queryParts.push(`content=${input.content}`);
-        return queryParts.join('&');
-    },
+export function NestedObjectNew(): NestedObject {
+    return {
+        id: '',
+        content: '',
+    };
+}
+export function NestedObjectValidate(input: unknown): input is NestedObject {
+    return (
+        isObject(input) &&
+        typeof input.id === 'string' &&
+        typeof input.content === 'string'
+    );
+}
+export function NestedObjectClone(input: NestedObject): NestedObject {
+    let _id: string;
+    _id = input.id;
+    let _content: string;
+    _content = input.content;
+    return {
+        id: _id,
+        content: _content,
+    };
+}
+export function NestedObjectFromJson(
+    input: Record<string, unknown>,
+): NestedObject {
+    let _id: string;
+    _id = parseString(input.id);
+    let _content: string;
+    _content = parseString(input.content);
+    return {
+        id: _id,
+        content: _content,
+    };
+}
+export function NestedObjectFromJsonString(input: string): NestedObject {
+    return NestedObjectFromJson(JSON.parse(input));
+}
+export function NestedObjectToJsonString(input: NestedObject): string {
+    let json = '{';
+    json += '"id":';
+    json += serializeString(input.id);
+    json += ',"content":';
+    json += serializeString(input.content);
+    json += '}';
+    return json;
+}
+export function NestedObjectToUrlSearchParams(
+    input: NestedObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('id', input.id);
+    params.set('content', input.content);
+    return params;
+}
+export function NestedObjectToUrlSearchParamsString(
+    input: NestedObject,
+): string {
+    return NestedObjectToUrlSearchParams(input).toString();
+}
+export const $$NestedObject: ExampleClientValidator<NestedObject> = {
+    new: NestedObjectNew,
+    validate: NestedObjectValidate,
+    clone: NestedObjectClone,
+    fromJson: NestedObjectFromJson,
+    fromJsonString: NestedObjectFromJsonString,
+    toJsonString: NestedObjectToJsonString,
+    toUrlSearchParams: NestedObjectToUrlSearchParams,
+    toUrlSearchParamsString: NestedObjectToUrlSearchParamsString,
 };
 
 export interface ObjectWithEveryType {
@@ -418,527 +513,1137 @@ export interface ObjectWithEveryType {
     object: NestedObject;
     array: boolean[];
     record: Record<string, boolean>;
-    discriminator: Discriminator;
+    unionExternal: UnionExternal;
+    unionInternal: UnionInternal;
+    unionAdjacent: UnionAdjacent;
     any: any;
 }
-export const $$ObjectWithEveryType: ArriModelValidator<ObjectWithEveryType> = {
-    new(): ObjectWithEveryType {
-        return {
-            string: '',
-            boolean: false,
-            timestamp: new Date(0),
-            float32: 0,
-            float64: 0,
-            int8: 0,
-            uint8: 0,
-            int16: 0,
-            uint16: 0,
-            int32: 0,
-            uint32: 0,
-            int64: BigInt(0),
-            uint64: BigInt(0),
-            enum: $$Enumerator.new(),
-            object: $$NestedObject.new(),
-            array: [],
-            record: {},
-            discriminator: $$Discriminator.new(),
-            any: undefined,
-        };
-    },
-    validate(input): input is ObjectWithEveryType {
-        return (
-            isObject(input) &&
-            typeof input.string === 'string' &&
-            typeof input.boolean === 'boolean' &&
-            input.timestamp instanceof Date &&
-            typeof input.float32 === 'number' &&
-            typeof input.float64 === 'number' &&
-            typeof input.int8 === 'number' &&
-            Number.isInteger(input.int8) &&
-            input.int8 >= INT8_MIN &&
-            input.int8 <= INT8_MAX &&
-            typeof input.uint8 === 'number' &&
-            Number.isInteger(input.uint8) &&
-            input.uint8 >= 0 &&
-            input.uint8 <= UINT8_MAX &&
-            typeof input.int16 === 'number' &&
-            Number.isInteger(input.int16) &&
-            input.int16 >= INT16_MIN &&
-            input.int16 <= INT16_MAX &&
-            typeof input.uint16 === 'number' &&
-            Number.isInteger(input.uint16) &&
-            input.uint16 >= 0 &&
-            input.uint16 <= UINT16_MAX &&
-            typeof input.int32 === 'number' &&
-            Number.isInteger(input.int32) &&
-            input.int32 >= INT32_MIN &&
-            input.int32 <= INT32_MAX &&
-            typeof input.uint32 === 'number' &&
-            Number.isInteger(input.uint32) &&
-            input.uint32 >= 0 &&
-            input.uint32 <= UINT32_MAX &&
-            typeof input.int64 === 'bigint' &&
-            input.int64 >= INT64_MIN &&
-            input.int64 <= INT64_MAX &&
-            typeof input.uint64 === 'bigint' &&
-            input.uint64 >= BigInt(0) &&
-            input.uint64 <= UINT64_MAX &&
-            $$Enumerator.validate(input.enum) &&
-            $$NestedObject.validate(input.object) &&
-            Array.isArray(input.array) &&
-            input.array.every((_element) => typeof _element === 'boolean') &&
-            isObject(input.record) &&
-            Object.values(input.record).every(
-                (_value) => typeof _value === 'boolean',
-            ) &&
-            $$Discriminator.validate(input.discriminator) &&
-            true
-        );
-    },
-    fromJson(input): ObjectWithEveryType {
-        let _string: string;
-        _string = parseString(input.string);
-        let _boolean: boolean;
-        _boolean = parseBoolean(input.boolean);
-        let _timestamp: Date;
-        _timestamp = parseTimestamp(input.timestamp);
-        let _float32: number;
-        _float32 = parseNumberFloat(input.float32);
-        let _float64: number;
-        _float64 = parseNumberFloat(input.float64);
-        let _int8: number;
-        _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
-        let _uint8: number;
-        _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
-        let _int16: number;
-        _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
-        let _uint16: number;
-        _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
-        let _int32: number;
-        _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
-        let _uint32: number;
-        _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
-        let _int64: bigint;
-        _int64 = parseNumberBigInt(input.int64);
-        let _uint64: bigint;
-        _uint64 = parseNumberUnsignedBigInt(input.uint64);
-        let _enum: Enumerator;
-        if (typeof input.enum === 'string') {
-            _enum = $$Enumerator.fromSerialValue(input.enum);
-        } else {
-            _enum = $$Enumerator.new();
+export function ObjectWithEveryTypeNew(): ObjectWithEveryType {
+    return {
+        string: '',
+        boolean: false,
+        timestamp: new Date(0),
+        float32: 0,
+        float64: 0,
+        int8: 0,
+        uint8: 0,
+        int16: 0,
+        uint16: 0,
+        int32: 0,
+        uint32: 0,
+        int64: BigInt(0),
+        uint64: BigInt(0),
+        enum: EnumeratorNew(),
+        object: NestedObjectNew(),
+        array: [],
+        record: {},
+        unionExternal: UnionExternalNew(),
+        unionInternal: UnionInternalNew(),
+        unionAdjacent: UnionAdjacentNew(),
+        any: undefined,
+    };
+}
+export function ObjectWithEveryTypeValidate(
+    input: unknown,
+): input is ObjectWithEveryType {
+    return (
+        isObject(input) &&
+        typeof input.string === 'string' &&
+        typeof input.boolean === 'boolean' &&
+        input.timestamp instanceof Date &&
+        !Number.isNaN(input.timestamp.getTime()) &&
+        typeof input.float32 === 'number' &&
+        typeof input.float64 === 'number' &&
+        typeof input.int8 === 'number' &&
+        Number.isInteger(input.int8) &&
+        input.int8 >= INT8_MIN &&
+        input.int8 <= INT8_MAX &&
+        typeof input.uint8 === 'number' &&
+        Number.isInteger(input.uint8) &&
+        input.uint8 >= 0 &&
+        input.uint8 <= UINT8_MAX &&
+        typeof input.int16 === 'number' &&
+        Number.isInteger(input.int16) &&
+        input.int16 >= INT16_MIN &&
+        input.int16 <= INT16_MAX &&
+        typeof input.uint16 === 'number' &&
+        Number.isInteger(input.uint16) &&
+        input.uint16 >= 0 &&
+        input.uint16 <= UINT16_MAX &&
+        typeof input.int32 === 'number' &&
+        Number.isInteger(input.int32) &&
+        input.int32 >= INT32_MIN &&
+        input.int32 <= INT32_MAX &&
+        typeof input.uint32 === 'number' &&
+        Number.isInteger(input.uint32) &&
+        input.uint32 >= 0 &&
+        input.uint32 <= UINT32_MAX &&
+        typeof input.int64 === 'bigint' &&
+        input.int64 >= INT64_MIN &&
+        input.int64 <= INT64_MAX &&
+        typeof input.uint64 === 'bigint' &&
+        input.uint64 >= BigInt(0) &&
+        input.uint64 <= UINT64_MAX &&
+        EnumeratorValidate(input.enum) &&
+        NestedObjectValidate(input.object) &&
+        Array.isArray(input.array) &&
+        input.array.every((_element) => typeof _element === 'boolean') &&
+        isObject(input.record) &&
+        Object.values(input.record).every(
+            (_value) => typeof _value === 'boolean',
+        ) &&
+        UnionExternalValidate(input.unionExternal) &&
+        UnionInternalValidate(input.unionInternal) &&
+        UnionAdjacentValidate(input.unionAdjacent) &&
+        true
+    );
+}
+export function ObjectWithEveryTypeClone(
+    input: ObjectWithEveryType,
+): ObjectWithEveryType {
+    let _string: string;
+    _string = input.string;
+    let _boolean: boolean;
+    _boolean = input.boolean;
+    let _timestamp: Date;
+    _timestamp = new Date(input.timestamp.getTime());
+    let _float32: number;
+    _float32 = input.float32;
+    let _float64: number;
+    _float64 = input.float64;
+    let _int8: number;
+    _int8 = input.int8;
+    let _uint8: number;
+    _uint8 = input.uint8;
+    let _int16: number;
+    _int16 = input.int16;
+    let _uint16: number;
+    _uint16 = input.uint16;
+    let _int32: number;
+    _int32 = input.int32;
+    let _uint32: number;
+    _uint32 = input.uint32;
+    let _int64: bigint;
+    _int64 = input.int64;
+    let _uint64: bigint;
+    _uint64 = input.uint64;
+    let _enum: Enumerator;
+    _enum = input.enum;
+    let _object: NestedObject;
+    _object = NestedObjectClone(input.object);
+    let _array: boolean[];
+    _array = [];
+    for (const _arrayEl of input.array) {
+        let _arrayElValue: boolean;
+        _arrayElValue = _arrayEl;
+        _array.push(_arrayElValue);
+    }
+    let _record: Record<string, boolean>;
+    _record = {};
+    for (const [_key, _value] of Object.entries(input.record)) {
+        let _recordValue: boolean;
+        _recordValue = _value;
+        _record[_key] = _recordValue;
+    }
+    let _unionExternal: UnionExternal;
+    _unionExternal = UnionExternalClone(input.unionExternal);
+    let _unionInternal: UnionInternal;
+    _unionInternal = UnionInternalClone(input.unionInternal);
+    let _unionAdjacent: UnionAdjacent;
+    _unionAdjacent = UnionAdjacentClone(input.unionAdjacent);
+    let _any: any;
+    _any = input.any;
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
+        any: _any,
+    };
+}
+export function ObjectWithEveryTypeFromJson(
+    input: Record<string, unknown>,
+): ObjectWithEveryType {
+    let _string: string;
+    _string = parseString(input.string);
+    let _boolean: boolean;
+    _boolean = parseBoolean(input.boolean);
+    let _timestamp: Date;
+    _timestamp = parseTimestamp(input.timestamp);
+    let _float32: number;
+    _float32 = parseNumberFloat(input.float32);
+    let _float64: number;
+    _float64 = parseNumberFloat(input.float64);
+    let _int8: number;
+    _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
+    let _uint8: number;
+    _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
+    let _int16: number;
+    _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
+    let _uint16: number;
+    _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
+    let _int32: number;
+    _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
+    let _uint32: number;
+    _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
+    let _int64: bigint;
+    _int64 = parseNumberBigInt(input.int64);
+    let _uint64: bigint;
+    _uint64 = parseNumberUnsignedBigInt(input.uint64);
+    let _enum: Enumerator;
+    if (typeof input.enum === 'string') {
+        _enum = EnumeratorFromSerialValue(input.enum);
+    } else {
+        _enum = EnumeratorNew();
+    }
+    let _object: NestedObject;
+    if (isObject(input.object)) {
+        _object = NestedObjectFromJson(input.object);
+    } else {
+        _object = NestedObjectNew();
+    }
+    let _array: boolean[];
+    if (Array.isArray(input.array)) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = parseBoolean(_arrayEl);
+            _array.push(_arrayElValue);
         }
-        let _object: NestedObject;
-        if (isObject(input.object)) {
-            _object = $$NestedObject.fromJson(input.object);
-        } else {
-            _object = $$NestedObject.new();
-        }
-        let _array: boolean[];
-        if (Array.isArray(input.array)) {
-            _array = [];
-            for (const _arrayEl of input.array) {
-                let _arrayElValue: boolean;
-                _arrayElValue = parseBoolean(_arrayEl);
-                _array.push(_arrayElValue);
-            }
-        } else {
-            _array = [];
-        }
-        let _record: Record<string, boolean>;
-        if (isObject(input.record)) {
-            _record = {};
-            for (const [_key, _value] of Object.entries(input.record)) {
-                let _recordValue: boolean;
-                _recordValue = parseBoolean(_value);
-                _record[_key] = _recordValue;
-            }
-        } else {
-            _record = {};
-        }
-        let _discriminator: Discriminator;
-        if (isObject(input.discriminator)) {
-            _discriminator = $$Discriminator.fromJson(input.discriminator);
-        } else {
-            _discriminator = $$Discriminator.new();
-        }
-        let _any: any;
-        _any = input.any;
-        return {
-            string: _string,
-            boolean: _boolean,
-            timestamp: _timestamp,
-            float32: _float32,
-            float64: _float64,
-            int8: _int8,
-            uint8: _uint8,
-            int16: _int16,
-            uint16: _uint16,
-            int32: _int32,
-            uint32: _uint32,
-            int64: _int64,
-            uint64: _uint64,
-            enum: _enum,
-            object: _object,
-            array: _array,
-            record: _record,
-            discriminator: _discriminator,
-            any: _any,
-        };
-    },
-    fromJsonString(input): ObjectWithEveryType {
-        return $$ObjectWithEveryType.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"string":';
-        json += serializeString(input.string);
-        json += ',"boolean":';
-        json += `${input.boolean}`;
-        json += ',"timestamp":';
-        json += `"${input.timestamp.toISOString()}"`;
-        json += ',"float32":';
-        json += `${input.float32}`;
-        json += ',"float64":';
-        json += `${input.float64}`;
-        json += ',"int8":';
-        json += `${input.int8}`;
-        json += ',"uint8":';
-        json += `${input.uint8}`;
-        json += ',"int16":';
-        json += `${input.int16}`;
-        json += ',"uint16":';
-        json += `${input.uint16}`;
-        json += ',"int32":';
-        json += `${input.int32}`;
-        json += ',"uint32":';
-        json += `${input.uint32}`;
-        json += ',"int64":';
-        json += `"${input.int64}"`;
-        json += ',"uint64":';
-        json += `"${input.uint64}"`;
-        json += ',"enum":';
-        json += `"${input.enum}"`;
-        json += ',"object":';
-        json += $$NestedObject.toJsonString(input.object);
-        json += ',"array":';
-        json += '[';
-        for (let i = 0; i < input.array.length; i++) {
-            if (i !== 0) json += ',';
-            const _inputArrayEl = input.array[i];
-            json += `${_inputArrayEl}`;
-        }
-        json += ']';
-        json += ',"record":';
-        json += '{';
-        let _recordPropertyCount = 0;
+    } else {
+        _array = [];
+    }
+    let _record: Record<string, boolean>;
+    if (isObject(input.record)) {
+        _record = {};
         for (const [_key, _value] of Object.entries(input.record)) {
-            if (_recordPropertyCount !== 0) {
-                json += ',';
-            }
-            json += `${serializeString(_key)}:`;
-            json += `${_value}`;
-            _recordPropertyCount++;
+            let _recordValue: boolean;
+            _recordValue = parseBoolean(_value);
+            _record[_key] = _recordValue;
         }
-        json += '}';
-        json += ',"discriminator":';
-        json += $$Discriminator.toJsonString(input.discriminator);
-        json += ',"any":';
-        json += JSON.stringify(input.any);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push(`string=${input.string}`);
-        queryParts.push(`boolean=${input.boolean}`);
-        queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-        queryParts.push(`float32=${input.float32}`);
-        queryParts.push(`float64=${input.float64}`);
-        queryParts.push(`int8=${input.int8}`);
-        queryParts.push(`uint8=${input.uint8}`);
-        queryParts.push(`int16=${input.int16}`);
-        queryParts.push(`uint16=${input.uint16}`);
-        queryParts.push(`int32=${input.int32}`);
-        queryParts.push(`uint32=${input.uint32}`);
-        queryParts.push(`int64=${input.int64}`);
-        queryParts.push(`uint64=${input.uint64}`);
-        queryParts.push(`enum=${input.enum}`);
-        console.warn(
-            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/object.',
-        );
-        console.warn(
-            '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/array.',
-        );
-        console.warn(
-            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
-        );
-        console.warn(
-            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/discriminator.',
-        );
-        console.warn(
-            "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
-        );
-        return queryParts.join('&');
-    },
-};
+    } else {
+        _record = {};
+    }
+    let _unionExternal: UnionExternal;
+    if (isObject(input.unionExternal)) {
+        _unionExternal = UnionExternalFromJson(input.unionExternal);
+    } else {
+        _unionExternal = UnionExternalNew();
+    }
+    let _unionInternal: UnionInternal;
+    if (isObject(input.unionInternal)) {
+        _unionInternal = UnionInternalFromJson(input.unionInternal);
+    } else {
+        _unionInternal = UnionInternalNew();
+    }
+    let _unionAdjacent: UnionAdjacent;
+    if (isObject(input.unionAdjacent)) {
+        _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+    } else {
+        _unionAdjacent = UnionAdjacentNew();
+    }
+    let _any: any;
+    _any = input.any;
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
+        any: _any,
+    };
+}
+export function ObjectWithEveryTypeFromJsonString(
+    input: string,
+): ObjectWithEveryType {
+    return ObjectWithEveryTypeFromJson(JSON.parse(input));
+}
+export function ObjectWithEveryTypeToJsonString(
+    input: ObjectWithEveryType,
+): string {
+    let json = '{';
+    json += '"string":';
+    json += serializeString(input.string);
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"timestamp":';
+    json += `"${input.timestamp.toISOString()}"`;
+    json += ',"float32":';
+    json += `${input.float32}`;
+    json += ',"float64":';
+    json += `${input.float64}`;
+    json += ',"int8":';
+    json += `${input.int8}`;
+    json += ',"uint8":';
+    json += `${input.uint8}`;
+    json += ',"int16":';
+    json += `${input.int16}`;
+    json += ',"uint16":';
+    json += `${input.uint16}`;
+    json += ',"int32":';
+    json += `${input.int32}`;
+    json += ',"uint32":';
+    json += `${input.uint32}`;
+    json += ',"int64":';
+    json += `"${input.int64}"`;
+    json += ',"uint64":';
+    json += `"${input.uint64}"`;
+    json += ',"enum":';
+    json += `"${input.enum}"`;
+    json += ',"object":';
+    json += NestedObjectToJsonString(input.object);
+    json += ',"array":';
+    json += '[';
+    for (let i = 0; i < input.array.length; i++) {
+        if (i !== 0) json += ',';
+        const _inputArrayEl = input.array[i]!;
+        json += `${_inputArrayEl}`;
+    }
+    json += ']';
+    json += ',"record":';
+    json += '{';
+    let _recordPropertyCount = 0;
+    for (const [_key, _value] of Object.entries(input.record)) {
+        if (_recordPropertyCount !== 0) {
+            json += ',';
+        }
+        json += `${serializeString(_key)}:`;
+        json += `${_value}`;
+        _recordPropertyCount++;
+    }
+    json += '}';
 
+    json += ',"unionExternal":';
+    json += UnionExternalToJsonString(input.unionExternal);
+    json += ',"unionInternal":';
+    json += UnionInternalToJsonString(input.unionInternal);
+    json += ',"unionAdjacent":';
+    json += UnionAdjacentToJsonString(input.unionAdjacent);
+    json += ',"any":';
+    json += JSON.stringify(input.any);
+    json += '}';
+    return json;
+}
+export function ObjectWithEveryTypeToUrlSearchParams(
+    input: ObjectWithEveryType,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('string', input.string);
+    params.set('boolean', `${input.boolean}`);
+    params.set('timestamp', input.timestamp.toISOString());
+    params.set('float32', `${input.float32}`);
+    params.set('float64', `${input.float64}`);
+    params.set('int8', `${input.int8}`);
+    params.set('uint8', `${input.uint8}`);
+    params.set('int16', `${input.int16}`);
+    params.set('uint16', `${input.uint16}`);
+    params.set('int32', `${input.int32}`);
+    params.set('uint32', `${input.uint32}`);
+    params.set('int64', `${input.int64}`);
+    params.set('uint64', `${input.uint64}`);
+    params.set('enum', input.enum);
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/object.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithEveryType/array.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithEveryType/record.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionExternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionInternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithEveryType/unionAdjacent.',
+    );
+    console.warn(
+        "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithEveryType/any.",
+    );
+    return params;
+}
+export function ObjectWithEveryTypeToUrlSearchParamsString(
+    input: ObjectWithEveryType,
+): string {
+    return ObjectWithEveryTypeToUrlSearchParams(input).toString();
+}
+export const $$ObjectWithEveryType: ExampleClientValidator<ObjectWithEveryType> =
+    {
+        new: ObjectWithEveryTypeNew,
+        validate: ObjectWithEveryTypeValidate,
+        clone: ObjectWithEveryTypeClone,
+        fromJson: ObjectWithEveryTypeFromJson,
+        fromJsonString: ObjectWithEveryTypeFromJsonString,
+        toJsonString: ObjectWithEveryTypeToJsonString,
+        toUrlSearchParams: ObjectWithEveryTypeToUrlSearchParams,
+        toUrlSearchParamsString: ObjectWithEveryTypeToUrlSearchParamsString,
+    };
 export type Enumerator = 'FOO' | 'BAR' | 'BAZ';
 export const Enumerator = {
     Foo: 'FOO',
     Bar: 'BAR',
     Baz: 'BAZ',
 } as const;
-const $$EnumeratorValues = ['FOO', 'BAR', 'BAZ'] as const;
-export const $$Enumerator: ArriEnumValidator<Enumerator> = {
-    new(): Enumerator {
-        return $$EnumeratorValues[0];
-    },
-    validate(input): input is Enumerator {
-        return (
-            typeof input === 'string' &&
-            $$EnumeratorValues.includes(input as any)
-        );
-    },
-    values: $$EnumeratorValues,
-    fromSerialValue(input): Enumerator {
-        if ($$EnumeratorValues.includes(input as any)) {
-            return input as Enumerator;
+export const EnumeratorValues = ['FOO', 'BAR', 'BAZ'] as const;
+export function EnumeratorNew(): Enumerator {
+    return EnumeratorValues[0];
+}
+export function EnumeratorValidate(input: unknown): input is Enumerator {
+    return typeof input === 'string' && EnumeratorValues.includes(input as any);
+}
+export function EnumeratorFromSerialValue(input: string): Enumerator {
+    if (EnumeratorValues.includes(input as any)) {
+        return input as Enumerator;
+    }
+    if (EnumeratorValues.includes(input.toLowerCase() as any)) {
+        return input.toLowerCase() as Enumerator;
+    }
+    if (EnumeratorValues.includes(input.toUpperCase() as any)) {
+        return input.toUpperCase() as Enumerator;
+    }
+    return 'FOO';
+}
+export const $$Enumerator: ExampleClientEnumValidator<Enumerator> = {
+    new: EnumeratorNew,
+    validate: EnumeratorValidate,
+    values: EnumeratorValues,
+    fromSerialValue: EnumeratorFromSerialValue,
+};
+export type UnionExternal =
+    | { type: `object`; value: NestedObject }
+    | { type: `array`; value: string[] }
+    | { type: `boolean`; value: boolean }
+    | { type: `nullable-timestamp`; value: Date | null };
+export function UnionExternalNew(): UnionExternal {
+    return {
+        type: `object`,
+        value: NestedObjectNew(),
+    };
+}
+export function UnionExternalValidate(input: unknown): input is UnionExternal {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('type' in input) || !('value' in input)) {
+        return false;
+    }
+    switch (input.type) {
+        case `object`:
+            return NestedObjectValidate(input.value);
+
+        case `array`:
+            return (
+                Array.isArray(input.value) &&
+                input.value.every((_element) => typeof _element === 'string')
+            );
+
+        case `boolean`:
+            return typeof input.value === 'boolean';
+
+        case `nullable-timestamp`:
+            return (
+                (input.value instanceof Date &&
+                    !Number.isNaN(input.value.getTime())) ||
+                input.value === null
+            );
+
+        default:
+            return false;
+    }
+}
+export function UnionExternalClone(input: UnionExternal): UnionExternal {
+    switch (input.type) {
+        case `object`: {
+            let __value__: NestedObject;
+            __value__ = NestedObjectClone(input.value);
+            return {
+                type: `object`,
+                value: __value__,
+            };
         }
-        if ($$EnumeratorValues.includes(input.toLowerCase() as any)) {
-            return input.toLowerCase() as Enumerator;
+
+        case `array`: {
+            let __value__: string[];
+            __value__ = [];
+            for (const __value__El of input.value) {
+                let __value__ElValue: string;
+                __value__ElValue = __value__El;
+                __value__.push(__value__ElValue);
+            }
+            return {
+                type: `array`,
+                value: __value__,
+            };
         }
-        if ($$EnumeratorValues.includes(input.toUpperCase() as any)) {
-            return input.toUpperCase() as Enumerator;
+
+        case `boolean`: {
+            let __value__: boolean;
+            __value__ = input.value;
+            return {
+                type: `boolean`,
+                value: __value__,
+            };
         }
-        return 'FOO';
-    },
+
+        case `nullable-timestamp`: {
+            let __value__: Date | null;
+            if (input.value !== null) {
+                __value__ = new Date(input.value.getTime());
+            } else {
+                __value__ = null;
+            }
+            return {
+                type: `nullable-timestamp`,
+                value: __value__,
+            };
+        }
+        default:
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).type}`);
+    }
+}
+export function UnionExternalFromJson(
+    input: Record<string, unknown>,
+): UnionExternal {
+    if (`object` in input) {
+        let __value__: NestedObject;
+        if (isObject(input[`object`])) {
+            __value__ = NestedObjectFromJson(input[`object`]);
+        } else {
+            __value__ = NestedObjectNew();
+        }
+        return {
+            type: `object`,
+            value: __value__,
+        };
+    }
+
+    if (`array` in input) {
+        let __value__: string[];
+        if (Array.isArray(input[`array`])) {
+            __value__ = [];
+            for (const __value__El of input[`array`]) {
+                let __value__ElValue: string;
+                __value__ElValue = parseString(__value__El);
+                __value__.push(__value__ElValue);
+            }
+        } else {
+            __value__ = [];
+        }
+        return {
+            type: `array`,
+            value: __value__,
+        };
+    }
+
+    if (`boolean` in input) {
+        let __value__: boolean;
+        __value__ = parseBoolean(input[`boolean`]);
+        return {
+            type: `boolean`,
+            value: __value__,
+        };
+    }
+
+    if (`nullable-timestamp` in input) {
+        let __value__: Date | null;
+        __value__ = parseNullableTimestamp(input[`nullable-timestamp`]);
+        return {
+            type: `nullable-timestamp`,
+            value: __value__,
+        };
+    }
+    return UnionExternalNew();
+}
+export function UnionExternalFromJsonString(input: string): UnionExternal {
+    return UnionExternalFromJson(JSON.parse(input));
+}
+export function UnionExternalToJsonString(input: UnionExternal): string {
+    switch (input.type) {
+        case `object`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += NestedObjectToJsonString(input.value);
+            json += '}';
+            return json;
+        }
+
+        case `array`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += '[';
+            for (let i = 0; i < input.value.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputValueEl = input.value[i]!;
+                json += serializeString(_inputValueEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `boolean`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            json += `${input.value}`;
+            json += '}';
+            return json;
+        }
+
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += serializeString(input.type);
+            json += ':';
+            if (input.value instanceof Date) {
+                json += `"${input.value.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).type}`);
+        }
+    }
+}
+export function UnionExternalToUrlSearchParams(
+    input: UnionExternal,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionExternalToUrlSearchParamsString(
+    input: UnionExternal,
+): string {
+    return UnionExternalToUrlSearchParams(input).toString();
+}
+export const $$UnionExternal: ExampleClientValidator<UnionExternal> = {
+    new: UnionExternalNew,
+    validate: UnionExternalValidate,
+    clone: UnionExternalClone,
+    fromJson: UnionExternalFromJson,
+    fromJsonString: UnionExternalFromJsonString,
+    toJsonString: UnionExternalToJsonString,
+    toUrlSearchParams: UnionExternalToUrlSearchParams,
+    toUrlSearchParamsString: UnionExternalToUrlSearchParamsString,
 };
 
-export type Discriminator = DiscriminatorA | DiscriminatorB | DiscriminatorC;
-export const $$Discriminator: ArriModelValidator<Discriminator> = {
-    new(): Discriminator {
-        return $$DiscriminatorA.new();
-    },
-    validate(input): input is Discriminator {
-        if (!isObject(input)) {
+export type UnionInternal = UnionInternalRectangle | UnionInternalCircle;
+export function UnionInternalNew(): UnionInternal {
+    return UnionInternalRectangleNew();
+}
+export function UnionInternalValidate(input: unknown): input is UnionInternal {
+    return (
+        UnionInternalRectangleValidate(input) ||
+        UnionInternalCircleValidate(input)
+    );
+}
+export function UnionInternalClone(input: UnionInternal): UnionInternal {
+    switch (input.shape) {
+        case `rectangle`: {
+            let __value__: UnionInternalRectangle;
+            __value__ = UnionInternalRectangleClone(input);
+            return __value__;
+        }
+
+        case `circle`: {
+            let __value__: UnionInternalCircle;
+            __value__ = UnionInternalCircleClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionInternalFromJson(
+    input: Record<string, unknown>,
+): UnionInternal {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleFromJson(input);
+        }
+        case `circle`: {
+            return UnionInternalCircleFromJson(input);
+        }
+        default: {
+            return UnionInternalRectangleNew();
+        }
+    }
+}
+export function UnionInternalFromJsonString(input: string): UnionInternal {
+    return UnionInternalFromJson(JSON.parse(input));
+}
+export function UnionInternalToJsonString(input: UnionInternal): string {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleToJsonString(input);
+        }
+
+        case `circle`: {
+            return UnionInternalCircleToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionInternalToUrlSearchParams(
+    input: UnionInternal,
+): URLSearchParams {
+    switch (input.shape) {
+        case `rectangle`: {
+            return UnionInternalRectangleToUrlSearchParams(input);
+        }
+        case `circle`: {
+            return UnionInternalCircleToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).shape}`);
+        }
+    }
+}
+export function UnionInternalToUrlSearchParamsString(
+    input: UnionInternal,
+): string {
+    return UnionInternalToUrlSearchParams(input).toString();
+}
+export const $$UnionInternal: ExampleClientValidator<UnionInternal> = {
+    new: UnionInternalNew,
+    validate: UnionInternalValidate,
+    clone: UnionInternalClone,
+    fromJson: UnionInternalFromJson,
+    fromJsonString: UnionInternalFromJsonString,
+    toJsonString: UnionInternalToJsonString,
+    toUrlSearchParams: UnionInternalToUrlSearchParams,
+    toUrlSearchParamsString: UnionInternalToUrlSearchParamsString,
+};
+export interface UnionInternalRectangle {
+    shape: `rectangle`;
+    width: number;
+    height: number;
+}
+export function UnionInternalRectangleNew(): UnionInternalRectangle {
+    return {
+        shape: `rectangle`,
+        width: 0,
+        height: 0,
+    };
+}
+export function UnionInternalRectangleValidate(
+    input: unknown,
+): input is UnionInternalRectangle {
+    return (
+        isObject(input) &&
+        input.shape === `rectangle` &&
+        typeof input.width === 'number' &&
+        typeof input.height === 'number'
+    );
+}
+export function UnionInternalRectangleClone(
+    input: UnionInternalRectangle,
+): UnionInternalRectangle {
+    const _shape = `rectangle`;
+    let _width: number;
+    _width = input.width;
+    let _height: number;
+    _height = input.height;
+    return {
+        shape: _shape,
+        width: _width,
+        height: _height,
+    };
+}
+export function UnionInternalRectangleFromJson(
+    input: Record<string, unknown>,
+): UnionInternalRectangle {
+    const _shape = `rectangle`;
+    let _width: number;
+    _width = parseNumberFloat(input.width);
+    let _height: number;
+    _height = parseNumberFloat(input.height);
+    return {
+        shape: _shape,
+        width: _width,
+        height: _height,
+    };
+}
+export function UnionInternalRectangleFromJsonString(
+    input: string,
+): UnionInternalRectangle {
+    return UnionInternalRectangleFromJson(JSON.parse(input));
+}
+export function UnionInternalRectangleToJsonString(
+    input: UnionInternalRectangle,
+): string {
+    let json = '{';
+    json += '"shape":"rectangle"';
+    json += ',"width":';
+    json += `${input.width}`;
+    json += ',"height":';
+    json += `${input.height}`;
+    json += '}';
+    return json;
+}
+export function UnionInternalRectangleToUrlSearchParams(
+    input: UnionInternalRectangle,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('shape', `rectangle`);
+    params.set('width', `${input.width}`);
+    params.set('height', `${input.height}`);
+    return params;
+}
+export function UnionInternalRectangleToUrlSearchParamsString(
+    input: UnionInternalRectangle,
+): string {
+    return UnionInternalRectangleToUrlSearchParams(input).toString();
+}
+
+export interface UnionInternalCircle {
+    shape: `circle`;
+    radius: number;
+}
+export function UnionInternalCircleNew(): UnionInternalCircle {
+    return {
+        shape: `circle`,
+        radius: 0,
+    };
+}
+export function UnionInternalCircleValidate(
+    input: unknown,
+): input is UnionInternalCircle {
+    return (
+        isObject(input) &&
+        input.shape === `circle` &&
+        typeof input.radius === 'number'
+    );
+}
+export function UnionInternalCircleClone(
+    input: UnionInternalCircle,
+): UnionInternalCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = input.radius;
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionInternalCircleFromJson(
+    input: Record<string, unknown>,
+): UnionInternalCircle {
+    const _shape = `circle`;
+    let _radius: number;
+    _radius = parseNumberFloat(input.radius);
+    return {
+        shape: _shape,
+        radius: _radius,
+    };
+}
+export function UnionInternalCircleFromJsonString(
+    input: string,
+): UnionInternalCircle {
+    return UnionInternalCircleFromJson(JSON.parse(input));
+}
+export function UnionInternalCircleToJsonString(
+    input: UnionInternalCircle,
+): string {
+    let json = '{';
+    json += '"shape":"circle"';
+    json += ',"radius":';
+    json += `${input.radius}`;
+    json += '}';
+    return json;
+}
+export function UnionInternalCircleToUrlSearchParams(
+    input: UnionInternalCircle,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('shape', `circle`);
+    params.set('radius', `${input.radius}`);
+    return params;
+}
+export function UnionInternalCircleToUrlSearchParamsString(
+    input: UnionInternalCircle,
+): string {
+    return UnionInternalCircleToUrlSearchParams(input).toString();
+}
+
+export type UnionAdjacent =
+    | { kind: `object`; data: NestedObject }
+    | { kind: `array`; data: string[] }
+    | { kind: `boolean`; data: boolean }
+    | { kind: `nullable-timestamp`; data: Date | null };
+export function UnionAdjacentNew(): UnionAdjacent {
+    return {
+        kind: `object`,
+        data: NestedObjectNew(),
+    };
+}
+export function UnionAdjacentValidate(input: unknown): input is UnionAdjacent {
+    if (!isObject(input)) {
+        return false;
+    }
+    if (!('kind' in input) || !('data' in input)) {
+        return false;
+    }
+    switch (input.kind) {
+        case `object`:
+            return NestedObjectValidate(input.data);
+
+        case `array`:
+            return (
+                Array.isArray(input.data) &&
+                input.data.every((_element) => typeof _element === 'string')
+            );
+
+        case `boolean`:
+            return typeof input.data === 'boolean';
+
+        case `nullable-timestamp`:
+            return (
+                (input.data instanceof Date &&
+                    !Number.isNaN(input.data.getTime())) ||
+                input.data === null
+            );
+
+        default:
             return false;
-        }
-        if (typeof input.typeName !== 'string') {
-            return false;
-        }
-        switch (input.typeName) {
-            case 'A':
-                return $$DiscriminatorA.validate(input);
-            case 'B':
-                return $$DiscriminatorB.validate(input);
-            case 'C':
-                return $$DiscriminatorC.validate(input);
-            default:
-                return false;
-        }
-    },
-    fromJson(input): Discriminator {
-        switch (input.typeName) {
-            case 'A':
-                return $$DiscriminatorA.fromJson(input);
-            case 'B':
-                return $$DiscriminatorB.fromJson(input);
-            case 'C':
-                return $$DiscriminatorC.fromJson(input);
-            default:
-                return $$DiscriminatorA.new();
-        }
-    },
-    fromJsonString(input): Discriminator {
-        return $$Discriminator.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        switch (input.typeName) {
-            case 'A':
-                return $$DiscriminatorA.toJsonString(input);
-            case 'B':
-                return $$DiscriminatorB.toJsonString(input);
-            case 'C':
-                return $$DiscriminatorC.toJsonString(input);
-            default:
-                throw new Error(`Unhandled case "${(input as any).typeName}"`);
-        }
-    },
-    toUrlQueryString(input): string {
-        switch (input.typeName) {
-            case 'A':
-                return $$DiscriminatorA.toUrlQueryString(input);
-            case 'B':
-                return $$DiscriminatorB.toUrlQueryString(input);
-            case 'C':
-                return $$DiscriminatorC.toUrlQueryString(input);
-            default:
-                throw new Error('Unhandled case');
-        }
-    },
-};
-export interface DiscriminatorA {
-    typeName: 'A';
-    id: string;
+    }
 }
-const $$DiscriminatorA: ArriModelValidator<DiscriminatorA> = {
-    new(): DiscriminatorA {
-        return {
-            typeName: 'A',
-            id: '',
-        };
-    },
-    validate(input): input is DiscriminatorA {
-        return (
-            isObject(input) &&
-            input.typeName === 'A' &&
-            typeof input.id === 'string'
-        );
-    },
-    fromJson(input): DiscriminatorA {
-        const _typeName = 'A';
-        let _id: string;
-        _id = parseString(input.id);
-        return {
-            typeName: _typeName,
-            id: _id,
-        };
-    },
-    fromJsonString(input): DiscriminatorA {
-        return $$DiscriminatorA.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"typeName":"A"';
-        json += ',"id":';
-        json += serializeString(input.id);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('typeName=A');
-        queryParts.push(`id=${input.id}`);
-        return queryParts.join('&');
-    },
-};
-export interface DiscriminatorB {
-    typeName: 'B';
-    id: string;
-    name: string;
+export function UnionAdjacentClone(input: UnionAdjacent): UnionAdjacent {
+    switch (input.kind) {
+        case `object`: {
+            let __value__: NestedObject;
+            __value__ = NestedObjectClone(input.data);
+            return {
+                kind: `object`,
+                data: __value__,
+            };
+        }
+
+        case `array`: {
+            let __value__: string[];
+            __value__ = [];
+            for (const __value__El of input.data) {
+                let __value__ElValue: string;
+                __value__ElValue = __value__El;
+                __value__.push(__value__ElValue);
+            }
+            return {
+                kind: `array`,
+                data: __value__,
+            };
+        }
+
+        case `boolean`: {
+            let __value__: boolean;
+            __value__ = input.data;
+            return {
+                kind: `boolean`,
+                data: __value__,
+            };
+        }
+
+        case `nullable-timestamp`: {
+            let __value__: Date | null;
+            if (input.data !== null) {
+                __value__ = new Date(input.data.getTime());
+            } else {
+                __value__ = null;
+            }
+            return {
+                kind: `nullable-timestamp`,
+                data: __value__,
+            };
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown union variant: ${(input as any).kind}`);
+        }
+    }
 }
-const $$DiscriminatorB: ArriModelValidator<DiscriminatorB> = {
-    new(): DiscriminatorB {
-        return {
-            typeName: 'B',
-            id: '',
-            name: '',
-        };
-    },
-    validate(input): input is DiscriminatorB {
-        return (
-            isObject(input) &&
-            input.typeName === 'B' &&
-            typeof input.id === 'string' &&
-            typeof input.name === 'string'
-        );
-    },
-    fromJson(input): DiscriminatorB {
-        const _typeName = 'B';
-        let _id: string;
-        _id = parseString(input.id);
-        let _name: string;
-        _name = parseString(input.name);
-        return {
-            typeName: _typeName,
-            id: _id,
-            name: _name,
-        };
-    },
-    fromJsonString(input): DiscriminatorB {
-        return $$DiscriminatorB.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"typeName":"B"';
-        json += ',"id":';
-        json += serializeString(input.id);
-        json += ',"name":';
-        json += serializeString(input.name);
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('typeName=B');
-        queryParts.push(`id=${input.id}`);
-        queryParts.push(`name=${input.name}`);
-        return queryParts.join('&');
-    },
-};
-export interface DiscriminatorC {
-    typeName: 'C';
-    id: string;
-    name: string;
-    date: Date;
+export function UnionAdjacentFromJson(
+    input: Record<string, unknown>,
+): UnionAdjacent {
+    if (typeof input.kind !== 'string') {
+        return UnionAdjacentNew();
+    }
+    switch (input.kind) {
+        case `object`: {
+            let __value__: NestedObject;
+            if (isObject(input.data)) {
+                __value__ = NestedObjectFromJson(input.data);
+            } else {
+                __value__ = NestedObjectNew();
+            }
+            return {
+                kind: `object`,
+                data: __value__,
+            };
+        }
+        case `array`: {
+            let __value__: string[];
+            if (Array.isArray(input.data)) {
+                __value__ = [];
+                for (const __value__El of input.data) {
+                    let __value__ElValue: string;
+                    __value__ElValue = parseString(__value__El);
+                    __value__.push(__value__ElValue);
+                }
+            } else {
+                __value__ = [];
+            }
+            return {
+                kind: `array`,
+                data: __value__,
+            };
+        }
+        case `boolean`: {
+            let __value__: boolean;
+            __value__ = parseBoolean(input.data);
+            return {
+                kind: `boolean`,
+                data: __value__,
+            };
+        }
+        case `nullable-timestamp`: {
+            let __value__: Date | null;
+            __value__ = parseNullableTimestamp(input.data);
+            return {
+                kind: `nullable-timestamp`,
+                data: __value__,
+            };
+        }
+        default: {
+            return UnionAdjacentNew();
+        }
+    }
 }
-const $$DiscriminatorC: ArriModelValidator<DiscriminatorC> = {
-    new(): DiscriminatorC {
-        return {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: new Date(0),
-        };
-    },
-    validate(input): input is DiscriminatorC {
-        return (
-            isObject(input) &&
-            input.typeName === 'C' &&
-            typeof input.id === 'string' &&
-            typeof input.name === 'string' &&
-            input.date instanceof Date
-        );
-    },
-    fromJson(input): DiscriminatorC {
-        const _typeName = 'C';
-        let _id: string;
-        _id = parseString(input.id);
-        let _name: string;
-        _name = parseString(input.name);
-        let _date: Date;
-        _date = parseTimestamp(input.date);
-        return {
-            typeName: _typeName,
-            id: _id,
-            name: _name,
-            date: _date,
-        };
-    },
-    fromJsonString(input): DiscriminatorC {
-        return $$DiscriminatorC.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"typeName":"C"';
-        json += ',"id":';
-        json += serializeString(input.id);
-        json += ',"name":';
-        json += serializeString(input.name);
-        json += ',"date":';
-        json += `"${input.date.toISOString()}"`;
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        queryParts.push('typeName=C');
-        queryParts.push(`id=${input.id}`);
-        queryParts.push(`name=${input.name}`);
-        queryParts.push(`date=${input.date.toISOString()}`);
-        return queryParts.join('&');
-    },
+export function UnionAdjacentFromJsonString(input: string): UnionAdjacent {
+    return UnionAdjacentFromJson(JSON.parse(input));
+}
+export function UnionAdjacentToJsonString(input: UnionAdjacent): string {
+    switch (input.kind) {
+        case `object`: {
+            let json = '{';
+            json += '"kind":"object"';
+            json += ',"data":';
+            json += NestedObjectToJsonString(input.data);
+            json += '}';
+            return json;
+        }
+
+        case `array`: {
+            let json = '{';
+            json += '"kind":"array"';
+            json += ',"data":';
+            json += '[';
+            for (let i = 0; i < input.data.length; i++) {
+                if (i !== 0) json += ',';
+                const _inputDataEl = input.data[i]!;
+                json += serializeString(_inputDataEl);
+            }
+            json += ']';
+            json += '}';
+            return json;
+        }
+
+        case `boolean`: {
+            let json = '{';
+            json += '"kind":"boolean"';
+            json += ',"data":';
+            json += `${input.data}`;
+            json += '}';
+            return json;
+        }
+
+        case `nullable-timestamp`: {
+            let json = '{';
+            json += '"kind":"nullable-timestamp"';
+            json += ',"data":';
+            if (input.data instanceof Date) {
+                json += `"${input.data.toISOString()}"`;
+            } else {
+                json += 'null';
+            }
+            json += '}';
+            return json;
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).kind}`);
+        }
+    }
+}
+export function UnionAdjacentToUrlSearchParams(
+    input: UnionAdjacent,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn('[WARNING] Cannot serialize unions to query string.');
+    return params;
+}
+export function UnionAdjacentToUrlSearchParamsString(
+    input: UnionAdjacent,
+): string {
+    return UnionAdjacentToUrlSearchParams(input).toString();
+}
+export const $$UnionAdjacent: ExampleClientValidator<UnionAdjacent> = {
+    new: UnionAdjacentNew,
+    validate: UnionAdjacentValidate,
+    clone: UnionAdjacentClone,
+    fromJson: UnionAdjacentFromJson,
+    fromJsonString: UnionAdjacentFromJsonString,
+    toJsonString: UnionAdjacentToJsonString,
+    toUrlSearchParams: UnionAdjacentToUrlSearchParams,
+    toUrlSearchParamsString: UnionAdjacentToUrlSearchParamsString,
 };
 
 export interface ObjectWithOptionalFields {
@@ -959,425 +1664,613 @@ export interface ObjectWithOptionalFields {
     object?: NestedObject;
     array?: boolean[];
     record?: Record<string, boolean>;
-    discriminator?: Discriminator;
+    unionExternal?: UnionExternal;
+    unionInternal?: UnionInternal;
+    unionAdjacent?: UnionAdjacent;
     any?: any;
 }
-export const $$ObjectWithOptionalFields: ArriModelValidator<ObjectWithOptionalFields> =
+export function ObjectWithOptionalFieldsNew(): ObjectWithOptionalFields {
+    return {};
+}
+export function ObjectWithOptionalFieldsValidate(
+    input: unknown,
+): input is ObjectWithOptionalFields {
+    return (
+        isObject(input) &&
+        (typeof input.string === 'string' ||
+            typeof input.string === 'undefined') &&
+        (typeof input.boolean === 'boolean' ||
+            typeof input.boolean === 'undefined') &&
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            typeof input.timestamp === 'undefined') &&
+        (typeof input.float32 === 'number' ||
+            typeof input.float32 === 'undefined') &&
+        (typeof input.float64 === 'number' ||
+            typeof input.float64 === 'undefined') &&
+        ((typeof input.int8 === 'number' &&
+            Number.isInteger(input.int8) &&
+            input.int8 >= INT8_MIN &&
+            input.int8 <= INT8_MAX) ||
+            typeof input.int8 === 'undefined') &&
+        ((typeof input.uint8 === 'number' &&
+            Number.isInteger(input.uint8) &&
+            input.uint8 >= 0 &&
+            input.uint8 <= UINT8_MAX) ||
+            typeof input.uint8 === 'undefined') &&
+        ((typeof input.int16 === 'number' &&
+            Number.isInteger(input.int16) &&
+            input.int16 >= INT16_MIN &&
+            input.int16 <= INT16_MAX) ||
+            typeof input.int16 === 'undefined') &&
+        ((typeof input.uint16 === 'number' &&
+            Number.isInteger(input.uint16) &&
+            input.uint16 >= 0 &&
+            input.uint16 <= UINT16_MAX) ||
+            typeof input.uint16 === 'undefined') &&
+        ((typeof input.int32 === 'number' &&
+            Number.isInteger(input.int32) &&
+            input.int32 >= INT32_MIN &&
+            input.int32 <= INT32_MAX) ||
+            typeof input.int32 === 'undefined') &&
+        ((typeof input.uint32 === 'number' &&
+            Number.isInteger(input.uint32) &&
+            input.uint32 >= 0 &&
+            input.uint32 <= UINT32_MAX) ||
+            typeof input.uint32 === 'undefined') &&
+        ((typeof input.int64 === 'bigint' &&
+            input.int64 >= INT64_MIN &&
+            input.int64 <= INT64_MAX) ||
+            typeof input.int64 === 'undefined') &&
+        ((typeof input.uint64 === 'bigint' &&
+            input.uint64 >= BigInt(0) &&
+            input.uint64 <= UINT64_MAX) ||
+            typeof input.uint64 === 'undefined') &&
+        (EnumeratorValidate(input.enum) || typeof input.enum === 'undefined') &&
+        (NestedObjectValidate(input.object) ||
+            typeof input.object === 'undefined') &&
+        ((Array.isArray(input.array) &&
+            input.array.every((_element) => typeof _element === 'boolean')) ||
+            typeof input.array === 'undefined') &&
+        ((isObject(input.record) &&
+            Object.values(input.record).every(
+                (_value) => typeof _value === 'boolean',
+            )) ||
+            typeof input.record === 'undefined') &&
+        (UnionExternalValidate(input.unionExternal) ||
+            typeof input.unionExternal === 'undefined') &&
+        (UnionInternalValidate(input.unionInternal) ||
+            typeof input.unionInternal === 'undefined') &&
+        (UnionAdjacentValidate(input.unionAdjacent) ||
+            typeof input.unionAdjacent === 'undefined') &&
+        (true || typeof input.any === 'undefined')
+    );
+}
+export function ObjectWithOptionalFieldsClone(
+    input: ObjectWithOptionalFields,
+): ObjectWithOptionalFields {
+    let _string: string | undefined;
+    if (typeof input.string !== 'undefined') {
+        _string = input.string;
+    }
+    let _boolean: boolean | undefined;
+    if (typeof input.boolean !== 'undefined') {
+        _boolean = input.boolean;
+    }
+    let _timestamp: Date | undefined;
+    if (typeof input.timestamp !== 'undefined') {
+        _timestamp = new Date(input.timestamp.getTime());
+    }
+    let _float32: number | undefined;
+    if (typeof input.float32 !== 'undefined') {
+        _float32 = input.float32;
+    }
+    let _float64: number | undefined;
+    if (typeof input.float64 !== 'undefined') {
+        _float64 = input.float64;
+    }
+    let _int8: number | undefined;
+    if (typeof input.int8 !== 'undefined') {
+        _int8 = input.int8;
+    }
+    let _uint8: number | undefined;
+    if (typeof input.uint8 !== 'undefined') {
+        _uint8 = input.uint8;
+    }
+    let _int16: number | undefined;
+    if (typeof input.int16 !== 'undefined') {
+        _int16 = input.int16;
+    }
+    let _uint16: number | undefined;
+    if (typeof input.uint16 !== 'undefined') {
+        _uint16 = input.uint16;
+    }
+    let _int32: number | undefined;
+    if (typeof input.int32 !== 'undefined') {
+        _int32 = input.int32;
+    }
+    let _uint32: number | undefined;
+    if (typeof input.uint32 !== 'undefined') {
+        _uint32 = input.uint32;
+    }
+    let _int64: bigint | undefined;
+    if (typeof input.int64 !== 'undefined') {
+        _int64 = input.int64;
+    }
+    let _uint64: bigint | undefined;
+    if (typeof input.uint64 !== 'undefined') {
+        _uint64 = input.uint64;
+    }
+    let _enum: Enumerator | undefined;
+    if (typeof input.enum !== 'undefined') {
+        _enum = input.enum;
+    }
+    let _object: NestedObject | undefined;
+    if (typeof input.object !== 'undefined') {
+        _object = NestedObjectClone(input.object);
+    }
+    let _array: boolean[] | undefined;
+    if (typeof input.array !== 'undefined') {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = _arrayEl;
+            _array.push(_arrayElValue);
+        }
+    }
+    let _record: Record<string, boolean> | undefined;
+    if (typeof input.record !== 'undefined') {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: boolean;
+            _recordValue = _value;
+            _record[_key] = _recordValue;
+        }
+    }
+    let _unionExternal: UnionExternal | undefined;
+    if (typeof input.unionExternal !== 'undefined') {
+        _unionExternal = UnionExternalClone(input.unionExternal);
+    }
+    let _unionInternal: UnionInternal | undefined;
+    if (typeof input.unionInternal !== 'undefined') {
+        _unionInternal = UnionInternalClone(input.unionInternal);
+    }
+    let _unionAdjacent: UnionAdjacent | undefined;
+    if (typeof input.unionAdjacent !== 'undefined') {
+        _unionAdjacent = UnionAdjacentClone(input.unionAdjacent);
+    }
+    let _any: any | undefined;
+    if (typeof input.any !== 'undefined') {
+        _any = input.any;
+    }
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
+        any: _any,
+    };
+}
+export function ObjectWithOptionalFieldsFromJson(
+    input: Record<string, unknown>,
+): ObjectWithOptionalFields {
+    let _string: string | undefined;
+    if (typeof input.string !== 'undefined') {
+        _string = parseString(input.string);
+    }
+    let _boolean: boolean | undefined;
+    if (typeof input.boolean !== 'undefined') {
+        _boolean = parseBoolean(input.boolean);
+    }
+    let _timestamp: Date | undefined;
+    if (typeof input.timestamp !== 'undefined') {
+        _timestamp = parseTimestamp(input.timestamp);
+    }
+    let _float32: number | undefined;
+    if (typeof input.float32 !== 'undefined') {
+        _float32 = parseNumberFloat(input.float32);
+    }
+    let _float64: number | undefined;
+    if (typeof input.float64 !== 'undefined') {
+        _float64 = parseNumberFloat(input.float64);
+    }
+    let _int8: number | undefined;
+    if (typeof input.int8 !== 'undefined') {
+        _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
+    }
+    let _uint8: number | undefined;
+    if (typeof input.uint8 !== 'undefined') {
+        _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
+    }
+    let _int16: number | undefined;
+    if (typeof input.int16 !== 'undefined') {
+        _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
+    }
+    let _uint16: number | undefined;
+    if (typeof input.uint16 !== 'undefined') {
+        _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
+    }
+    let _int32: number | undefined;
+    if (typeof input.int32 !== 'undefined') {
+        _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
+    }
+    let _uint32: number | undefined;
+    if (typeof input.uint32 !== 'undefined') {
+        _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
+    }
+    let _int64: bigint | undefined;
+    if (typeof input.int64 !== 'undefined') {
+        _int64 = parseNumberBigInt(input.int64);
+    }
+    let _uint64: bigint | undefined;
+    if (typeof input.uint64 !== 'undefined') {
+        _uint64 = parseNumberUnsignedBigInt(input.uint64);
+    }
+    let _enum: Enumerator | undefined;
+    if (typeof input.enum !== 'undefined') {
+        if (typeof input.enum === 'string') {
+            _enum = EnumeratorFromSerialValue(input.enum);
+        } else {
+            _enum = EnumeratorNew();
+        }
+    }
+    let _object: NestedObject | undefined;
+    if (typeof input.object !== 'undefined') {
+        if (isObject(input.object)) {
+            _object = NestedObjectFromJson(input.object);
+        } else {
+            _object = NestedObjectNew();
+        }
+    }
+    let _array: boolean[] | undefined;
+    if (typeof input.array !== 'undefined') {
+        if (Array.isArray(input.array)) {
+            _array = [];
+            for (const _arrayEl of input.array) {
+                let _arrayElValue: boolean;
+                _arrayElValue = parseBoolean(_arrayEl);
+                _array.push(_arrayElValue);
+            }
+        } else {
+            _array = [];
+        }
+    }
+    let _record: Record<string, boolean> | undefined;
+    if (typeof input.record !== 'undefined') {
+        if (isObject(input.record)) {
+            _record = {};
+            for (const [_key, _value] of Object.entries(input.record)) {
+                let _recordValue: boolean;
+                _recordValue = parseBoolean(_value);
+                _record[_key] = _recordValue;
+            }
+        } else {
+            _record = {};
+        }
+    }
+    let _unionExternal: UnionExternal | undefined;
+    if (typeof input.unionExternal !== 'undefined') {
+        if (isObject(input.unionExternal)) {
+            _unionExternal = UnionExternalFromJson(input.unionExternal);
+        } else {
+            _unionExternal = UnionExternalNew();
+        }
+    }
+    let _unionInternal: UnionInternal | undefined;
+    if (typeof input.unionInternal !== 'undefined') {
+        if (isObject(input.unionInternal)) {
+            _unionInternal = UnionInternalFromJson(input.unionInternal);
+        } else {
+            _unionInternal = UnionInternalNew();
+        }
+    }
+    let _unionAdjacent: UnionAdjacent | undefined;
+    if (typeof input.unionAdjacent !== 'undefined') {
+        if (isObject(input.unionAdjacent)) {
+            _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+        } else {
+            _unionAdjacent = UnionAdjacentNew();
+        }
+    }
+    let _any: any | undefined;
+    if (typeof input.any !== 'undefined') {
+        _any = input.any;
+    }
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
+        any: _any,
+    };
+}
+export function ObjectWithOptionalFieldsFromJsonString(
+    input: string,
+): ObjectWithOptionalFields {
+    return ObjectWithOptionalFieldsFromJson(JSON.parse(input));
+}
+export function ObjectWithOptionalFieldsToJsonString(
+    input: ObjectWithOptionalFields,
+): string {
+    let json = '{';
+    let _hasKey = false;
+    if (typeof input.string !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"string":';
+        json += serializeString(input.string);
+        _hasKey = true;
+    }
+    if (typeof input.boolean !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"boolean":';
+        json += `${input.boolean}`;
+        _hasKey = true;
+    }
+    if (typeof input.timestamp !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"timestamp":';
+        json += `"${input.timestamp.toISOString()}"`;
+        _hasKey = true;
+    }
+    if (typeof input.float32 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"float32":';
+        json += `${input.float32}`;
+        _hasKey = true;
+    }
+    if (typeof input.float64 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"float64":';
+        json += `${input.float64}`;
+        _hasKey = true;
+    }
+    if (typeof input.int8 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int8":';
+        json += `${input.int8}`;
+        _hasKey = true;
+    }
+    if (typeof input.uint8 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint8":';
+        json += `${input.uint8}`;
+        _hasKey = true;
+    }
+    if (typeof input.int16 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int16":';
+        json += `${input.int16}`;
+        _hasKey = true;
+    }
+    if (typeof input.uint16 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint16":';
+        json += `${input.uint16}`;
+        _hasKey = true;
+    }
+    if (typeof input.int32 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int32":';
+        json += `${input.int32}`;
+        _hasKey = true;
+    }
+    if (typeof input.uint32 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint32":';
+        json += `${input.uint32}`;
+        _hasKey = true;
+    }
+    if (typeof input.int64 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"int64":';
+        json += `"${input.int64}"`;
+        _hasKey = true;
+    }
+    if (typeof input.uint64 !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"uint64":';
+        json += `"${input.uint64}"`;
+        _hasKey = true;
+    }
+    if (typeof input.enum !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"enum":';
+        json += `"${input.enum}"`;
+        _hasKey = true;
+    }
+    if (typeof input.object !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"object":';
+        json += NestedObjectToJsonString(input.object);
+        _hasKey = true;
+    }
+    if (typeof input.array !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"array":';
+        json += '[';
+        for (let i = 0; i < input.array.length; i++) {
+            if (i !== 0) json += ',';
+            const _inputArrayEl = input.array[i]!;
+            json += `${_inputArrayEl}`;
+        }
+        json += ']';
+        _hasKey = true;
+    }
+    if (typeof input.record !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"record":';
+        json += '{';
+        let _recordPropertyCount = 0;
+        for (const [_key, _value] of Object.entries(input.record)) {
+            if (_recordPropertyCount !== 0) {
+                json += ',';
+            }
+            json += `${serializeString(_key)}:`;
+            json += `${_value}`;
+            _recordPropertyCount++;
+        }
+        json += '}';
+
+        _hasKey = true;
+    }
+    if (typeof input.unionExternal !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"unionExternal":';
+        json += UnionExternalToJsonString(input.unionExternal);
+        _hasKey = true;
+    }
+    if (typeof input.unionInternal !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"unionInternal":';
+        json += UnionInternalToJsonString(input.unionInternal);
+        _hasKey = true;
+    }
+    if (typeof input.unionAdjacent !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"unionAdjacent":';
+        json += UnionAdjacentToJsonString(input.unionAdjacent);
+        _hasKey = true;
+    }
+    if (typeof input.any !== 'undefined') {
+        if (_hasKey) json += ',';
+        json += '"any":';
+        json += JSON.stringify(input.any);
+        _hasKey = true;
+    }
+    json += '}';
+    return json;
+}
+export function ObjectWithOptionalFieldsToUrlSearchParams(
+    input: ObjectWithOptionalFields,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    if (typeof input.string !== 'undefined') {
+        params.set('string', input.string);
+    }
+    if (typeof input.boolean !== 'undefined') {
+        params.set('boolean', `${input.boolean}`);
+    }
+    if (typeof input.timestamp !== 'undefined') {
+        params.set('timestamp', input.timestamp.toISOString());
+    }
+    if (typeof input.float32 !== 'undefined') {
+        params.set('float32', `${input.float32}`);
+    }
+    if (typeof input.float64 !== 'undefined') {
+        params.set('float64', `${input.float64}`);
+    }
+    if (typeof input.int8 !== 'undefined') {
+        params.set('int8', `${input.int8}`);
+    }
+    if (typeof input.uint8 !== 'undefined') {
+        params.set('uint8', `${input.uint8}`);
+    }
+    if (typeof input.int16 !== 'undefined') {
+        params.set('int16', `${input.int16}`);
+    }
+    if (typeof input.uint16 !== 'undefined') {
+        params.set('uint16', `${input.uint16}`);
+    }
+    if (typeof input.int32 !== 'undefined') {
+        params.set('int32', `${input.int32}`);
+    }
+    if (typeof input.uint32 !== 'undefined') {
+        params.set('uint32', `${input.uint32}`);
+    }
+    if (typeof input.int64 !== 'undefined') {
+        params.set('int64', `${input.int64}`);
+    }
+    if (typeof input.uint64 !== 'undefined') {
+        params.set('uint64', `${input.uint64}`);
+    }
+    if (typeof input.enum !== 'undefined') {
+        params.set('enum', input.enum);
+    }
+    if (typeof input.object !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/object.',
+        );
+    }
+    if (typeof input.array !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithOptionalFields/array.',
+        );
+    }
+    if (typeof input.record !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.',
+        );
+    }
+    if (typeof input.unionExternal !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionExternal.',
+        );
+    }
+    if (typeof input.unionInternal !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionInternal.',
+        );
+    }
+    if (typeof input.unionAdjacent !== 'undefined') {
+        console.warn(
+            '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithOptionalFields/unionAdjacent.',
+        );
+    }
+    if (typeof input.any !== 'undefined') {
+        console.warn(
+            "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithOptionalFields/any.",
+        );
+    }
+    return params;
+}
+export function ObjectWithOptionalFieldsToUrlSearchParamsString(
+    input: ObjectWithOptionalFields,
+): string {
+    return ObjectWithOptionalFieldsToUrlSearchParams(input).toString();
+}
+export const $$ObjectWithOptionalFields: ExampleClientValidator<ObjectWithOptionalFields> =
     {
-        new(): ObjectWithOptionalFields {
-            return {};
-        },
-        validate(input): input is ObjectWithOptionalFields {
-            return (
-                isObject(input) &&
-                (typeof input.string === 'string' ||
-                    typeof input.string === 'undefined') &&
-                (typeof input.boolean === 'boolean' ||
-                    typeof input.boolean === 'undefined') &&
-                (input.timestamp instanceof Date ||
-                    typeof input.timestamp === 'undefined') &&
-                (typeof input.float32 === 'number' ||
-                    typeof input.float32 === 'undefined') &&
-                (typeof input.float64 === 'number' ||
-                    typeof input.float64 === 'undefined') &&
-                ((typeof input.int8 === 'number' &&
-                    Number.isInteger(input.int8) &&
-                    input.int8 >= INT8_MIN &&
-                    input.int8 <= INT8_MAX) ||
-                    typeof input.int8 === 'undefined') &&
-                ((typeof input.uint8 === 'number' &&
-                    Number.isInteger(input.uint8) &&
-                    input.uint8 >= 0 &&
-                    input.uint8 <= UINT8_MAX) ||
-                    typeof input.uint8 === 'undefined') &&
-                ((typeof input.int16 === 'number' &&
-                    Number.isInteger(input.int16) &&
-                    input.int16 >= INT16_MIN &&
-                    input.int16 <= INT16_MAX) ||
-                    typeof input.int16 === 'undefined') &&
-                ((typeof input.uint16 === 'number' &&
-                    Number.isInteger(input.uint16) &&
-                    input.uint16 >= 0 &&
-                    input.uint16 <= UINT16_MAX) ||
-                    typeof input.uint16 === 'undefined') &&
-                ((typeof input.int32 === 'number' &&
-                    Number.isInteger(input.int32) &&
-                    input.int32 >= INT32_MIN &&
-                    input.int32 <= INT32_MAX) ||
-                    typeof input.int32 === 'undefined') &&
-                ((typeof input.uint32 === 'number' &&
-                    Number.isInteger(input.uint32) &&
-                    input.uint32 >= 0 &&
-                    input.uint32 <= UINT32_MAX) ||
-                    typeof input.uint32 === 'undefined') &&
-                ((typeof input.int64 === 'bigint' &&
-                    input.int64 >= INT64_MIN &&
-                    input.int64 <= INT64_MAX) ||
-                    typeof input.int64 === 'undefined') &&
-                ((typeof input.uint64 === 'bigint' &&
-                    input.uint64 >= BigInt(0) &&
-                    input.uint64 <= UINT64_MAX) ||
-                    typeof input.uint64 === 'undefined') &&
-                ($$Enumerator.validate(input.enum) ||
-                    typeof input.enum === 'undefined') &&
-                ($$NestedObject.validate(input.object) ||
-                    typeof input.object === 'undefined') &&
-                ((Array.isArray(input.array) &&
-                    input.array.every(
-                        (_element) => typeof _element === 'boolean',
-                    )) ||
-                    typeof input.array === 'undefined') &&
-                ((isObject(input.record) &&
-                    Object.values(input.record).every(
-                        (_value) => typeof _value === 'boolean',
-                    )) ||
-                    typeof input.record === 'undefined') &&
-                ($$Discriminator.validate(input.discriminator) ||
-                    typeof input.discriminator === 'undefined') &&
-                (true || typeof input.any === 'undefined')
-            );
-        },
-        fromJson(input): ObjectWithOptionalFields {
-            let _string: string | undefined;
-            if (typeof input.string !== 'undefined') {
-                _string = parseString(input.string);
-            }
-            let _boolean: boolean | undefined;
-            if (typeof input.boolean !== 'undefined') {
-                _boolean = parseBoolean(input.boolean);
-            }
-            let _timestamp: Date | undefined;
-            if (typeof input.timestamp !== 'undefined') {
-                _timestamp = parseTimestamp(input.timestamp);
-            }
-            let _float32: number | undefined;
-            if (typeof input.float32 !== 'undefined') {
-                _float32 = parseNumberFloat(input.float32);
-            }
-            let _float64: number | undefined;
-            if (typeof input.float64 !== 'undefined') {
-                _float64 = parseNumberFloat(input.float64);
-            }
-            let _int8: number | undefined;
-            if (typeof input.int8 !== 'undefined') {
-                _int8 = parseNumberInt(input.int8, INT8_MIN, INT8_MAX);
-            }
-            let _uint8: number | undefined;
-            if (typeof input.uint8 !== 'undefined') {
-                _uint8 = parseNumberInt(input.uint8, 0, UINT8_MAX);
-            }
-            let _int16: number | undefined;
-            if (typeof input.int16 !== 'undefined') {
-                _int16 = parseNumberInt(input.int16, INT16_MIN, INT16_MAX);
-            }
-            let _uint16: number | undefined;
-            if (typeof input.uint16 !== 'undefined') {
-                _uint16 = parseNumberInt(input.uint16, 0, UINT16_MAX);
-            }
-            let _int32: number | undefined;
-            if (typeof input.int32 !== 'undefined') {
-                _int32 = parseNumberInt(input.int32, INT32_MIN, INT32_MAX);
-            }
-            let _uint32: number | undefined;
-            if (typeof input.uint32 !== 'undefined') {
-                _uint32 = parseNumberInt(input.uint32, 0, UINT32_MAX);
-            }
-            let _int64: bigint | undefined;
-            if (typeof input.int64 !== 'undefined') {
-                _int64 = parseNumberBigInt(input.int64);
-            }
-            let _uint64: bigint | undefined;
-            if (typeof input.uint64 !== 'undefined') {
-                _uint64 = parseNumberUnsignedBigInt(input.uint64);
-            }
-            let _enum: Enumerator | undefined;
-            if (typeof input.enum !== 'undefined') {
-                if (typeof input.enum === 'string') {
-                    _enum = $$Enumerator.fromSerialValue(input.enum);
-                } else {
-                    _enum = $$Enumerator.new();
-                }
-            }
-            let _object: NestedObject | undefined;
-            if (typeof input.object !== 'undefined') {
-                if (isObject(input.object)) {
-                    _object = $$NestedObject.fromJson(input.object);
-                } else {
-                    _object = $$NestedObject.new();
-                }
-            }
-            let _array: boolean[] | undefined;
-            if (typeof input.array !== 'undefined') {
-                if (Array.isArray(input.array)) {
-                    _array = [];
-                    for (const _arrayEl of input.array) {
-                        let _arrayElValue: boolean;
-                        _arrayElValue = parseBoolean(_arrayEl);
-                        _array.push(_arrayElValue);
-                    }
-                } else {
-                    _array = [];
-                }
-            }
-            let _record: Record<string, boolean> | undefined;
-            if (typeof input.record !== 'undefined') {
-                if (isObject(input.record)) {
-                    _record = {};
-                    for (const [_key, _value] of Object.entries(input.record)) {
-                        let _recordValue: boolean;
-                        _recordValue = parseBoolean(_value);
-                        _record[_key] = _recordValue;
-                    }
-                } else {
-                    _record = {};
-                }
-            }
-            let _discriminator: Discriminator | undefined;
-            if (typeof input.discriminator !== 'undefined') {
-                if (isObject(input.discriminator)) {
-                    _discriminator = $$Discriminator.fromJson(
-                        input.discriminator,
-                    );
-                } else {
-                    _discriminator = $$Discriminator.new();
-                }
-            }
-            let _any: any | undefined;
-            if (typeof input.any !== 'undefined') {
-                _any = input.any;
-            }
-            return {
-                string: _string,
-                boolean: _boolean,
-                timestamp: _timestamp,
-                float32: _float32,
-                float64: _float64,
-                int8: _int8,
-                uint8: _uint8,
-                int16: _int16,
-                uint16: _uint16,
-                int32: _int32,
-                uint32: _uint32,
-                int64: _int64,
-                uint64: _uint64,
-                enum: _enum,
-                object: _object,
-                array: _array,
-                record: _record,
-                discriminator: _discriminator,
-                any: _any,
-            };
-        },
-        fromJsonString(input): ObjectWithOptionalFields {
-            return $$ObjectWithOptionalFields.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            let _hasKey = false;
-            if (typeof input.string !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"string":';
-                json += serializeString(input.string);
-                _hasKey = true;
-            }
-            if (typeof input.boolean !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"boolean":';
-                json += `${input.boolean}`;
-                _hasKey = true;
-            }
-            if (typeof input.timestamp !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"timestamp":';
-                json += `"${input.timestamp.toISOString()}"`;
-                _hasKey = true;
-            }
-            if (typeof input.float32 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"float32":';
-                json += `${input.float32}`;
-                _hasKey = true;
-            }
-            if (typeof input.float64 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"float64":';
-                json += `${input.float64}`;
-                _hasKey = true;
-            }
-            if (typeof input.int8 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int8":';
-                json += `${input.int8}`;
-                _hasKey = true;
-            }
-            if (typeof input.uint8 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint8":';
-                json += `${input.uint8}`;
-                _hasKey = true;
-            }
-            if (typeof input.int16 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int16":';
-                json += `${input.int16}`;
-                _hasKey = true;
-            }
-            if (typeof input.uint16 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint16":';
-                json += `${input.uint16}`;
-                _hasKey = true;
-            }
-            if (typeof input.int32 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int32":';
-                json += `${input.int32}`;
-                _hasKey = true;
-            }
-            if (typeof input.uint32 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint32":';
-                json += `${input.uint32}`;
-                _hasKey = true;
-            }
-            if (typeof input.int64 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"int64":';
-                json += `"${input.int64}"`;
-                _hasKey = true;
-            }
-            if (typeof input.uint64 !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"uint64":';
-                json += `"${input.uint64}"`;
-                _hasKey = true;
-            }
-            if (typeof input.enum !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"enum":';
-                json += `"${input.enum}"`;
-                _hasKey = true;
-            }
-            if (typeof input.object !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"object":';
-                json += $$NestedObject.toJsonString(input.object);
-                _hasKey = true;
-            }
-            if (typeof input.array !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"array":';
-                json += '[';
-                for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) json += ',';
-                    const _inputArrayEl = input.array[i];
-                    json += `${_inputArrayEl}`;
-                }
-                json += ']';
-                _hasKey = true;
-            }
-            if (typeof input.record !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"record":';
-                json += '{';
-                let _recordPropertyCount = 0;
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    if (_recordPropertyCount !== 0) {
-                        json += ',';
-                    }
-                    json += `${serializeString(_key)}:`;
-                    json += `${_value}`;
-                    _recordPropertyCount++;
-                }
-                json += '}';
-                _hasKey = true;
-            }
-            if (typeof input.discriminator !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"discriminator":';
-                json += $$Discriminator.toJsonString(input.discriminator);
-                _hasKey = true;
-            }
-            if (typeof input.any !== 'undefined') {
-                if (_hasKey) json += ',';
-                json += '"any":';
-                json += JSON.stringify(input.any);
-                _hasKey = true;
-            }
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            if (typeof input.string !== 'undefined') {
-                queryParts.push(`string=${input.string}`);
-            }
-            if (typeof input.boolean !== 'undefined') {
-                queryParts.push(`boolean=${input.boolean}`);
-            }
-            if (typeof input.timestamp !== 'undefined') {
-                queryParts.push(`timestamp=${input.timestamp.toISOString()}`);
-            }
-            if (typeof input.float32 !== 'undefined') {
-                queryParts.push(`float32=${input.float32}`);
-            }
-            if (typeof input.float64 !== 'undefined') {
-                queryParts.push(`float64=${input.float64}`);
-            }
-            if (typeof input.int8 !== 'undefined') {
-                queryParts.push(`int8=${input.int8}`);
-            }
-            if (typeof input.uint8 !== 'undefined') {
-                queryParts.push(`uint8=${input.uint8}`);
-            }
-            if (typeof input.int16 !== 'undefined') {
-                queryParts.push(`int16=${input.int16}`);
-            }
-            if (typeof input.uint16 !== 'undefined') {
-                queryParts.push(`uint16=${input.uint16}`);
-            }
-            if (typeof input.int32 !== 'undefined') {
-                queryParts.push(`int32=${input.int32}`);
-            }
-            if (typeof input.uint32 !== 'undefined') {
-                queryParts.push(`uint32=${input.uint32}`);
-            }
-            if (typeof input.int64 !== 'undefined') {
-                queryParts.push(`int64=${input.int64}`);
-            }
-            if (typeof input.uint64 !== 'undefined') {
-                queryParts.push(`uint64=${input.uint64}`);
-            }
-            if (typeof input.enum !== 'undefined') {
-                queryParts.push(`enum=${input.enum}`);
-            }
-            if (typeof input.object !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/object.',
-                );
-            }
-            if (typeof input.array !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithOptionalFields/array.',
-                );
-            }
-            if (typeof input.record !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/record.',
-                );
-            }
-            if (typeof input.discriminator !== 'undefined') {
-                console.warn(
-                    '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithOptionalFields/discriminator.',
-                );
-            }
-            if (typeof input.any !== 'undefined') {
-                console.warn(
-                    "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithOptionalFields/any.",
-                );
-            }
-            return queryParts.join('&');
-        },
+        new: ObjectWithOptionalFieldsNew,
+        validate: ObjectWithOptionalFieldsValidate,
+        clone: ObjectWithOptionalFieldsClone,
+        fromJson: ObjectWithOptionalFieldsFromJson,
+        fromJsonString: ObjectWithOptionalFieldsFromJsonString,
+        toJsonString: ObjectWithOptionalFieldsToJsonString,
+        toUrlSearchParams: ObjectWithOptionalFieldsToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithOptionalFieldsToUrlSearchParamsString,
     };
 
 export interface ObjectWithNullableFields {
@@ -1398,387 +2291,965 @@ export interface ObjectWithNullableFields {
     object: NestedObject | null;
     array: boolean[] | null;
     record: Record<string, boolean> | null;
-    discriminator: Discriminator | null;
+    unionExternal: UnionExternal | null;
+    unionInternal: UnionInternal | null;
+    unionAdjacent: UnionAdjacent | null;
     any: any;
 }
-export const $$ObjectWithNullableFields: ArriModelValidator<ObjectWithNullableFields> =
+export function ObjectWithNullableFieldsNew(): ObjectWithNullableFields {
+    return {
+        string: null,
+        boolean: null,
+        timestamp: null,
+        float32: null,
+        float64: null,
+        int8: null,
+        uint8: null,
+        int16: null,
+        uint16: null,
+        int32: null,
+        uint32: null,
+        int64: null,
+        uint64: null,
+        enum: null,
+        object: null,
+        array: null,
+        record: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
+        any: null,
+    };
+}
+export function ObjectWithNullableFieldsValidate(
+    input: unknown,
+): input is ObjectWithNullableFields {
+    return (
+        isObject(input) &&
+        (typeof input.string === 'string' || input.string === null) &&
+        (typeof input.boolean === 'boolean' || input.boolean === null) &&
+        ((input.timestamp instanceof Date &&
+            !Number.isNaN(input.timestamp.getTime())) ||
+            input.timestamp === null) &&
+        (typeof input.float32 === 'number' || input.float32 === null) &&
+        (typeof input.float64 === 'number' || input.float64 === null) &&
+        ((typeof input.int8 === 'number' &&
+            Number.isInteger(input.int8) &&
+            input.int8 >= INT8_MIN &&
+            input.int8 <= INT8_MAX) ||
+            input.int8 === null) &&
+        ((typeof input.uint8 === 'number' &&
+            Number.isInteger(input.uint8) &&
+            input.uint8 >= 0 &&
+            input.uint8 <= UINT8_MAX) ||
+            input.uint8 === null) &&
+        ((typeof input.int16 === 'number' &&
+            Number.isInteger(input.int16) &&
+            input.int16 >= INT16_MIN &&
+            input.int16 <= INT16_MAX) ||
+            input.int16 === null) &&
+        ((typeof input.uint16 === 'number' &&
+            Number.isInteger(input.uint16) &&
+            input.uint16 >= 0 &&
+            input.uint16 <= UINT16_MAX) ||
+            input.uint16 === null) &&
+        ((typeof input.int32 === 'number' &&
+            Number.isInteger(input.int32) &&
+            input.int32 >= INT32_MIN &&
+            input.int32 <= INT32_MAX) ||
+            input.int32 === null) &&
+        ((typeof input.uint32 === 'number' &&
+            Number.isInteger(input.uint32) &&
+            input.uint32 >= 0 &&
+            input.uint32 <= UINT32_MAX) ||
+            input.uint32 === null) &&
+        ((typeof input.int64 === 'bigint' &&
+            input.int64 >= INT64_MIN &&
+            input.int64 <= INT64_MAX) ||
+            input.int64 === null) &&
+        ((typeof input.uint64 === 'bigint' &&
+            input.uint64 >= BigInt(0) &&
+            input.uint64 <= UINT64_MAX) ||
+            input.uint64 === null) &&
+        (EnumeratorValidate(input.enum) || input.enum === null) &&
+        (NestedObjectValidate(input.object) || input.object === null) &&
+        ((Array.isArray(input.array) &&
+            input.array.every((_element) => typeof _element === 'boolean')) ||
+            input.array === null) &&
+        ((isObject(input.record) &&
+            Object.values(input.record).every(
+                (_value) => typeof _value === 'boolean',
+            )) ||
+            input.record === null) &&
+        (UnionExternalValidate(input.unionExternal) ||
+            input.unionExternal === null) &&
+        (UnionInternalValidate(input.unionInternal) ||
+            input.unionInternal === null) &&
+        (UnionAdjacentValidate(input.unionAdjacent) ||
+            input.unionAdjacent === null) &&
+        true
+    );
+}
+export function ObjectWithNullableFieldsClone(
+    input: ObjectWithNullableFields,
+): ObjectWithNullableFields {
+    let _string: string | null;
+    _string = input.string;
+    let _boolean: boolean | null;
+    _boolean = input.boolean;
+    let _timestamp: Date | null;
+    if (input.timestamp !== null) {
+        _timestamp = new Date(input.timestamp.getTime());
+    } else {
+        _timestamp = null;
+    }
+    let _float32: number | null;
+    _float32 = input.float32;
+    let _float64: number | null;
+    _float64 = input.float64;
+    let _int8: number | null;
+    _int8 = input.int8;
+    let _uint8: number | null;
+    _uint8 = input.uint8;
+    let _int16: number | null;
+    _int16 = input.int16;
+    let _uint16: number | null;
+    _uint16 = input.uint16;
+    let _int32: number | null;
+    _int32 = input.int32;
+    let _uint32: number | null;
+    _uint32 = input.uint32;
+    let _int64: bigint | null;
+    _int64 = input.int64;
+    let _uint64: bigint | null;
+    _uint64 = input.uint64;
+    let _enum: Enumerator | null;
+    _enum = input.enum;
+    let _object: NestedObject | null;
+    if (input.object !== null) {
+        _object = NestedObjectClone(input.object);
+    } else {
+        _object = null;
+    }
+    let _array: boolean[] | null;
+    if (input.array !== null) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = _arrayEl;
+            _array.push(_arrayElValue);
+        }
+    } else {
+        _array = null;
+    }
+    let _record: Record<string, boolean> | null;
+    if (input.record !== null) {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: boolean;
+            _recordValue = _value;
+            _record[_key] = _recordValue;
+        }
+    } else {
+        _record = null;
+    }
+    let _unionExternal: UnionExternal | null;
+    if (input.unionExternal !== null) {
+        _unionExternal = UnionExternalClone(input.unionExternal);
+    } else {
+        _unionExternal = null;
+    }
+    let _unionInternal: UnionInternal | null;
+    if (input.unionInternal !== null) {
+        _unionInternal = UnionInternalClone(input.unionInternal);
+    } else {
+        _unionInternal = null;
+    }
+    let _unionAdjacent: UnionAdjacent | null;
+    if (input.unionAdjacent !== null) {
+        _unionAdjacent = UnionAdjacentClone(input.unionAdjacent);
+    } else {
+        _unionAdjacent = null;
+    }
+    let _any: any;
+    _any = input.any;
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
+        any: _any,
+    };
+}
+export function ObjectWithNullableFieldsFromJson(
+    input: Record<string, unknown>,
+): ObjectWithNullableFields {
+    let _string: string | null;
+    _string = parseNullableString(input.string);
+    let _boolean: boolean | null;
+    _boolean = parseNullableBoolean(input.boolean);
+    let _timestamp: Date | null;
+    _timestamp = parseNullableTimestamp(input.timestamp);
+    let _float32: number | null;
+    _float32 = parseNullableNumberFloat(input.float32);
+    let _float64: number | null;
+    _float64 = parseNullableNumberFloat(input.float64);
+    let _int8: number | null;
+    _int8 = parseNullableNumberInt(input.int8, INT8_MIN, INT8_MAX);
+    let _uint8: number | null;
+    _uint8 = parseNullableNumberInt(input.uint8, 0, UINT8_MAX);
+    let _int16: number | null;
+    _int16 = parseNullableNumberInt(input.int16, INT16_MIN, INT16_MAX);
+    let _uint16: number | null;
+    _uint16 = parseNullableNumberInt(input.uint16, 0, UINT16_MAX);
+    let _int32: number | null;
+    _int32 = parseNullableNumberInt(input.int32, INT32_MIN, INT32_MAX);
+    let _uint32: number | null;
+    _uint32 = parseNullableNumberInt(input.uint32, 0, UINT32_MAX);
+    let _int64: bigint | null;
+    _int64 = parseNullableNumberBigInt(input.int64);
+    let _uint64: bigint | null;
+    _uint64 = parseNullableNumberUnsignedBigInt(input.uint64);
+    let _enum: Enumerator | null;
+    if (typeof input.enum === 'string') {
+        _enum = EnumeratorFromSerialValue(input.enum);
+    } else {
+        _enum = null;
+    }
+    let _object: NestedObject | null;
+    if (isObject(input.object)) {
+        _object = NestedObjectFromJson(input.object);
+    } else {
+        _object = null;
+    }
+    let _array: boolean[] | null;
+    if (Array.isArray(input.array)) {
+        _array = [];
+        for (const _arrayEl of input.array) {
+            let _arrayElValue: boolean;
+            _arrayElValue = parseBoolean(_arrayEl);
+            _array.push(_arrayElValue);
+        }
+    } else {
+        _array = null;
+    }
+    let _record: Record<string, boolean> | null;
+    if (isObject(input.record)) {
+        _record = {};
+        for (const [_key, _value] of Object.entries(input.record)) {
+            let _recordValue: boolean;
+            _recordValue = parseBoolean(_value);
+            _record[_key] = _recordValue;
+        }
+    } else {
+        _record = null;
+    }
+    let _unionExternal: UnionExternal | null;
+    if (isObject(input.unionExternal)) {
+        _unionExternal = UnionExternalFromJson(input.unionExternal);
+    } else {
+        _unionExternal = null;
+    }
+    let _unionInternal: UnionInternal | null;
+    if (isObject(input.unionInternal)) {
+        _unionInternal = UnionInternalFromJson(input.unionInternal);
+    } else {
+        _unionInternal = null;
+    }
+    let _unionAdjacent: UnionAdjacent | null;
+    if (isObject(input.unionAdjacent)) {
+        _unionAdjacent = UnionAdjacentFromJson(input.unionAdjacent);
+    } else {
+        _unionAdjacent = null;
+    }
+    let _any: any;
+    _any = input.any;
+    return {
+        string: _string,
+        boolean: _boolean,
+        timestamp: _timestamp,
+        float32: _float32,
+        float64: _float64,
+        int8: _int8,
+        uint8: _uint8,
+        int16: _int16,
+        uint16: _uint16,
+        int32: _int32,
+        uint32: _uint32,
+        int64: _int64,
+        uint64: _uint64,
+        enum: _enum,
+        object: _object,
+        array: _array,
+        record: _record,
+        unionExternal: _unionExternal,
+        unionInternal: _unionInternal,
+        unionAdjacent: _unionAdjacent,
+        any: _any,
+    };
+}
+export function ObjectWithNullableFieldsFromJsonString(
+    input: string,
+): ObjectWithNullableFields {
+    return ObjectWithNullableFieldsFromJson(JSON.parse(input));
+}
+export function ObjectWithNullableFieldsToJsonString(
+    input: ObjectWithNullableFields,
+): string {
+    let json = '{';
+    json += '"string":';
+    if (typeof input.string === 'string') {
+        json += serializeString(input.string);
+    } else {
+        json += 'null';
+    }
+    json += ',"boolean":';
+    json += `${input.boolean}`;
+    json += ',"timestamp":';
+    if (input.timestamp instanceof Date) {
+        json += `"${input.timestamp.toISOString()}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"float32":';
+    json += `${input.float32}`;
+    json += ',"float64":';
+    json += `${input.float64}`;
+    json += ',"int8":';
+    json += `${input.int8}`;
+    json += ',"uint8":';
+    json += `${input.uint8}`;
+    json += ',"int16":';
+    json += `${input.int16}`;
+    json += ',"uint16":';
+    json += `${input.uint16}`;
+    json += ',"int32":';
+    json += `${input.int32}`;
+    json += ',"uint32":';
+    json += `${input.uint32}`;
+    json += ',"int64":';
+    if (typeof input.int64 === 'bigint') {
+        json += `"${input.int64}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"uint64":';
+    if (typeof input.uint64 === 'bigint') {
+        json += `"${input.uint64}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"enum":';
+    if (typeof input.enum === 'string') {
+        json += `"${input.enum}"`;
+    } else {
+        json += 'null';
+    }
+    json += ',"object":';
+    if (input.object !== null) {
+        json += NestedObjectToJsonString(input.object);
+    } else {
+        json += 'null';
+    }
+    json += ',"array":';
+    if (input.array !== null) {
+        json += '[';
+        for (let i = 0; i < input.array.length; i++) {
+            if (i !== 0) json += ',';
+            const _inputArrayEl = input.array[i]!;
+            json += `${_inputArrayEl}`;
+        }
+        json += ']';
+    } else {
+        json += 'null';
+    }
+    json += ',"record":';
+    if (input.record !== null) {
+        json += '{';
+        let _recordPropertyCount = 0;
+        for (const [_key, _value] of Object.entries(input.record)) {
+            if (_recordPropertyCount !== 0) {
+                json += ',';
+            }
+            json += `${serializeString(_key)}:`;
+            json += `${_value}`;
+            _recordPropertyCount++;
+        }
+        json += '}';
+    } else {
+        json += 'null';
+    }
+    json += ',"unionExternal":';
+    if (input.unionExternal != null) {
+        json += UnionExternalToJsonString(input.unionExternal);
+    } else {
+        json += 'null';
+    }
+    json += ',"unionInternal":';
+    if (input.unionInternal != null) {
+        json += UnionInternalToJsonString(input.unionInternal);
+    } else {
+        json += 'null';
+    }
+    json += ',"unionAdjacent":';
+    if (input.unionAdjacent != null) {
+        json += UnionAdjacentToJsonString(input.unionAdjacent);
+    } else {
+        json += 'null';
+    }
+    json += ',"any":';
+    json += JSON.stringify(input.any);
+    json += '}';
+    return json;
+}
+export function ObjectWithNullableFieldsToUrlSearchParams(
+    input: ObjectWithNullableFields,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('string', `${input.string}`);
+    params.set('boolean', `${input.boolean}`);
+    params.set('timestamp', `${input.timestamp?.toISOString()}`);
+    params.set('float32', `${input.float32}`);
+    params.set('float64', `${input.float64}`);
+    params.set('int8', `${input.int8}`);
+    params.set('uint8', `${input.uint8}`);
+    params.set('int16', `${input.int16}`);
+    params.set('uint16', `${input.uint16}`);
+    params.set('int32', `${input.int32}`);
+    params.set('uint32', `${input.uint32}`);
+    params.set('int64', `${input.int64}`);
+    params.set('uint64', `${input.uint64}`);
+    params.set('enum', `${input.enum}`);
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/object.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithNullableFields/array.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionExternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionInternal.',
+    );
+    console.warn(
+        '[WARNING] Cannot serialize nested unions to query string. Skipping property at /ObjectWithNullableFields/unionAdjacent.',
+    );
+    console.warn(
+        "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithNullableFields/any.",
+    );
+    return params;
+}
+export function ObjectWithNullableFieldsToUrlSearchParamsString(
+    input: ObjectWithNullableFields,
+): string {
+    return ObjectWithNullableFieldsToUrlSearchParams(input).toString();
+}
+export const $$ObjectWithNullableFields: ExampleClientValidator<ObjectWithNullableFields> =
     {
-        new(): ObjectWithNullableFields {
-            return {
-                string: null,
-                boolean: null,
-                timestamp: null,
-                float32: null,
-                float64: null,
-                int8: null,
-                uint8: null,
-                int16: null,
-                uint16: null,
-                int32: null,
-                uint32: null,
-                int64: null,
-                uint64: null,
-                enum: null,
-                object: null,
-                array: null,
-                record: null,
-                discriminator: null,
-                any: null,
-            };
-        },
-        validate(input): input is ObjectWithNullableFields {
-            return (
-                isObject(input) &&
-                (typeof input.string === 'string' || input.string === null) &&
-                (typeof input.boolean === 'boolean' ||
-                    input.boolean === null) &&
-                (input.timestamp instanceof Date || input.timestamp === null) &&
-                (typeof input.float32 === 'number' || input.float32 === null) &&
-                (typeof input.float64 === 'number' || input.float64 === null) &&
-                ((typeof input.int8 === 'number' &&
-                    Number.isInteger(input.int8) &&
-                    input.int8 >= INT8_MIN &&
-                    input.int8 <= INT8_MAX) ||
-                    input.int8 === null) &&
-                ((typeof input.uint8 === 'number' &&
-                    Number.isInteger(input.uint8) &&
-                    input.uint8 >= 0 &&
-                    input.uint8 <= UINT8_MAX) ||
-                    input.uint8 === null) &&
-                ((typeof input.int16 === 'number' &&
-                    Number.isInteger(input.int16) &&
-                    input.int16 >= INT16_MIN &&
-                    input.int16 <= INT16_MAX) ||
-                    input.int16 === null) &&
-                ((typeof input.uint16 === 'number' &&
-                    Number.isInteger(input.uint16) &&
-                    input.uint16 >= 0 &&
-                    input.uint16 <= UINT16_MAX) ||
-                    input.uint16 === null) &&
-                ((typeof input.int32 === 'number' &&
-                    Number.isInteger(input.int32) &&
-                    input.int32 >= INT32_MIN &&
-                    input.int32 <= INT32_MAX) ||
-                    input.int32 === null) &&
-                ((typeof input.uint32 === 'number' &&
-                    Number.isInteger(input.uint32) &&
-                    input.uint32 >= 0 &&
-                    input.uint32 <= UINT32_MAX) ||
-                    input.uint32 === null) &&
-                ((typeof input.int64 === 'bigint' &&
-                    input.int64 >= INT64_MIN &&
-                    input.int64 <= INT64_MAX) ||
-                    input.int64 === null) &&
-                ((typeof input.uint64 === 'bigint' &&
-                    input.uint64 >= BigInt(0) &&
-                    input.uint64 <= UINT64_MAX) ||
-                    input.uint64 === null) &&
-                ($$Enumerator.validate(input.enum) || input.enum === null) &&
-                ($$NestedObject.validate(input.object) ||
-                    input.object === null) &&
-                ((Array.isArray(input.array) &&
-                    input.array.every(
-                        (_element) => typeof _element === 'boolean',
-                    )) ||
-                    input.array === null) &&
-                ((isObject(input.record) &&
-                    Object.values(input.record).every(
-                        (_value) => typeof _value === 'boolean',
-                    )) ||
-                    input.record === null) &&
-                ($$Discriminator.validate(input.discriminator) ||
-                    input.discriminator === null) &&
-                true
-            );
-        },
-        fromJson(input): ObjectWithNullableFields {
-            let _string: string | null;
-            _string = parseNullableString(input.string);
-            let _boolean: boolean | null;
-            _boolean = parseNullableBoolean(input.boolean);
-            let _timestamp: Date | null;
-            _timestamp = parseNullableTimestamp(input.timestamp);
-            let _float32: number | null;
-            _float32 = parseNullableNumberFloat(input.float32);
-            let _float64: number | null;
-            _float64 = parseNullableNumberFloat(input.float64);
-            let _int8: number | null;
-            _int8 = parseNullableNumberInt(input.int8, INT8_MIN, INT8_MAX);
-            let _uint8: number | null;
-            _uint8 = parseNullableNumberInt(input.uint8, 0, UINT8_MAX);
-            let _int16: number | null;
-            _int16 = parseNullableNumberInt(input.int16, INT16_MIN, INT16_MAX);
-            let _uint16: number | null;
-            _uint16 = parseNullableNumberInt(input.uint16, 0, UINT16_MAX);
-            let _int32: number | null;
-            _int32 = parseNullableNumberInt(input.int32, INT32_MIN, INT32_MAX);
-            let _uint32: number | null;
-            _uint32 = parseNullableNumberInt(input.uint32, 0, UINT32_MAX);
-            let _int64: bigint | null;
-            _int64 = parseNullableNumberBigInt(input.int64);
-            let _uint64: bigint | null;
-            _uint64 = parseNullableNumberUnsignedBigInt(input.uint64);
-            let _enum: Enumerator | null;
-            if (typeof input.enum === 'string') {
-                _enum = $$Enumerator.fromSerialValue(input.enum);
-            } else {
-                _enum = null;
-            }
-            let _object: NestedObject | null;
-            if (isObject(input.object)) {
-                _object = $$NestedObject.fromJson(input.object);
-            } else {
-                _object = null;
-            }
-            let _array: boolean[] | null;
-            if (Array.isArray(input.array)) {
-                _array = [];
-                for (const _arrayEl of input.array) {
-                    let _arrayElValue: boolean;
-                    _arrayElValue = parseBoolean(_arrayEl);
-                    _array.push(_arrayElValue);
-                }
-            } else {
-                _array = null;
-            }
-            let _record: Record<string, boolean> | null;
-            if (isObject(input.record)) {
-                _record = {};
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    let _recordValue: boolean;
-                    _recordValue = parseBoolean(_value);
-                    _record[_key] = _recordValue;
-                }
-            } else {
-                _record = null;
-            }
-            let _discriminator: Discriminator | null;
-            if (isObject(input.discriminator)) {
-                _discriminator = $$Discriminator.fromJson(input.discriminator);
-            } else {
-                _discriminator = null;
-            }
-            let _any: any;
-            _any = input.any;
-            return {
-                string: _string,
-                boolean: _boolean,
-                timestamp: _timestamp,
-                float32: _float32,
-                float64: _float64,
-                int8: _int8,
-                uint8: _uint8,
-                int16: _int16,
-                uint16: _uint16,
-                int32: _int32,
-                uint32: _uint32,
-                int64: _int64,
-                uint64: _uint64,
-                enum: _enum,
-                object: _object,
-                array: _array,
-                record: _record,
-                discriminator: _discriminator,
-                any: _any,
-            };
-        },
-        fromJsonString(input): ObjectWithNullableFields {
-            return $$ObjectWithNullableFields.fromJson(JSON.parse(input));
-        },
-        toJsonString(input): string {
-            let json = '{';
-            json += '"string":';
-            if (typeof input.string === 'string') {
-                json += serializeString(input.string);
-            } else {
-                json += 'null';
-            }
-            json += ',"boolean":';
-            json += `${input.boolean}`;
-            json += ',"timestamp":';
-            if (input.timestamp instanceof Date) {
-                json += `"${input.timestamp.toISOString()}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"float32":';
-            json += `${input.float32}`;
-            json += ',"float64":';
-            json += `${input.float64}`;
-            json += ',"int8":';
-            json += `${input.int8}`;
-            json += ',"uint8":';
-            json += `${input.uint8}`;
-            json += ',"int16":';
-            json += `${input.int16}`;
-            json += ',"uint16":';
-            json += `${input.uint16}`;
-            json += ',"int32":';
-            json += `${input.int32}`;
-            json += ',"uint32":';
-            json += `${input.uint32}`;
-            json += ',"int64":';
-            if (typeof input.int64 === 'bigint') {
-                json += `"${input.int64}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"uint64":';
-            if (typeof input.uint64 === 'bigint') {
-                json += `"${input.uint64}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"enum":';
-            if (typeof input.enum === 'string') {
-                json += `"${input.enum}"`;
-            } else {
-                json += 'null';
-            }
-            json += ',"object":';
-            if (input.object !== null) {
-                json += $$NestedObject.toJsonString(input.object);
-            } else {
-                json += 'null';
-            }
-            json += ',"array":';
-            if (input.array !== null) {
-                json += '[';
-                for (let i = 0; i < input.array.length; i++) {
-                    if (i !== 0) json += ',';
-                    const _inputArrayEl = input.array[i];
-                    json += `${_inputArrayEl}`;
-                }
-                json += ']';
-            } else {
-                json += 'null';
-            }
-            json += ',"record":';
-            if (input.record !== null) {
-                json += '{';
-                let _recordPropertyCount = 0;
-                for (const [_key, _value] of Object.entries(input.record)) {
-                    if (_recordPropertyCount !== 0) {
-                        json += ',';
-                    }
-                    json += `${serializeString(_key)}:`;
-                    json += `${_value}`;
-                    _recordPropertyCount++;
-                }
-                json += '}';
-            } else {
-                json += 'null';
-            }
-            json += ',"discriminator":';
-            if (input.discriminator != null) {
-                json += $$Discriminator.toJsonString(input.discriminator);
-            } else {
-                json += 'null';
-            }
-            json += ',"any":';
-            json += JSON.stringify(input.any);
-            json += '}';
-            return json;
-        },
-        toUrlQueryString(input): string {
-            const queryParts: string[] = [];
-            queryParts.push(`string=${input.string}`);
-            queryParts.push(`boolean=${input.boolean}`);
-            queryParts.push(`timestamp=${input.timestamp?.toISOString()}`);
-            queryParts.push(`float32=${input.float32}`);
-            queryParts.push(`float64=${input.float64}`);
-            queryParts.push(`int8=${input.int8}`);
-            queryParts.push(`uint8=${input.uint8}`);
-            queryParts.push(`int16=${input.int16}`);
-            queryParts.push(`uint16=${input.uint16}`);
-            queryParts.push(`int32=${input.int32}`);
-            queryParts.push(`uint32=${input.uint32}`);
-            queryParts.push(`int64=${input.int64}`);
-            queryParts.push(`uint64=${input.uint64}`);
-            queryParts.push(`enum=${input.enum}`);
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/object.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize arrays to query string. Skipping property at /ObjectWithNullableFields/array.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/record.',
-            );
-            console.warn(
-                '[WARNING] Cannot serialize nested objects to query string. Skipping property at /ObjectWithNullableFields/discriminator.',
-            );
-            console.warn(
-                "[WARNING] Cannot serialize any's to query string. Skipping property at /ObjectWithNullableFields/any.",
-            );
-            return queryParts.join('&');
-        },
+        new: ObjectWithNullableFieldsNew,
+        validate: ObjectWithNullableFieldsValidate,
+        clone: ObjectWithNullableFieldsClone,
+        fromJson: ObjectWithNullableFieldsFromJson,
+        fromJsonString: ObjectWithNullableFieldsFromJsonString,
+        toJsonString: ObjectWithNullableFieldsToJsonString,
+        toUrlSearchParams: ObjectWithNullableFieldsToUrlSearchParams,
+        toUrlSearchParamsString:
+            ObjectWithNullableFieldsToUrlSearchParamsString,
     };
 
 export interface RecursiveObject {
     left: RecursiveObject | null;
     right: RecursiveObject | null;
 }
-export const $$RecursiveObject: ArriModelValidator<RecursiveObject> = {
-    new(): RecursiveObject {
-        return {
-            left: null,
-            right: null,
-        };
-    },
-    validate(input): input is RecursiveObject {
-        return (
-            isObject(input) &&
-            ($$RecursiveObject.validate(input.left) || input.left === null) &&
-            ($$RecursiveObject.validate(input.right) || input.right === null)
-        );
-    },
-    fromJson(input): RecursiveObject {
-        let _left: RecursiveObject | null;
-        if (isObject(input.left)) {
-            _left = $$RecursiveObject.fromJson(input.left);
-        } else {
-            _left = null;
-        }
-        let _right: RecursiveObject | null;
-        if (isObject(input.right)) {
-            _right = $$RecursiveObject.fromJson(input.right);
-        } else {
-            _right = null;
-        }
-        return {
-            left: _left,
-            right: _right,
-        };
-    },
-    fromJsonString(input): RecursiveObject {
-        return $$RecursiveObject.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        let json = '{';
-        json += '"left":';
-        if (input.left !== null) {
-            json += $$RecursiveObject.toJsonString(input.left);
-        } else {
-            json += 'null';
-        }
-        json += ',"right":';
-        if (input.right !== null) {
-            json += $$RecursiveObject.toJsonString(input.right);
-        } else {
-            json += 'null';
-        }
-        json += '}';
-        return json;
-    },
-    toUrlQueryString(input): string {
-        const queryParts: string[] = [];
-        console.warn(
-            '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/left.',
-        );
-        console.warn(
-            '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/right.',
-        );
-        return queryParts.join('&');
-    },
+export function RecursiveObjectNew(): RecursiveObject {
+    return {
+        left: null,
+        right: null,
+    };
+}
+export function RecursiveObjectValidate(
+    input: unknown,
+): input is RecursiveObject {
+    return (
+        isObject(input) &&
+        (RecursiveObjectValidate(input.left) || input.left === null) &&
+        (RecursiveObjectValidate(input.right) || input.right === null)
+    );
+}
+export function RecursiveObjectClone(input: RecursiveObject): RecursiveObject {
+    let _left: RecursiveObject | null;
+    if (input.left !== null) {
+        _left = RecursiveObjectClone(input.left);
+    } else {
+        _left = null;
+    }
+    let _right: RecursiveObject | null;
+    if (input.right !== null) {
+        _right = RecursiveObjectClone(input.right);
+    } else {
+        _right = null;
+    }
+    return {
+        left: _left,
+        right: _right,
+    };
+}
+export function RecursiveObjectFromJson(
+    input: Record<string, unknown>,
+): RecursiveObject {
+    let _left: RecursiveObject | null;
+    if (isObject(input.left)) {
+        _left = RecursiveObjectFromJson(input.left);
+    } else {
+        _left = null;
+    }
+    let _right: RecursiveObject | null;
+    if (isObject(input.right)) {
+        _right = RecursiveObjectFromJson(input.right);
+    } else {
+        _right = null;
+    }
+    return {
+        left: _left,
+        right: _right,
+    };
+}
+export function RecursiveObjectFromJsonString(input: string): RecursiveObject {
+    return RecursiveObjectFromJson(JSON.parse(input));
+}
+export function RecursiveObjectToJsonString(input: RecursiveObject): string {
+    let json = '{';
+    json += '"left":';
+    if (input.left !== null) {
+        json += RecursiveObjectToJsonString(input.left);
+    } else {
+        json += 'null';
+    }
+    json += ',"right":';
+    if (input.right !== null) {
+        json += RecursiveObjectToJsonString(input.right);
+    } else {
+        json += 'null';
+    }
+    json += '}';
+    return json;
+}
+export function RecursiveObjectToUrlSearchParams(
+    input: RecursiveObject,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    console.warn(
+        '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/left.',
+    );
+    console.warn(
+        '[WARNING] Nested objects cannot be serialized to query string. Ignoring property at /RecursiveObject/right.',
+    );
+    return params;
+}
+export function RecursiveObjectToUrlSearchParamsString(
+    input: RecursiveObject,
+): string {
+    return RecursiveObjectToUrlSearchParams(input).toString();
+}
+export const $$RecursiveObject: ExampleClientValidator<RecursiveObject> = {
+    new: RecursiveObjectNew,
+    validate: RecursiveObjectValidate,
+    clone: RecursiveObjectClone,
+    fromJson: RecursiveObjectFromJson,
+    fromJsonString: RecursiveObjectFromJsonString,
+    toJsonString: RecursiveObjectToJsonString,
+    toUrlSearchParams: RecursiveObjectToUrlSearchParams,
+    toUrlSearchParamsString: RecursiveObjectToUrlSearchParamsString,
 };
+
+export type LegacyDiscriminator =
+    | LegacyDiscriminatorA
+    | LegacyDiscriminatorB
+    | LegacyDiscriminatorC;
+export function LegacyDiscriminatorNew(): LegacyDiscriminator {
+    return LegacyDiscriminatorANew();
+}
+export function LegacyDiscriminatorValidate(
+    input: unknown,
+): input is LegacyDiscriminator {
+    return (
+        LegacyDiscriminatorAValidate(input) ||
+        LegacyDiscriminatorBValidate(input) ||
+        LegacyDiscriminatorCValidate(input)
+    );
+}
+export function LegacyDiscriminatorClone(
+    input: LegacyDiscriminator,
+): LegacyDiscriminator {
+    switch (input.typeName) {
+        case `A`: {
+            let __value__: LegacyDiscriminatorA;
+            __value__ = LegacyDiscriminatorAClone(input);
+            return __value__;
+        }
+
+        case `B`: {
+            let __value__: LegacyDiscriminatorB;
+            __value__ = LegacyDiscriminatorBClone(input);
+            return __value__;
+        }
+
+        case `C`: {
+            let __value__: LegacyDiscriminatorC;
+            __value__ = LegacyDiscriminatorCClone(input);
+            return __value__;
+        }
+        default: {
+            input satisfies never;
+            throw new Error(
+                `Unknown union variant: ${(input as any).typeName}`,
+            );
+        }
+    }
+}
+export function LegacyDiscriminatorFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminator {
+    switch (input.typeName) {
+        case `A`: {
+            return LegacyDiscriminatorAFromJson(input);
+        }
+        case `B`: {
+            return LegacyDiscriminatorBFromJson(input);
+        }
+        case `C`: {
+            return LegacyDiscriminatorCFromJson(input);
+        }
+        default: {
+            return LegacyDiscriminatorANew();
+        }
+    }
+}
+export function LegacyDiscriminatorFromJsonString(
+    input: string,
+): LegacyDiscriminator {
+    return LegacyDiscriminatorFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorToJsonString(
+    input: LegacyDiscriminator,
+): string {
+    switch (input.typeName) {
+        case `A`: {
+            return LegacyDiscriminatorAToJsonString(input);
+        }
+
+        case `B`: {
+            return LegacyDiscriminatorBToJsonString(input);
+        }
+
+        case `C`: {
+            return LegacyDiscriminatorCToJsonString(input);
+        }
+
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).typeName}`);
+        }
+    }
+}
+export function LegacyDiscriminatorToUrlSearchParams(
+    input: LegacyDiscriminator,
+): URLSearchParams {
+    switch (input.typeName) {
+        case `A`: {
+            return LegacyDiscriminatorAToUrlSearchParams(input);
+        }
+        case `B`: {
+            return LegacyDiscriminatorBToUrlSearchParams(input);
+        }
+        case `C`: {
+            return LegacyDiscriminatorCToUrlSearchParams(input);
+        }
+        default: {
+            input satisfies never;
+            throw new Error(`Unknown variant type: ${(input as any).typeName}`);
+        }
+    }
+}
+export function LegacyDiscriminatorToUrlSearchParamsString(
+    input: LegacyDiscriminator,
+): string {
+    return LegacyDiscriminatorToUrlSearchParams(input).toString();
+}
+export const $$LegacyDiscriminator: ExampleClientValidator<LegacyDiscriminator> =
+    {
+        new: LegacyDiscriminatorNew,
+        validate: LegacyDiscriminatorValidate,
+        clone: LegacyDiscriminatorClone,
+        fromJson: LegacyDiscriminatorFromJson,
+        fromJsonString: LegacyDiscriminatorFromJsonString,
+        toJsonString: LegacyDiscriminatorToJsonString,
+        toUrlSearchParams: LegacyDiscriminatorToUrlSearchParams,
+        toUrlSearchParamsString: LegacyDiscriminatorToUrlSearchParamsString,
+    };
+export interface LegacyDiscriminatorA {
+    typeName: `A`;
+    id: string;
+}
+export function LegacyDiscriminatorANew(): LegacyDiscriminatorA {
+    return {
+        typeName: `A`,
+        id: '',
+    };
+}
+export function LegacyDiscriminatorAValidate(
+    input: unknown,
+): input is LegacyDiscriminatorA {
+    return (
+        isObject(input) &&
+        input.typeName === `A` &&
+        typeof input.id === 'string'
+    );
+}
+export function LegacyDiscriminatorAClone(
+    input: LegacyDiscriminatorA,
+): LegacyDiscriminatorA {
+    const _typeName = `A`;
+    let _id: string;
+    _id = input.id;
+    return {
+        typeName: _typeName,
+        id: _id,
+    };
+}
+export function LegacyDiscriminatorAFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorA {
+    const _typeName = `A`;
+    let _id: string;
+    _id = parseString(input.id);
+    return {
+        typeName: _typeName,
+        id: _id,
+    };
+}
+export function LegacyDiscriminatorAFromJsonString(
+    input: string,
+): LegacyDiscriminatorA {
+    return LegacyDiscriminatorAFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorAToJsonString(
+    input: LegacyDiscriminatorA,
+): string {
+    let json = '{';
+    json += '"typeName":"A"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += '}';
+    return json;
+}
+export function LegacyDiscriminatorAToUrlSearchParams(
+    input: LegacyDiscriminatorA,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', `A`);
+    params.set('id', input.id);
+    return params;
+}
+export function LegacyDiscriminatorAToUrlSearchParamsString(
+    input: LegacyDiscriminatorA,
+): string {
+    return LegacyDiscriminatorAToUrlSearchParams(input).toString();
+}
+
+export interface LegacyDiscriminatorB {
+    typeName: `B`;
+    id: string;
+    name: string;
+}
+export function LegacyDiscriminatorBNew(): LegacyDiscriminatorB {
+    return {
+        typeName: `B`,
+        id: '',
+        name: '',
+    };
+}
+export function LegacyDiscriminatorBValidate(
+    input: unknown,
+): input is LegacyDiscriminatorB {
+    return (
+        isObject(input) &&
+        input.typeName === `B` &&
+        typeof input.id === 'string' &&
+        typeof input.name === 'string'
+    );
+}
+export function LegacyDiscriminatorBClone(
+    input: LegacyDiscriminatorB,
+): LegacyDiscriminatorB {
+    const _typeName = `B`;
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+    };
+}
+export function LegacyDiscriminatorBFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorB {
+    const _typeName = `B`;
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+    };
+}
+export function LegacyDiscriminatorBFromJsonString(
+    input: string,
+): LegacyDiscriminatorB {
+    return LegacyDiscriminatorBFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorBToJsonString(
+    input: LegacyDiscriminatorB,
+): string {
+    let json = '{';
+    json += '"typeName":"B"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += '}';
+    return json;
+}
+export function LegacyDiscriminatorBToUrlSearchParams(
+    input: LegacyDiscriminatorB,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', `B`);
+    params.set('id', input.id);
+    params.set('name', input.name);
+    return params;
+}
+export function LegacyDiscriminatorBToUrlSearchParamsString(
+    input: LegacyDiscriminatorB,
+): string {
+    return LegacyDiscriminatorBToUrlSearchParams(input).toString();
+}
+
+export interface LegacyDiscriminatorC {
+    typeName: `C`;
+    id: string;
+    name: string;
+    date: Date;
+}
+export function LegacyDiscriminatorCNew(): LegacyDiscriminatorC {
+    return {
+        typeName: `C`,
+        id: '',
+        name: '',
+        date: new Date(0),
+    };
+}
+export function LegacyDiscriminatorCValidate(
+    input: unknown,
+): input is LegacyDiscriminatorC {
+    return (
+        isObject(input) &&
+        input.typeName === `C` &&
+        typeof input.id === 'string' &&
+        typeof input.name === 'string' &&
+        input.date instanceof Date &&
+        !Number.isNaN(input.date.getTime())
+    );
+}
+export function LegacyDiscriminatorCClone(
+    input: LegacyDiscriminatorC,
+): LegacyDiscriminatorC {
+    const _typeName = `C`;
+    let _id: string;
+    _id = input.id;
+    let _name: string;
+    _name = input.name;
+    let _date: Date;
+    _date = new Date(input.date.getTime());
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+        date: _date,
+    };
+}
+export function LegacyDiscriminatorCFromJson(
+    input: Record<string, unknown>,
+): LegacyDiscriminatorC {
+    const _typeName = `C`;
+    let _id: string;
+    _id = parseString(input.id);
+    let _name: string;
+    _name = parseString(input.name);
+    let _date: Date;
+    _date = parseTimestamp(input.date);
+    return {
+        typeName: _typeName,
+        id: _id,
+        name: _name,
+        date: _date,
+    };
+}
+export function LegacyDiscriminatorCFromJsonString(
+    input: string,
+): LegacyDiscriminatorC {
+    return LegacyDiscriminatorCFromJson(JSON.parse(input));
+}
+export function LegacyDiscriminatorCToJsonString(
+    input: LegacyDiscriminatorC,
+): string {
+    let json = '{';
+    json += '"typeName":"C"';
+    json += ',"id":';
+    json += serializeString(input.id);
+    json += ',"name":';
+    json += serializeString(input.name);
+    json += ',"date":';
+    json += `"${input.date.toISOString()}"`;
+    json += '}';
+    return json;
+}
+export function LegacyDiscriminatorCToUrlSearchParams(
+    input: LegacyDiscriminatorC,
+): URLSearchParams {
+    const params = new URLSearchParams();
+    params.set('typeName', `C`);
+    params.set('id', input.id);
+    params.set('name', input.name);
+    params.set('date', input.date.toISOString());
+    return params;
+}
+export function LegacyDiscriminatorCToUrlSearchParamsString(
+    input: LegacyDiscriminatorC,
+): string {
+    return LegacyDiscriminatorCToUrlSearchParams(input).toString();
+}

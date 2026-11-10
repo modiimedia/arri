@@ -28,11 +28,9 @@ class ObjectWithOptionalFieldsTest {
         ),
         array = mutableListOf(true, false, false),
         record = mutableMapOf(Pair("A", true), Pair("B", false)),
-        discriminator = DiscriminatorC(
-            id = "",
-            name = "",
-            date = Instant.parse("2001-01-01T16:00:00.000Z")
-        ),
+        unionExternal = UnionExternalArray(value = mutableListOf("hello", "world")),
+        unionInternal = UnionInternalCircle(radius = 2.5),
+        unionAdjacent = UnionAdjacentNullableTimestamp(data = Instant.parse("2001-01-01T16:00:00.000Z")),
         any = JsonPrimitive("hello world")
     )
 
@@ -57,5 +55,22 @@ class ObjectWithOptionalFieldsTest {
     fun fromJson() {
         assertEquals(ObjectWithOptionalFields.fromJson(expectedEmptyOutput), emptyValue)
         assertEquals(ObjectWithOptionalFields.fromJson(expectedNonEmptyOutput), nonEmptyValue)
+    }
+
+    @Test
+    fun recordOrderDoesNotAffectEquality() {
+        val normal = ObjectWithOptionalFields.fromJson(
+            File("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined.json").bufferedReader().use { it.readText() }
+        )
+        val reversed = ObjectWithOptionalFields.fromJson(
+            File("../../../tests/test-files/ObjectWithOptionalFields_NoUndefined_ReversedRecord.json").bufferedReader().use { it.readText() }
+        )
+        assertEquals(normal, reversed)
+        assertEquals(normal.hashCode(), reversed.hashCode())
+    }
+
+    @Test
+    fun invalidTimestampsFallBack() {
+        assertEquals(null, ObjectWithOptionalFields.fromJson("""{"timestamp":"hello world"}""").timestamp)
     }
 }

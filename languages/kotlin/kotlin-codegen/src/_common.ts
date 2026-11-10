@@ -163,14 +163,15 @@ export function getCodeComment(
     valueField?: 'field' | 'method' | 'class',
 ) {
     if (!metadata?.description && !metadata?.isDeprecated) return '';
+    const indent = prefix ?? '';
     const descriptionPart = metadata.description
         ?.split('\n')
-        .map((line) => `${prefix ?? ''}* ${line}`)
+        .map((line) => `${indent} * ${line}`.trimEnd())
         .join('\n');
     const finalDescription = metadata.description
-        ? `${prefix ?? ''}/**\n${descriptionPart}${prefix ?? ''}\n*/`
+        ? `${indent}/**\n${descriptionPart}\n${indent} */`
         : '';
-    const deprecationMessage = `@Deprecated(message = "This ${valueField ?? 'item'} was marked as deprecated by the server")`;
+    const deprecationMessage = `${indent}@Deprecated(message = "This ${valueField ?? 'item'} was marked as deprecated by the server")`;
     if (metadata.description && metadata.isDeprecated) {
         return `${finalDescription}\n${deprecationMessage}\n`;
     }
@@ -181,4 +182,50 @@ export function getCodeComment(
         return `${finalDescription}\n`;
     }
     return '';
+}
+
+/**
+ * Indents every line of a multiline snippet except the first.
+ * Use it when interpolating a snippet into a template line that is already indented by `spaces`.
+ */
+export function indentTail(input: string, spaces: number): string {
+    const padding = ' '.repeat(spaces);
+    return input
+        .split('\n')
+        .map((line, i) =>
+            i === 0 || line.length === 0 ? line : `${padding}${line}`,
+        )
+        .join('\n');
+}
+
+/**
+ * Query string part for values that may contain characters which need to be URL encoded
+ *
+ * @param toValue Returns a Kotlin String expression for a non-null input
+ */
+export function kotlinEncodedQueryString(
+    schema: Schema,
+    context: CodegenContext,
+    input: string,
+    target: string,
+    key: string,
+    toValue: (input: string) => string,
+): string {
+    const queryKey = encodeURIComponent(key);
+    if (context.isOptional) {
+        return `if (${input} != null) {
+    ${target}.add("${queryKey}=\${__encodeQueryValue(${toValue(input)})}")
+}`;
+    }
+    if (schema.isNullable) {
+        const value = toValue('it');
+        let nullableValue = `${input}?.let { ${value} }`;
+        if (value === 'it') {
+            nullableValue = input;
+        } else if (value.startsWith('it.')) {
+            nullableValue = `${input}?.${value.slice(3)}`;
+        }
+        return `${target}.add("${queryKey}=\${__encodeQueryValue(${nullableValue})}")`;
+    }
+    return `${target}.add("${queryKey}=\${__encodeQueryValue(${toValue(input)})}")`;
 }

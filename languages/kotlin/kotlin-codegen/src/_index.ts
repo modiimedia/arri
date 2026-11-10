@@ -10,6 +10,7 @@ import {
     isSchemaFormProperties,
     isSchemaFormRef,
     isSchemaFormType,
+    isSchemaFormUnion,
     isSchemaFormValues,
     isServiceDefinition,
     type Schema,
@@ -18,6 +19,7 @@ import {
 
 import {
     type CodegenContext,
+    indentTail,
     kotlinClassName,
     kotlinIdentifier,
 } from './_common';
@@ -45,8 +47,10 @@ import {
 import {
     kotlinProcedureFromSchema,
     kotlinServiceFromSchema,
+    kotlinSubServiceField,
 } from './procedures';
 import { kotlinRefFromSchema } from './ref';
+import { kotlinUnionFromSchema } from './union';
 
 export interface ServiceContext {
     clientName: string;
@@ -112,12 +116,9 @@ export function kotlinClientFromAppDefinition(
                 ...context,
                 instancePath: `${key}`,
             });
-            procedureParts.push(`val ${kotlinKey}: ${subService.name} = ${subService.name}(
-                httpClient = httpClient,
-                baseUrl = baseUrl,
-                headers = headers,
-                onError = onError,
-            )`);
+            procedureParts.push(
+                kotlinSubServiceField(kotlinKey, subService.name),
+            );
             if (subService.content) {
                 subServiceParts.push(subService.content);
             }
@@ -150,7 +151,7 @@ class ${clientName}(
     private val headers: __${clientName}HeadersFn,
     private val onError: ((err: Exception) -> Unit) = {},
 ) {
-    ${procedureParts.join('\n\n    ')}
+    ${indentTail(procedureParts.join('\n\n'), 4)}
 }
 
 ${subServiceParts.join('\n\n')}
@@ -210,6 +211,9 @@ export function kotlinTypeFromSchema(schema: Schema, context: CodegenContext) {
     }
     if (isSchemaFormDiscriminator(schema)) {
         return kotlinDiscriminatorFromSchema(schema, context);
+    }
+    if (isSchemaFormUnion(schema)) {
+        return kotlinUnionFromSchema(schema, context);
     }
     if (isSchemaFormRef(schema)) {
         return kotlinRefFromSchema(schema, context);
@@ -391,6 +395,13 @@ private fun __logError(string: String) {
     System.err.println(string)
 }
 
+/**
+ * URL encodes a query param value. Null values are serialized as "null".
+ */
+private fun __encodeQueryValue(value: String?): String {
+    return value?.encodeURLParameter(spaceToPlus = true) ?: "null"
+}
+
 private suspend fun __prepareRequest(
     client: HttpClient,
     url: String,
@@ -558,7 +569,7 @@ private suspend fun __handleSseRequest(
             if (httpResponse.status.value !in 200..299) {
                 try {
                     if (httpResponse.headers["Content-Type"] == "application/json") {
-                        val err = ${clientName}Error.fromJson(httpResponse.bodyAsText()) 
+                        val err = ${clientName}Error.fromJson(httpResponse.bodyAsText())
                         onError(err)
                         onResponseError(err)
                     } else {
@@ -627,11 +638,23 @@ private suspend fun __handleSseRequest(
                 )
             }
             newBackoffTime = 0
+            val heartbeatIntervalMs = httpResponse.headers["heartbeat-interval"]?.toLongOrNull() ?: 0L
             val channel: ByteReadChannel = httpResponse.body()
             var pendingData = ""
             while (!channel.isClosedForRead) {
                 val buffer = ByteBuffer.allocateDirect(bufferCapacity)
-                val read = channel.readAvailable(buffer)
+                val read = if (heartbeatIntervalMs > 0L) {
+                    withTimeoutOrNull(heartbeatIntervalMs * 2L) {
+                        channel.readAvailable(buffer)
+                    }
+                } else {
+                    channel.readAvailable(buffer)
+                }
+                if (read == null) {
+                    // no data or heartbeat was received in time so assume the connection is dead and reconnect
+                    httpResponse.cancel()
+                    break
+                }
                 if (read == -1) break
                 buffer.flip()
                 val input = Charsets.UTF_8.decode(buffer).toString()
@@ -744,6 +767,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.nio.ByteBuffer

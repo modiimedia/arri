@@ -3,7 +3,10 @@ import path from 'pathe';
 import prettier from 'prettier';
 
 import { a } from '../../languages/ts/ts-schema/src/_index';
-import { createAppDefinition } from '../../tooling/codegen-utils/src';
+import {
+    createAppDefinition,
+    SchemaFormDiscriminator,
+} from '../../tooling/codegen-utils/src';
 
 const Enumerator = a.enumerator(['FOO', 'BAR', 'BAZ'], { id: 'Enumerator' });
 type Enumerator = a.infer<typeof Enumerator>;
@@ -17,27 +20,53 @@ const NestedObject = a.object(
 );
 type NestedObject = a.infer<typeof NestedObject>;
 
-const Discriminator = a.discriminator(
-    'typeName',
+const LegacyDiscriminator: SchemaFormDiscriminator = {
+    discriminator: 'typeName',
+    mapping: {
+        A: { properties: { id: { type: 'string' } } },
+        B: { properties: { id: { type: 'string' }, name: { type: 'string' } } },
+        C: {
+            properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                date: { type: 'timestamp' },
+            },
+        },
+    },
+    metadata: {
+        id: 'LegacyDiscriminator',
+    },
+};
+
+// UnionExternal and UnionAdjacent share the same variants so the same data can be compared across tagging formats
+const unionVariants = {
+    object: NestedObject,
+    array: a.array(a.string()),
+    boolean: a.boolean(),
+    'nullable-timestamp': a.nullable(a.timestamp()),
+};
+const UnionExternal = a.union('UnionExternal', unionVariants);
+type UnionExternal = a.infer<typeof UnionExternal>;
+const UnionAdjacent = a.union('UnionAdjacent', unionVariants, {
+    tagKey: 'kind',
+    valueKey: 'data',
+});
+type UnionAdjacent = a.infer<typeof UnionAdjacent>;
+// internally tagged unions require every variant to be an object
+const UnionInternal = a.union(
+    'UnionInternal',
     {
-        A: a.object({
-            id: a.string(),
+        rectangle: a.object({
+            width: a.float64(),
+            height: a.float64(),
         }),
-        B: a.object({
-            id: a.string(),
-            name: a.string(),
-        }),
-        C: a.object({
-            id: a.string(),
-            name: a.string(),
-            date: a.timestamp(),
+        circle: a.object({
+            radius: a.float64(),
         }),
     },
-    {
-        id: 'Discriminator',
-    },
+    { tagKey: 'shape' },
 );
-type Discriminator = a.infer<typeof Discriminator>;
+type UnionInternal = a.infer<typeof UnionInternal>;
 
 const EmptyObject = a.object({});
 
@@ -60,7 +89,9 @@ const ObjectWithEveryType = a.object(
         object: NestedObject,
         array: a.array(a.boolean()),
         record: a.record(a.boolean()),
-        discriminator: Discriminator,
+        unionExternal: UnionExternal,
+        unionInternal: UnionInternal,
+        unionAdjacent: UnionAdjacent,
         any: a.any(),
     },
     {
@@ -93,7 +124,9 @@ const ObjectWithNullableFields = a.object(
         object: a.nullable(NestedObject),
         array: a.nullable(a.array(a.boolean())),
         record: a.nullable(a.record(a.boolean())),
-        discriminator: a.nullable(Discriminator),
+        unionExternal: a.nullable(UnionExternal),
+        unionInternal: a.nullable(UnionInternal),
+        unionAdjacent: a.nullable(UnionAdjacent),
         any: a.nullable(a.any()),
     },
     {
@@ -190,7 +223,11 @@ const def = createAppDefinition({
         ObjectWithEveryType,
         ObjectWithOptionalFields,
         ObjectWithNullableFields,
+        UnionExternal,
+        UnionInternal,
+        UnionAdjacent,
         RecursiveObject,
+        LegacyDiscriminator,
     },
 });
 
@@ -279,11 +316,16 @@ async function main() {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: targetDate,
+        unionExternal: {
+            array: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'nullable-timestamp',
+            data: targetDate,
         },
         any: 'hello world',
     };
@@ -350,7 +392,9 @@ async function main() {
         object: null,
         array: null,
         record: null,
-        discriminator: null,
+        unionExternal: null,
+        unionInternal: null,
+        unionAdjacent: null,
         any: null,
     };
     files.push({
@@ -384,11 +428,16 @@ async function main() {
             A: true,
             B: false,
         },
-        discriminator: {
-            typeName: 'C',
-            id: '',
-            name: '',
-            date: targetDate,
+        unionExternal: {
+            array: ['hello', 'world'],
+        },
+        unionInternal: {
+            shape: 'circle',
+            radius: 2.5,
+        },
+        unionAdjacent: {
+            kind: 'boolean',
+            data: true,
         },
         any: {
             message: 'hello world',
@@ -412,6 +461,55 @@ async function main() {
             objectWithNullableFieldsNoNull,
         ),
     });
+    // top level unions use different variants than the nested ones in ObjectWithEveryType, etc.
+    files.push({
+        filename: 'UnionExternal_Object.json',
+        content: a.serializeUnsafe(UnionExternal, { object: nestedObject }),
+    });
+    files.push({
+        filename: 'UnionExternal_Boolean.json',
+        content: a.serializeUnsafe(UnionExternal, { boolean: true }),
+    });
+    files.push({
+        filename: 'UnionExternal_Array.json',
+        content: a.serializeUnsafe(UnionExternal, {
+            array: ['hello', 'world'],
+        }),
+    });
+    files.push({
+        filename: 'UnionExternal_Timestamp.json',
+        content: a.serializeUnsafe(UnionExternal, {
+            'nullable-timestamp': targetDate,
+        }),
+    });
+    files.push({
+        filename: 'UnionExternal_TimestampNull.json',
+        content: a.serializeUnsafe(UnionExternal, {
+            'nullable-timestamp': null,
+        }),
+    });
+    files.push({
+        filename: 'UnionInternal_Rectangle.json',
+        content: a.serializeUnsafe(UnionInternal, {
+            shape: 'rectangle',
+            width: 10.7,
+            height: 5.3,
+        }),
+    });
+    files.push({
+        filename: 'UnionAdjacent_Object.json',
+        content: a.serializeUnsafe(UnionAdjacent, {
+            kind: 'object',
+            data: nestedObject,
+        }),
+    });
+    files.push({
+        filename: 'UnionAdjacent_TimestampNull.json',
+        content: a.serializeUnsafe(UnionAdjacent, {
+            kind: 'nullable-timestamp',
+            data: null,
+        }),
+    });
 
     const recursiveObject: RecursiveObject = {
         left: {
@@ -432,6 +530,12 @@ async function main() {
     files.push({
         filename: 'RecursiveObject.json',
         content: a.serializeUnsafe(RecursiveObject, recursiveObject),
+    });
+
+    const legacyDiscriminatorSerialized = `{"typeName":"C","id":"1","name":"John Doe","date":"${targetDate.toISOString()}"}`;
+    files.push({
+        filename: 'LegacyDiscriminator.json',
+        content: legacyDiscriminatorSerialized,
     });
 
     const mdParts: string[] = [

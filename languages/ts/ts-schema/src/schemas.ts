@@ -4,6 +4,7 @@ import {
     isSchemaFormEnum,
     isSchemaFormProperties,
     isSchemaFormRef,
+    isSchemaFormUnion,
     isSchemaFormValues,
     type Type as JtdType,
     TypeValues,
@@ -224,18 +225,73 @@ export function isAStringEnumSchema(
 export type AStringEnumSchemaWithAdapters<T extends string[]> =
     AStringEnumSchema<T> & WithAdapters<T[number]>;
 
-// discriminators
+/**
+ * @deprecated move to union schemas
+ */
 export interface ADiscriminatorSchema<T> extends ASchema<T> {
     discriminator: string;
     mapping: Record<string, AObjectSchema<any>>;
 }
+/**
+ * @deprecated move to union schemas
+ */
 export function isADiscriminatorSchema(
     input: unknown,
 ): input is ADiscriminatorSchema<any> {
     return isASchema(input) && isSchemaFormDiscriminator(input);
 }
+/**
+ * @deprecated move to union schemas
+ */
 export type ADiscriminatorSchemaWithAdapters<T> = ADiscriminatorSchema<T> &
     WithAdapters<T>;
+
+export interface AUnionSchema<T> extends ASchema<T> {
+    tagKey: string | undefined;
+    valueKey: string | undefined;
+    union: Record<string, ASchema<any>>;
+}
+export type AUnionSchemaWithAdapters<T> = AUnionSchema<T> & WithAdapters<T>;
+export function isAUnionSchema(input: unknown): input is AUnionSchema<any> {
+    return isASchema(input) && isSchemaFormUnion(input);
+}
+
+export type InferUnionType<
+    TMapping extends Record<string, ASchema<any>>,
+    TTag extends string | undefined = undefined,
+    TValue extends string | undefined = undefined,
+> = TTag extends string
+    ? InferInternallyTaggedUnionType<TMapping, TTag, TValue>
+    : InferExternallyTaggedUnionType<TMapping>;
+
+export type InferExternallyTaggedUnionType<
+    TMapping extends Record<string, ASchema<any>>,
+> = {
+    [TKey in keyof TMapping]: {
+        [K in TKey]: InferType<TMapping[TKey]>;
+    };
+}[keyof TMapping];
+
+export type InferInternallyTaggedUnionType<
+    TMapping extends Record<string, ASchema<any>>,
+    TDiscriminatorKey extends string,
+    TValueKey extends string | undefined = undefined,
+    TJoinedMapping extends MergedInternallyTaggedUnion<
+        TMapping,
+        TDiscriminatorKey,
+        TValueKey
+    > = MergedInternallyTaggedUnion<TMapping, TDiscriminatorKey, TValueKey>,
+> = ResolveObject<TJoinedMapping[keyof TJoinedMapping]>;
+
+export type MergedInternallyTaggedUnion<
+    TInput extends Record<string, ASchema<any>>,
+    TUnionKey extends string,
+    TValueKey extends string | undefined = undefined,
+> = {
+    [TKey in keyof TInput]: TValueKey extends string
+        ? Record<TUnionKey, TKey> & Record<TValueKey, InferType<TInput[TKey]>>
+        : InferType<TInput[TKey]> & Record<TUnionKey, TKey>;
+};
 
 // records
 export interface ARecordSchema<

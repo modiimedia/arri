@@ -1,6 +1,6 @@
 import { Schema } from '@arrirpc/codegen-utils';
 
-import { CodegenContext, TsProperty } from './common';
+import { CodegenContext, defaultCloneTemplate, TsProperty } from './common';
 
 export function tsAnyFromSchema(
     schema: Schema,
@@ -14,13 +14,14 @@ export function tsAnyFromSchema(
         validationTemplate(_) {
             return 'true';
         },
+        cloneTemplate: defaultCloneTemplate,
         fromJsonTemplate(input, target) {
             return `${target} = ${input}`;
         },
         toJsonTemplate(input, target) {
             return `${target} += JSON.stringify(${input})`;
         },
-        toQueryStringTemplate(_input, _target, _key) {
+        setSearchParamTemplate(_input, _target, _key) {
             return `console.warn('[WARNING] Cannot serialize any\\'s to query string. Skipping property at ${context.instancePath}.')`;
         },
         content: '',

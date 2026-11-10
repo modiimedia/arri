@@ -1,6 +1,7 @@
 package arri
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"reflect"
@@ -63,6 +64,11 @@ func rpc[TParams, TResponse any, TEvent Event](app *App[TEvent], serviceName str
 		}
 		if paramsSchema.Metadata.IsNone() {
 			panic("Procedures cannot accept anonymous structs")
+		}
+		if rpcSchema.Http.Method == HttpMethodGet {
+			if err := validateUrlQueryTypeDef(paramsSchema); err != nil {
+				panic(fmt.Sprintf("error registering %s. GET requests receive params through url query params. %s. use a different http method such as POST for these params", rpcName, err.Error()))
+			}
 		}
 		rpcSchema.Http.Params.Set(paramsName)
 		app.definitions.Set(paramsName, *paramsSchema)

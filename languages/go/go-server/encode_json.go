@@ -89,8 +89,12 @@ func encodeValueToJSON(v reflect.Value, c *EncodingContext) error {
 		if t.Name() == "Time" {
 			return encodeTimestampToJSON(v, c)
 		}
-		if isDiscriminatorStruct(t) {
-			return encodeDiscriminatorToJSON(v, c)
+		union, err := getUnionInfo(t)
+		if err != nil {
+			return fmt.Errorf("error at %+v. %w", c.InstancePath, err)
+		}
+		if union != nil {
+			return encodeUnionToJSON(v, union, c)
 		}
 		return encodeStructToJSON(v, c)
 	case reflect.Array, reflect.Slice:
@@ -250,7 +254,7 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 		c.Buffer = append(c.Buffer, "\""+fieldName+"\":"...)
 		err := encodeValueToJSON(fieldValue, c)
 		if err != nil {
-			return nil
+			return err
 		}
 		c.HasKeys = true
 		c.InstancePath = oldInstancePath
@@ -260,85 +264,6 @@ func encodeStructToJSON(v reflect.Value, c *EncodingContext) error {
 	c.HasKeys = false
 	c.CurrentDepth--
 	return nil
-}
-
-func isDiscriminatorStruct(t reflect.Type) bool {
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		if field.Type.Name() == "DiscriminatorKey" {
-			continue
-		}
-		if field.Type.Kind() != reflect.Ptr {
-			return false
-		}
-		if field.Type.Elem().Kind() != reflect.Struct {
-			return false
-		}
-		if len(field.Tag.Get("discriminator")) == 0 {
-			return false
-		}
-	}
-	return true
-}
-
-func encodeDiscriminatorToJSON(v reflect.Value, c *EncodingContext) error {
-	t := v.Type()
-	discriminatorKey := "type"
-	schemaPath := c.SchemaPath
-	instancePath := c.InstancePath
-	c.CurrentDepth++
-	var firstFieldVal = None[reflect.Value]()
-	var firstFieldDiscriminatorValue string = ""
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		discriminatorKeyTag := field.Tag.Get("discriminatorKey")
-		if len(discriminatorKeyTag) > 0 {
-			discriminatorKey = discriminatorKeyTag
-			continue
-		}
-		discriminatorValue := field.Tag.Get("discriminator")
-		c.SchemaPath = schemaPath + "/mapping/" + discriminatorValue
-		c.DiscriminatorKey = discriminatorKey
-		c.DiscriminatorValue = discriminatorValue
-		fieldValue := v.Field(i)
-		if firstFieldVal.IsNone() {
-			firstFieldVal.Set(fieldValue)
-			firstFieldDiscriminatorValue = discriminatorValue
-		}
-		if field.Type.Kind() != reflect.Ptr {
-			return fmt.Errorf("all discriminator subtypes must be a struct pointer at %+v", c.InstancePath)
-		}
-		if fieldValue.IsNil() {
-			continue
-		}
-		err := encodeValueToJSON(fieldValue, c)
-		if err != nil {
-			return err
-		}
-		c.SchemaPath = schemaPath
-		c.InstancePath = instancePath
-		c.CurrentDepth--
-		c.DiscriminatorKey = ""
-		c.DiscriminatorValue = ""
-		return nil
-	}
-	if firstFieldVal.IsSome() {
-		c.SchemaPath = schemaPath + "/mapping/" + firstFieldDiscriminatorValue
-		c.DiscriminatorKey = discriminatorKey
-		c.DiscriminatorValue = firstFieldDiscriminatorValue
-		val := reflect.Zero(firstFieldVal.Unwrap().Type().Elem())
-		err := encodeValueToJSON(val, c)
-		if err != nil {
-			return err
-		}
-		c.SchemaPath = schemaPath
-		c.InstancePath = instancePath
-		c.CurrentDepth--
-		c.DiscriminatorKey = ""
-		c.DiscriminatorValue = ""
-		return nil
-	}
-	return fmt.Errorf("all discriminator subtypes are nil")
 }
 
 func encodeArrayToJSON(v reflect.Value, c *EncodingContext) error {

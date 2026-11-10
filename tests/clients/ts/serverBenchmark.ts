@@ -39,10 +39,21 @@ async function main() {
             a: 1n,
             b: 0n,
         },
-        discriminator: {
-            type: 'B',
-            title: 'hello world',
-            description: '',
+        unionExternal: {
+            type: 'boolean',
+            value: true,
+        },
+        unionInternal: {
+            shape: 'rectangle',
+            width: 15.5,
+            height: 1.5,
+        },
+        unionAdjacent: {
+            kind: 'object',
+            data: {
+                id: '1',
+                content: 'hello world',
+            },
         },
         nestedObject: {
             id: '',

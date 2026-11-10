@@ -26,13 +26,9 @@ final class ObjectWithOptionalFieldsTests: XCTestCase {
         ),
         array: [true, false, false],
         record: Dictionary(dictionaryLiteral: ("A", true), ("B", false)),
-        discriminator: Discriminator.c(
-            DiscriminatorC(
-                id: "",
-                name: "",
-                date: targetDate
-            )
-        ),
+        unionExternal: UnionExternal.array(["hello", "world"]),
+        unionInternal: UnionInternal.circle(UnionInternalCircle(radius: 2.5)),
+        unionAdjacent: UnionAdjacent.nullableTimestamp(targetDate),
         any: "hello world"
     )
     func testFromJSON() throws {

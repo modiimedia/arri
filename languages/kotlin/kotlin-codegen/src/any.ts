@@ -20,28 +20,28 @@ export function kotlinAnyFromSchema(
         fromJson(input) {
             if (context.isOptional) {
                 return `when (${input}) {
-                    null -> null
-                    else -> ${input} 
-                }`;
+    null -> null
+    else -> ${input}
+}`;
             }
             if (schema.isNullable) {
                 return `when (${input}) {
-                    JsonNull -> null
-                    null -> null
-                    else -> ${input}
-                }`;
+    JsonNull -> null
+    null -> null
+    else -> ${input}
+}`;
             }
             return `when (${input}) {
-                is JsonElement -> ${input}!!
-                else -> JsonNull
-            }`;
+    is JsonElement -> ${input}!!
+    else -> JsonNull
+}`;
         },
         toJson(input, target) {
             if (schema.isNullable) {
                 return `${target} += when (${input}) {
-                    null -> "null"
-                    else -> JsonInstance.encodeToString(${input})
-                }`;
+    null -> "null"
+    else -> JsonInstance.encodeToString(${input})
+}`;
             }
             return `${target} += JsonInstance.encodeToString(${input})`;
         },

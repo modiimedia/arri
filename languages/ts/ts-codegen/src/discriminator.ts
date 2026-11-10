@@ -1,142 +1,20 @@
 import { SchemaFormDiscriminator } from '@arrirpc/codegen-utils';
 
-import {
-    CodegenContext,
-    getJsDocComment,
-    getTsTypeName,
-    TsProperty,
-} from './common';
-import { tsObjectFromSchema } from './object';
+import { CodegenContext, TsProperty } from './common';
+import { tsInternallyTaggedUnionFromSchema } from './union';
 
-export function tsTaggedUnionFromSchema(
+/**
+ * @deprecated discriminator schemas have been replaced by internally tagged unions
+ */
+export function tsDiscriminatorFromSchema(
     schema: SchemaFormDiscriminator,
     context: CodegenContext,
 ): TsProperty {
-    const typeName = getTsTypeName(schema, context);
-    const prefixedTypeName = `${context.typePrefix}${typeName}`;
-    const defaultValue = schema.isNullable
-        ? 'null'
-        : `$$${prefixedTypeName}.new()`;
-
-    const result: TsProperty = {
-        typeName: schema.isNullable
-            ? `${prefixedTypeName} | null`
-            : prefixedTypeName,
-        defaultValue,
-        validationTemplate(input: string): string {
-            const mainPart = `$$${prefixedTypeName}.validate(${input})`;
-            if (schema.isNullable) {
-                return `(${mainPart} || ${input} === null)`;
-            }
-            return mainPart;
-        },
-        fromJsonTemplate(input: string, target: string): string {
-            return `if (isObject(${input})) {
-                ${target} = $$${prefixedTypeName}.fromJson(${input});
-            } else {
-                ${target} = ${defaultValue}; 
-            }`;
-        },
-        toJsonTemplate(input: string, target: string, _key: string): string {
-            if (schema.isNullable) {
-                return `if (${input} != null) {
-                    ${target} += $$${prefixedTypeName}.toJsonString(${input});
-                } else {
-                    ${target} += 'null'; 
-                }`;
-            }
-            return `${target} += $$${prefixedTypeName}.toJsonString(${input});`;
-        },
-        toQueryStringTemplate(_: string, __: string, ___: string): string {
-            return `console.warn('[WARNING] Cannot serialize nested objects to query string. Skipping property at ${context.instancePath}.');`;
-        },
-        content: '',
-    };
-    if (context.generatedTypes.includes(typeName)) return result;
-    const subTypes: { value: string; data: TsProperty }[] = [];
-    const discriminatorKey = schema.discriminator;
-    for (const key of Object.keys(schema.mapping)) {
-        const subSchema = schema.mapping[key]!;
-        const subType = tsObjectFromSchema(subSchema, {
-            clientName: context.clientName,
-            typePrefix: context.typePrefix,
-            generatedTypes: context.generatedTypes,
-            instancePath: context.instancePath,
-            schemaPath: `${context.schemaPath}/mapping/${key}`,
-            discriminatorParent: typeName,
-            discriminatorKey: discriminatorKey,
-            discriminatorValue: key,
-            versionNumber: context.versionNumber,
-            usedFeatures: context.usedFeatures,
-            rpcGenerators: context.rpcGenerators,
-        });
-        subTypes.push({ value: key, data: subType });
-    }
-    result.content = `${getJsDocComment(schema.metadata)}export type ${prefixedTypeName} = ${subTypes.map((type) => type.data.typeName).join(' |')};
-export const $$${prefixedTypeName}: ArriModelValidator<${prefixedTypeName}> = {
-    new(): ${prefixedTypeName} {
-        return $$${subTypes[0]!.data.typeName}.new();
-    },
-    validate(input): input is ${prefixedTypeName} {
-        if (!isObject(input)) {
-            return false;
-        }
-        if (typeof input.${discriminatorKey} !== 'string') {
-            return false;
-        }
-        switch (input.${discriminatorKey}) {
-${subTypes
-    .map(
-        (type) => `            case "${type.value}":
-                return $$${type.data.typeName}.validate(input);`,
-    )
-    .join('\n')}
-            default:
-                return false;
-        }
-    },
-    fromJson(input): ${prefixedTypeName} {
-        switch (input.${discriminatorKey}) {
-${subTypes
-    .map(
-        (type) => `            case "${type.value}":
-                return $$${type.data.typeName}.fromJson(input);`,
-    )
-    .join('\n')}
-            default:
-                return $$${subTypes[0]!.data.typeName}.new();
-        }
-    },
-    fromJsonString(input): ${prefixedTypeName} {
-        return $$${prefixedTypeName}.fromJson(JSON.parse(input));
-    },
-    toJsonString(input): string {
-        switch (input.${discriminatorKey}) {
-${subTypes
-    .map(
-        (type) => `            case "${type.value}":
-                return $$${type.data.typeName}.toJsonString(input);`,
-    )
-    .join('\n')}
-            default:
-                throw new Error(\`Unhandled case "\${(input as any).${discriminatorKey}}"\`);
-        }
-    },
-    toUrlQueryString(input): string {
-        switch (input.${discriminatorKey}) {
-${subTypes
-    .map(
-        (type) => `            case "${type.value}":
-                return $$${type.data.typeName}.toUrlQueryString(input);`,
-    )
-    .join('\n')}
-            default:
-                throw new Error('Unhandled case');
-        }
-    }
-}
-${subTypes.map((type) => type.data.content).join('\n')}
-`;
-    context.generatedTypes.push(typeName);
-    return result;
+    return tsInternallyTaggedUnionFromSchema(
+        schema,
+        schema.discriminator,
+        schema.mapping,
+        'mapping',
+        context,
+    );
 }

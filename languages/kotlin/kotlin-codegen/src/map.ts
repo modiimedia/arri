@@ -2,6 +2,7 @@ import { type SchemaFormValues } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
+    indentTail,
     isNullable,
     type KotlinProperty,
 } from './_common';
@@ -30,42 +31,46 @@ export function kotlinMapFromSchema(
         defaultValue,
         fromJson(input, key) {
             return `when (${input}) {
-                is JsonObject -> {
-                    val __value: ${typeName} = mutableMapOf()
-                    for (__entry in ${input}!!.jsonObject.entries) {
-                        __value[__entry.key] = ${subType.fromJson('__entry.value', key)}
-                    }
-                    __value
-                }
+    is JsonObject -> {
+        val __value: ${typeName} = mutableMapOf()
+        for (__entry in ${input}!!.jsonObject.entries) {
+            __value[__entry.key] = ${indentTail(subType.fromJson('__entry.value', key), 12)}
+        }
+        __value
+    }
 
-                else -> ${defaultValue}
-            }`;
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
+            const valueToJson = indentTail(
+                subType.toJson('__entry.value', target),
+                4,
+            );
             if (schema.isNullable) {
                 return `if (${input} == null) {
-                    ${target} += "null"
-                } else {
-                    ${target} += "{"
-                    for ((__index, __entry) in ${input}.entries.withIndex()) {
-                        if (__index != 0) {
-                            ${target} += ","
-                        }
-                        ${target} += "\${buildString { printQuoted(__entry.key) }}:"
-                        ${subType.toJson('__entry.value', target)}
-                    }
-                    ${target} += "}"
-                }`;
+    ${target} += "null"
+} else {
+    ${target} += "{"
+    for ((__index, __entry) in ${input}.entries.withIndex()) {
+        if (__index != 0) {
+            ${target} += ","
+        }
+        ${target} += "\${buildString { printQuoted(__entry.key) }}:"
+        ${indentTail(valueToJson, 4)}
+    }
+    ${target} += "}"
+}`;
             }
             return `${target} += "{"
-            for ((__index, __entry) in ${input}.entries.withIndex()) {
-                if (__index != 0) {
-                    ${target} += ","
-                }
-                ${target} += "\${buildString { printQuoted(__entry.key) }}:"
-                ${subType.toJson('__entry.value', target)}
-            }
-            ${target} += "}"`;
+for ((__index, __entry) in ${input}.entries.withIndex()) {
+    if (__index != 0) {
+        ${target} += ","
+    }
+    ${target} += "\${buildString { printQuoted(__entry.key) }}:"
+    ${valueToJson}
+}
+${target} += "}"`;
         },
         toQueryString() {
             return `__logError("[WARNING] nested objects cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;

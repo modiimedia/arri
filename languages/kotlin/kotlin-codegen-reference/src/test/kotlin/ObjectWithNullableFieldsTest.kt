@@ -25,7 +25,9 @@ class ObjectWithNullableFieldsTest {
         `object` = null,
         array = null,
         record = null,
-        discriminator = null,
+        unionExternal = null,
+        unionInternal = null,
+        unionAdjacent = null,
         any = null,
     )
     private val noNullValue = ObjectWithNullableFields(
@@ -49,11 +51,9 @@ class ObjectWithNullableFieldsTest {
         ),
         array = mutableListOf(true, false, false),
         record = mutableMapOf(Pair("A", true), Pair("B", false)),
-        discriminator = DiscriminatorC(
-            id = "",
-            name = "",
-            date = Instant.parse("2001-01-01T16:00:00.000Z")
-        ),
+        unionExternal = UnionExternalArray(value = mutableListOf("hello", "world")),
+        unionInternal = UnionInternalCircle(radius = 2.5),
+        unionAdjacent = UnionAdjacentBoolean(data = true),
         any = JsonObject(mapOf(Pair("message", JsonPrimitive("hello world"))))
     )
 
@@ -80,7 +80,7 @@ class ObjectWithNullableFieldsTest {
         )
         assertEquals(
             noNullValue.toUrlQueryParams(),
-            "string=&boolean=true&timestamp=2001-01-01T16:00:00.000Z&float32=1.5&float64=1.5&int8=1&uint8=1&int16=10&uint16=10&int32=100&uint32=100&int64=1000&uint64=1000&enum=BAZ"
+            "string=&boolean=true&timestamp=2001-01-01T16%3A00%3A00.000Z&float32=1.5&float64=1.5&int8=1&uint8=1&int16=10&uint16=10&int32=100&uint32=100&int64=1000&uint64=1000&enum=BAZ"
         )
     }
 
@@ -89,5 +89,22 @@ class ObjectWithNullableFieldsTest {
         val result = ObjectWithNullableFields.fromJson(allNullReference)
         assertEquals(result, allNullValue)
         assertEquals(ObjectWithNullableFields.fromJson(noNullReference), noNullValue)
+    }
+
+    @Test
+    fun recordOrderDoesNotAffectEquality() {
+        val normal = ObjectWithNullableFields.fromJson(
+            File("../../../tests/test-files/ObjectWithNullableFields_NoNull.json").bufferedReader().use { it.readText() }
+        )
+        val reversed = ObjectWithNullableFields.fromJson(
+            File("../../../tests/test-files/ObjectWithNullableFields_NoNull_ReversedRecord.json").bufferedReader().use { it.readText() }
+        )
+        assertEquals(normal, reversed)
+        assertEquals(normal.hashCode(), reversed.hashCode())
+    }
+
+    @Test
+    fun invalidTimestampsFallBack() {
+        assertEquals(null, ObjectWithNullableFields.fromJson("""{"timestamp":"hello world"}""").timestamp)
     }
 }

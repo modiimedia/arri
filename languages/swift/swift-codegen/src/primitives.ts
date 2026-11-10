@@ -124,7 +124,7 @@ export function swiftTimestampFromSchema(
 ): SwiftProperty {
     const isNullable = isNullableType(schema, context);
     const typeName = isNullable ? 'Date?' : 'Date';
-    const defaultValue = isNullable ? '' : 'Date()';
+    const defaultValue = isNullable ? '' : 'Date(timeIntervalSince1970: 0)';
     return {
         typeName,
         defaultValue,
@@ -134,15 +134,15 @@ export function swiftTimestampFromSchema(
         fromJsonTemplate(input, target) {
             if (context.isOptional) {
                 return `        if ${input}.exists() {
-                    ${target} = parseDate(${input}.string ?? "") ?? Date()
+                    ${target} = parseDate(${input}.string ?? "")
                 }`;
             }
             if (schema.isNullable) {
                 return `        if ${input}.string != nil {
-                    ${target} = parseDate(${input}.string ?? "") ?? Date()
+                    ${target} = parseDate(${input}.string ?? "")
                 }`;
             }
-            return `        ${target} = parseDate(${input}.string ?? "") ?? Date()`;
+            return `        ${target} = parseDate(${input}.string ?? "") ?? ${defaultValue}`;
         },
         toJsonTemplate(input, target) {
             if (context.isOptional) {

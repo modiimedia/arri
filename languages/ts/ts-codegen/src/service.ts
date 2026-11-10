@@ -29,8 +29,9 @@ export function tsServiceFromDefinition(
                 discriminatorKey: '',
                 discriminatorValue: '',
                 versionNumber: context.versionNumber,
-                usedFeatures: context.usedFeatures,
+                useRpcTypes: context.useRpcTypes,
                 rpcGenerators: context.rpcGenerators,
+                features: context.features,
             });
             if (subService.content) {
                 subServices.push(subService);
@@ -48,8 +49,9 @@ export function tsServiceFromDefinition(
                 discriminatorKey: '',
                 discriminatorValue: '',
                 versionNumber: context.versionNumber,
-                usedFeatures: context.usedFeatures,
+                useRpcTypes: context.useRpcTypes,
                 rpcGenerators: context.rpcGenerators,
+                features: context.features,
             });
             if (rpc) {
                 rpcParts.push(rpc);

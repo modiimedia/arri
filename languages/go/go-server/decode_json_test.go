@@ -37,14 +37,12 @@ func TestDecodeObjectWithEveryType(t *testing.T) {
 			Id:      "1",
 			Content: "hello world",
 		},
-		Array:  []bool{true, false, false},
-		Record: map[string]bool{"A": true, "B": false},
-		Discriminator: discriminator{C: &discriminatorC{
-			Id:   "",
-			Name: "",
-			Date: testDate,
-		}},
-		Any: "hello world",
+		Array:         []bool{true, false, false},
+		Record:        map[string]bool{"A": true, "B": false},
+		UnionExternal: unionExternal{Array: &[]string{"hello", "world"}},
+		UnionInternal: unionInternal{Circle: &unionInternalCircle{Radius: 2.5}},
+		UnionAdjacent: unionAdjacent{NullableTimestamp: ptr(arri.NotNull(testDate))},
+		Any:           "hello world",
 	}
 	decodeErr := arri.DecodeJSON(_objectWithEveryTypeInput, &target, arri.EncodingOptions{})
 	if decodeErr != nil {
@@ -69,33 +67,27 @@ func TestDecodeObjectWithOptionalFields(t *testing.T) {
 	}
 	noUndefinedTarget := objectWithOptionalFields{}
 	noUndefinedExpectedResult := objectWithOptionalFields{
-		String:    arri.Some(""),
-		Boolean:   arri.Some(false),
-		Timestamp: arri.Some(testDate),
-		Float32:   arri.Some[float32](1.5),
-		Float64:   arri.Some(1.5),
-		Int8:      arri.Some[int8](1),
-		Uint8:     arri.Some[uint8](1),
-		Int16:     arri.Some[int16](10),
-		Uint16:    arri.Some[uint16](10),
-		Int32:     arri.Some[int32](100),
-		Uint32:    arri.Some[uint32](100),
-		Int64:     arri.Some[int64](1000),
-		Uint64:    arri.Some[uint64](1000),
-		Enum:      arri.Some("BAZ"),
-		Object:    arri.Some(nestedObject{Id: "1", Content: "hello world"}),
-		Array:     arri.Some([]bool{true, false, false}),
-		Record:    arri.Some(map[string]bool{"A": true, "B": false}),
-		Discriminator: arri.Some(
-			discriminator{
-				C: &discriminatorC{
-					Id:   "",
-					Name: "",
-					Date: testDate,
-				},
-			},
-		),
-		Any: arri.Some[any]("hello world"),
+		String:        arri.Some(""),
+		Boolean:       arri.Some(false),
+		Timestamp:     arri.Some(testDate),
+		Float32:       arri.Some[float32](1.5),
+		Float64:       arri.Some(1.5),
+		Int8:          arri.Some[int8](1),
+		Uint8:         arri.Some[uint8](1),
+		Int16:         arri.Some[int16](10),
+		Uint16:        arri.Some[uint16](10),
+		Int32:         arri.Some[int32](100),
+		Uint32:        arri.Some[uint32](100),
+		Int64:         arri.Some[int64](1000),
+		Uint64:        arri.Some[uint64](1000),
+		Enum:          arri.Some("BAZ"),
+		Object:        arri.Some(nestedObject{Id: "1", Content: "hello world"}),
+		Array:         arri.Some([]bool{true, false, false}),
+		Record:        arri.Some(map[string]bool{"A": true, "B": false}),
+		UnionExternal: arri.Some(unionExternal{Array: &[]string{"hello", "world"}}),
+		UnionInternal: arri.Some(unionInternal{Circle: &unionInternalCircle{Radius: 2.5}}),
+		UnionAdjacent: arri.Some(unionAdjacent{NullableTimestamp: ptr(arri.NotNull(testDate))}),
+		Any:           arri.Some[any]("hello world"),
 	}
 	noUndefinedDecodingErr := arri.DecodeJSON(noUndefinedInput, &noUndefinedTarget, arri.EncodingOptions{})
 	if noUndefinedDecodingErr != nil {
@@ -171,7 +163,9 @@ func TestDecodeObjectWithNullableFieldsNoNull(t *testing.T) {
 		Object:        arri.NotNull(nestedObject{Id: "", Content: ""}),
 		Array:         arri.NotNull([]bool{true, false, false}),
 		Record:        arri.NotNull(map[string]bool{"A": true, "B": false}),
-		Discriminator: arri.NotNull(discriminator{C: &discriminatorC{Id: "", Name: "", Date: testDate}}),
+		UnionExternal: arri.NotNull(unionExternal{Array: &[]string{"hello", "world"}}),
+		UnionInternal: arri.NotNull(unionInternal{Circle: &unionInternalCircle{Radius: 2.5}}),
+		UnionAdjacent: arri.NotNull(unionAdjacent{Boolean: ptr(true)}),
 		Any: arri.NotNull[any](map[string]any{
 			"message": "hello world",
 		}),
@@ -325,8 +319,46 @@ func TestDecodeBadStringInput(t *testing.T) {
 		t.Fatalf("should have errors")
 		return
 	}
-	if len(err.Errors) != 18 {
-		t.Fatalf("should have 18 errors")
+	if len(err.Errors) != 20 {
+		t.Fatalf("should have 20 errors. got %d: %+v", len(err.Errors), err.Errors)
 		return
+	}
+}
+
+func TestDecodeLongArrays(t *testing.T) {
+	type nestedArrays struct {
+		Items  []string
+		Nested [][]int32
+		Nulls  []arri.Nullable[string]
+	}
+	input := []byte(`{"items":["a","b","c","d","e","f","g","h","i","j"],"nested":[[1,2,3,4,5],[],[],[],[6]],"nulls":[null,null,null,null,"a"]}`)
+	var result nestedArrays
+	err := arri.DecodeJSON(input, &result, arri.EncodingOptions{})
+	if err != nil {
+		t.Fatalf("%+v", err.Errors)
+	}
+	if len(result.Items) != 10 || result.Items[9] != "j" {
+		t.Fatalf("unexpected items %+v", result.Items)
+	}
+	if len(result.Nested) != 5 || len(result.Nested[0]) != 5 || result.Nested[4][0] != 6 {
+		t.Fatalf("unexpected nested arrays %+v", result.Nested)
+	}
+	if len(result.Nulls) != 5 || result.Nulls[4].Unwrap() != "a" {
+		t.Fatalf("unexpected nullable items %+v", result.Nulls)
+	}
+}
+
+func TestDecodeArraysRespectMaxDepth(t *testing.T) {
+	type deep struct {
+		Value [][][]int32
+	}
+	var result deep
+	err := arri.DecodeJSON([]byte(`{"value":[[[1]]]}`), &result, arri.EncodingOptions{MaxDepth: 2})
+	if err == nil {
+		t.Fatal("expected arrays nested past the max depth to fail")
+	}
+	err = arri.DecodeJSON([]byte(`{"value":[[[1]]]}`), &result, arri.EncodingOptions{MaxDepth: 10})
+	if err != nil {
+		t.Fatalf("%+v", err.Errors)
 	}
 }

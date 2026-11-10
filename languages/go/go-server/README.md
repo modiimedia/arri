@@ -16,7 +16,7 @@ Go implementation of [Arri RPC](/README.md). It uses the `net/http` package from
     - [Objects](#objects)
         - [Struct Field Tags](#struct-field-tags)
     - [Maps](#maps)
-    - [Discriminated Unions / Tagged Unions](#discriminated-unions--tagged-unions)
+    - [Tagged Unions](#tagged-unions)
     - [Recursive Types](#recursive-types)
     - [Optional Fields](#optional-fields)
     - [Nullable Types](#nullable-types)
@@ -179,6 +179,15 @@ arri.Rpc(&app, SayHello, arri.RpcOptions{
 	IsDeprecated: true
 })
 ```
+
+#### GET Requests
+
+Procedures using the GET method receive their params through url query params instead of the request body. Because of this their params must be one of the following:
+
+- A struct where every field is a string, boolean, number, timestamp, or enum. (Fields can be optional or nullable.)
+- An internally tagged union where every variant meets the above requirement. The tag is passed as its own query param. For example: `?shape=rectangle&width=10&height=20`
+
+Arri will panic when registering a GET procedure that doesn't meet these requirements. Use a different HTTP method such as POST if you need to send nested objects, arrays, or other unions.
 
 ### Creating Event Stream Procedures
 
@@ -478,141 +487,142 @@ outputted ATD:
 }
 ```
 
-### Discriminated Unions / Tagged Unions
+### Tagged Unions
 
-Since go doesn't have discriminated unions we have created the following convention for defining such data types.
+Go doesn't have tagged unions so Arri uses the following convention for defining them:
 
-- A discriminated union must have a root struct type which will act as the "parent" type
-- All "subtypes" are fields that contain a pointer to a struct. They can be either named structs or inlined.
-- All "subtype" fields must have the `discriminator` tag, which defines the value of the `"type"` field during serialization. Clients will use this value to determine which subtype has been sent by the server.
-
-#### Example
-
-Here we are creating a `Shape` parent type with the `Rectangle` and `Circle` type
+- Embed `arri.Union` in a struct to mark it as a union
+- Every other field is a variant. Variants must be pointers. They can point to any supported type.
+- The non-nil field is the active variant. Only one variant may be set at a time.
 
 ```go
 type Shape struct {
-	Rectangle *Rectangle `discriminator:"RECTANGLE"`
-	Circle *Circle `discriminator:"CIRCLE"`
+	arri.Union
+	Rectangle *Rectangle
+	Circle    *Circle
 }
 type Rectangle struct {
-	Width float32
-	Height float32
+	Width  float64
+	Height float64
 }
 type Circle struct {
-	Radius float32
+	Radius float64
 }
 
-// The following are also valid
-type Shape struct {
-	*Rectangle `discriminator:"RECTANGLE"`
-	*Circle `discriminator:"CIRCLE"`
-}
-type Shape struct {
-	Rectangle struct{
-		Width float32
-		Height float32
-	} `discriminator:"RECTANGLE"`
-	Circle struct{
-		Radius float32
-	} `discriminator:"CIRCLE"`
+// initialize a circle
+shape := Shape{Circle: &Circle{Radius: 2.5}}
+
+// check which variant is active
+switch {
+case shape.Rectangle != nil:
+	fmt.Println(shape.Rectangle.Width * shape.Rectangle.Height)
+case shape.Circle != nil:
+	fmt.Println(math.Pi * shape.Circle.Radius * shape.Circle.Radius)
 }
 ```
 
-Outputted JTD:
-
-```json
-{
-    "discriminator": "type",
-    "mapping": {
-        "RECTANGLE": {
-            "properties": {
-                "width": {
-                    "type": "float32"
-                },
-                "height": {
-                    "type": "float32"
-                }
-            },
-            "metadata": {
-                "id": "Rectangle"
-            }
-        },
-        "CIRCLE": {
-            "properties": {
-                "radius": {
-                    "type": "float32"
-                }
-            },
-            "metadata": {
-                "id": "Circle"
-            }
-        }
-    },
-    "metadata": {
-        "id": "Shape"
-    }
-}
-```
-
-The outputed JSON will look something like this:
+Variants aren't limited to structs:
 
 ```go
-// initialize a rectangle shape
-myShape := Shape{Rectangle: &Rectangle{Width: 10, Height: 20}}
-// serialize to json
-result, _ := arri.EncodeJSON(myShape, arri.KeyCasingCamelCase)
-// print the result
-fmt.Println(string(result))
-```
-
-```json
-{
-    "type": "RECTANGLE",
-    "width": 10,
-    "height": 20
+type CategoryFilter struct {
+	arri.Union
+	One  *string
+	Many *[]string
+	// use arri.Nullable for variants that can be null
+	None *arri.Nullable[bool]
 }
 ```
 
-#### Overriding discriminator field
+#### Variant Names
 
-By default arri will put the discriminator value in the "type" field for clients to determine when subtype has been sent.
-
-```json
-{
-    "type": "RECTANGLE",
-    "width": 10,
-    "height": 20
-}
-{
-	"type": "CIRCLE",
-	"radius": 20
-}
-```
-
-You can override this by using the `discriminatorKey` tag in conjunction with the `DiscriminatorKey` helper provided by arri
+By default the variant name is the field name with the key casing applied (`Rectangle` becomes `"rectangle"` when using camelCase). You can override it with the `tag` field tag. The `description`, `arri:"deprecated"`, and `enum` field tags are also supported on variants.
 
 ```go
+type Shape struct {
+	arri.Union
+	Rectangle *Rectangle `tag:"RECTANGLE"`
+	Circle    *Circle    `tag:"CIRCLE" description:"A perfectly round shape"`
+}
+```
+
+#### Serialization Options
+
+How a union is represented in JSON is configured with tags on the embedded `arri.Union` field.
+
+**Externally Tagged (default)**
+
+The variant name is the only key of a wrapping object.
+
+```go
+type Shape struct {
+	arri.Union
+	Rectangle *Rectangle
+	Circle    *Circle
+}
+```
+
+```json
+{ "rectangle": { "width": 10, "height": 20 } }
+```
+
+**Internally Tagged**
+
+Use `tagKey` to put the variant name alongside the variant's own fields. All variants must be pointers to structs and they cannot have a field with the same key as the `tagKey`.
+
+```go
+type Shape struct {
+	arri.Union `tagKey:"type"`
+	Rectangle  *Rectangle
+	Circle     *Circle
+}
+```
+
+```json
+{ "type": "rectangle", "width": 10, "height": 20 }
+```
+
+**Adjacently Tagged**
+
+Use `tagKey` and `valueKey` to put the variant name and the variant's value side by side.
+
+```go
+type Shape struct {
+	arri.Union `tagKey:"kind" valueKey:"data"`
+	Rectangle  *Rectangle
+	Circle     *Circle
+}
+```
+
+```json
+{ "kind": "rectangle", "data": { "width": 10, "height": 20 } }
+```
+
+#### Encoding Behavior
+
+- `arri.EncodeJSON()` returns an error if more than one variant is set
+- If no variant is set the first variant is encoded with its zero value. (Recursive variants are skipped.)
+
+#### Legacy Discriminators (Deprecated)
+
+Structs using the `discriminator` and `discriminatorKey` tags are still supported, but they are deprecated and are output as internally tagged unions. They can be migrated like so:
+
+```go
+// before
 type Shape struct {
 	arri.DiscriminatorKey `discriminatorKey:"kind"`
-	Rectangle *Rectangle `discriminator:"RECTANGLE"`
-	Circle *Circle `discriminator:"CIRCLE"`
+	Rectangle *Rectangle  `discriminator:"RECTANGLE"`
+	Circle    *Circle     `discriminator:"CIRCLE"`
+}
+
+// after
+type Shape struct {
+	arri.Union `tagKey:"kind"`
+	Rectangle  *Rectangle `tag:"RECTANGLE"`
+	Circle     *Circle    `tag:"CIRCLE"`
 }
 ```
 
-Now the outputted JSON will look something like this:
-
-```json
-{
-	"kind": "RECTANGLE",
-	"width": 10,
-	"height": 20
-}
-{
-	"kind": "CIRCLE",
-	"radius": 20
-}
-```
+When `discriminatorKey` isn't specified the tag key is `"type"`. A struct cannot use both `arri.Union` and the `discriminator` tags.
 
 ### Recursive Types
 

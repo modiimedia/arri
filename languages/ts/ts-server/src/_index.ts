@@ -7,4 +7,5 @@ export * from './route';
 export * from './router';
 export * from './rpc';
 export * from './service';
+export * from './worker';
 export * from 'h3';

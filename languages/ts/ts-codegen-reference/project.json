@@ -12,6 +12,13 @@
     },
     "test": {
       "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/vite.config.ts",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/pnpm-lock.yaml"
+      ],
       "outputs": [],
       "options": {
         "command": "vitest run . --passWithNoTests --globals",

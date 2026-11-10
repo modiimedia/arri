@@ -53,7 +53,7 @@ export default function rustEnumFromSchema(
             if (context.isOptional) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", ${innerKey}.serial_value()));
+                        ${target}.push(format!("${key}={}", encode_query_component(&${innerKey}.serial_value())));
                     }
                     _ => {}
                 }`;
@@ -61,14 +61,14 @@ export default function rustEnumFromSchema(
             if (schema.isNullable) {
                 return `match ${input} {
                     Some(${innerKey}) => {
-                        ${target}.push(format!("${key}={}", ${innerKey}.serial_value()));
+                        ${target}.push(format!("${key}={}", encode_query_component(&${innerKey}.serial_value())));
                     }
                     _ => {
                         ${target}.push("${key}=null".to_string());
                     }
                 }`;
             }
-            return `${target}.push(format!("${key}={}", ${input}.serial_value()))`;
+            return `${target}.push(format!("${key}={}", encode_query_component(&${input}.serial_value())))`;
         },
         content: '',
     };

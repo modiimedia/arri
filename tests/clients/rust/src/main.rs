@@ -34,8 +34,7 @@ mod tests {
         ObjectWithEveryOptionalTypeNestedObjectDataData, ObjectWithEveryType,
         ObjectWithEveryTypeNestedArrayElementElement, ObjectWithEveryTypeNestedObject,
         ObjectWithEveryTypeNestedObjectData, ObjectWithEveryTypeNestedObjectDataData,
-        ObjectWithEveryTypeObject, RecursiveObject, RecursiveUnion, RecursiveUnionDataShape,
-        SendErrorParams, TestClient,
+        ObjectWithEveryTypeObject, RecursiveObject, SendErrorParams, TestClient,
     };
 
     const TARGET_MS: i64 = 978328800000;
@@ -84,9 +83,14 @@ mod tests {
                 timestamp: target_date.fixed_offset(),
             },
             record,
-            discriminator: crate::test_client::ObjectWithEveryTypeDiscriminator::A {
-                title: "hello world (A)".to_string(),
+            union_external: crate::test_client::ObjectWithEveryTypeUnionExternal::Array(vec![
+                "foo".to_string(),
+                "bar".to_string(),
+            ]),
+            union_internal: crate::test_client::ObjectWithEveryTypeUnionInternal::Circle {
+                radius: 15.5,
             },
+            union_adjacent: crate::test_client::ObjectWithEveryTypeUnionAdjacent::Boolean(true),
             nested_object: ObjectWithEveryTypeNestedObject {
                 id: "12345".to_string(),
                 timestamp: target_date.fixed_offset(),
@@ -130,6 +134,22 @@ mod tests {
             phone_number: None,
             email_address: Some("johndoe@gmail.com".to_string()),
             is_admin: Some(true),
+            external_event: Some(
+                test_client::ObjectWithSnakeCaseKeysExternalEvent::UserCreated(
+                    test_client::ObjectWithSnakeCaseKeysExternalEventUserCreatedValue {
+                        user_id: "1".to_string(),
+                    },
+                ),
+            ),
+            internal_event: test_client::ObjectWithSnakeCaseKeysInternalEvent::UserUpdated {
+                user_id: "1".to_string(),
+                updated_at: None,
+            },
+            adjacent_event: test_client::ObjectWithSnakeCaseKeysAdjacentEvent::UserCreated(
+                test_client::ObjectWithSnakeCaseKeysAdjacentEventUserCreatedEventData {
+                    user_id: "1".to_string(),
+                },
+            ),
         };
         let result = client
             .tests
@@ -150,6 +170,20 @@ mod tests {
             phone_number: None,
             email_address: Some("johndoe@gmail.com".to_string()),
             is_admin: Some(true),
+            external_event: Some(
+                test_client::ObjectWithPascalCaseKeysExternalEvent::UserCreated(
+                    test_client::ObjectWithPascalCaseKeysExternalEventUserCreatedValue {
+                        user_id: "1".to_string(),
+                    },
+                ),
+            ),
+            internal_event: test_client::ObjectWithPascalCaseKeysInternalEvent::UserUpdated {
+                user_id: "1".to_string(),
+                updated_at: Some(target_date.fixed_offset()),
+            },
+            adjacent_event: test_client::ObjectWithPascalCaseKeysAdjacentEvent::UserUpdated(
+                "hello".to_string(),
+            ),
         };
         let result = client
             .tests
@@ -191,7 +225,9 @@ mod tests {
                 array: None,
                 object: None,
                 record: None,
-                discriminator: None,
+                union_external: None,
+                union_internal: None,
+                union_adjacent: None,
                 nested_object: None,
                 nested_array: None,
             })
@@ -224,7 +260,9 @@ mod tests {
             array: None,
             object: None,
             record: None,
-            discriminator: None,
+            union_external: None,
+            union_internal: None,
+            union_adjacent: None,
             nested_object: None,
             nested_array: None,
         };
@@ -254,11 +292,16 @@ mod tests {
                 timestamp: Some(target_date.fixed_offset()),
             }),
             record: Some(record),
-            discriminator: Some(
-                crate::test_client::ObjectWithEveryNullableTypeDiscriminator::B {
-                    title: Some("hello world".to_string()),
-                    description: Some("hello world again".to_string()),
+            union_external: Some(
+                crate::test_client::ObjectWithEveryNullableTypeUnionExternal::Boolean(true),
+            ),
+            union_internal: Some(
+                crate::test_client::ObjectWithEveryNullableTypeUnionInternal::Circle {
+                    radius: 15.5,
                 },
+            ),
+            union_adjacent: Some(
+                crate::test_client::ObjectWithEveryNullableTypeUnionAdjacent::Boolean(true),
             ),
             nested_object: Some(ObjectWithEveryNullableTypeNestedObject {
                 id: Some("1".to_string()),
@@ -350,38 +393,464 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn can_send_and_receive_recursive_discriminators() {
-        let config = get_config(headers());
-        let client = TestClient::create(config);
-        let input = RecursiveUnion::Children {
+    async fn can_send_and_receive_objects_with_kebab_case_keys() {
+        use test_client::*;
+        let client = TestClient::create(get_config(headers()));
+        let target_date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS).unwrap();
+        let mut input = ObjectWithKebabCaseKeys {
+            created_at: target_date.fixed_offset(),
+            display_name: "John Doe".to_string(),
+            phone_number: None,
+            email_address: None,
+            is_admin: Some(true),
+            external_event: None,
+            internal_event: ObjectWithKebabCaseKeysInternalEvent::UserUpdated {
+                user_id: "1".to_string(),
+                updated_at: Some(target_date.fixed_offset()),
+            },
+            adjacent_event: ObjectWithKebabCaseKeysAdjacentEvent::UserCreated(
+                ObjectWithKebabCaseKeysAdjacentEventUserCreatedEventData {
+                    user_id: "1".to_string(),
+                },
+            ),
+        };
+        let result = client
+            .tests
+            .send_object_with_kebab_case_keys(input.clone())
+            .await;
+        assert_eq!(result.unwrap(), input);
+        input.external_event = Some(ObjectWithKebabCaseKeysExternalEvent::UserDeleted(
+            ObjectWithKebabCaseKeysExternalEventUserDeletedValue {
+                user_id: "1".to_string(),
+            },
+        ));
+        input.adjacent_event =
+            ObjectWithKebabCaseKeysAdjacentEvent::UserUpdated("hello".to_string());
+        let result = client
+            .tests
+            .send_object_with_kebab_case_keys(input.clone())
+            .await;
+        assert_eq!(result.unwrap(), input);
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_recursive_unions_externally_tagged() {
+        use test_client::RecursiveUnionExternal as U;
+        let client = TestClient::create(get_config(headers()));
+        let input = U::Children(vec![
+            Box::new(U::Child(Box::new(U::Text("Hello world".to_string())))),
+            Box::new(U::Shape(test_client::RecursiveUnionExternalShapeValue {
+                width: 100.0,
+                height: 1000.0,
+                color: "#F6F6F6".to_string(),
+            })),
+            Box::new(U::Children(vec![Box::new(U::Text(
+                "Hello world".to_string(),
+            ))])),
+        ]);
+        let result = client
+            .tests
+            .send_recursive_union_external(input.clone())
+            .await;
+        assert_eq!(result.unwrap(), input);
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_recursive_unions_internally_tagged() {
+        use test_client::RecursiveUnionInternal as U;
+        let client = TestClient::create(get_config(headers()));
+        let input = U::Children {
             data: vec![
-                Box::new(RecursiveUnion::Child {
-                    data: Box::new(RecursiveUnion::Text {
+                Box::new(U::Child {
+                    data: Box::new(U::Text {
                         data: "Hello world".to_string(),
                     }),
                 }),
-                Box::new(RecursiveUnion::Shape {
-                    data: RecursiveUnionDataShape {
+                Box::new(U::Shape {
+                    data: test_client::RecursiveUnionInternalDataShape {
                         width: 100.0,
                         height: 1000.0,
                         color: "#F6F6F6".to_string(),
                     },
                 }),
-                Box::new(RecursiveUnion::Children {
-                    data: vec![
-                        Box::new(RecursiveUnion::Text {
-                            data: "Hello world".to_string(),
-                        }),
-                        Box::new(RecursiveUnion::Text {
-                            data: "Hello world".to_string(),
-                        }),
-                    ],
+                Box::new(U::Children {
+                    data: vec![Box::new(U::Text {
+                        data: "Hello world".to_string(),
+                    })],
                 }),
             ],
         };
-
-        let result = client.tests.send_recursive_union(input.clone()).await;
+        let result = client
+            .tests
+            .send_recursive_union_internal(input.clone())
+            .await;
         assert_eq!(result.unwrap(), input);
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_recursive_unions_adjacently_tagged() {
+        use test_client::RecursiveUnionAdjacent as U;
+        let client = TestClient::create(get_config(headers()));
+        let input = U::Children(vec![
+            Box::new(U::Child(Box::new(U::Text("Hello world".to_string())))),
+            Box::new(U::Shape(test_client::RecursiveUnionAdjacentShapeData {
+                width: 100.0,
+                height: 1000.0,
+                color: "#F6F6F6".to_string(),
+            })),
+            Box::new(U::Children(vec![Box::new(U::Text(
+                "Hello world".to_string(),
+            ))])),
+        ]);
+        let result = client
+            .tests
+            .send_recursive_union_adjacent(input.clone())
+            .await;
+        assert_eq!(result.unwrap(), input);
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_discriminators_with_empty_objects() {
+        use test_client::DiscriminatorWithEmptyObject as U;
+        let client = TestClient::create(get_config(headers()));
+        for input in [
+            U::Empty {},
+            U::NotEmpty {
+                foo: "hello world".to_string(),
+                bar: 1.5,
+                baz: true,
+            },
+        ] {
+            let result = client
+                .tests
+                .send_discriminator_with_empty_object(input.clone())
+                .await;
+            assert_eq!(result.unwrap(), input);
+        }
+    }
+
+    fn get_request_input(string: &str) -> test_client::UnionInternalGetRequest {
+        test_client::UnionInternalGetRequest::WithFields {
+            string: string.to_string(),
+            nullable_string: Some(string.to_string()),
+            optional_string: Some(string.to_string()),
+            float64: 1.5,
+            int64: 5,
+            boolean: true,
+            timestamp: DateTime::<Utc>::from_timestamp_millis(TARGET_MS)
+                .unwrap()
+                .fixed_offset(),
+            nullable_enum: Some(test_client::UnionInternalGetRequestNullableEnumWithFields::B),
+        }
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_unions_with_get_requests() {
+        use test_client::UnionInternalGetRequest as U;
+        let client = TestClient::create(get_config(headers()));
+        let null_values = U::WithFields {
+            string: "hello world".to_string(),
+            nullable_string: None,
+            optional_string: None,
+            float64: 1.5,
+            int64: -5,
+            boolean: false,
+            timestamp: DateTime::<Utc>::from_timestamp_millis(TARGET_MS)
+                .unwrap()
+                .fixed_offset(),
+            nullable_enum: None,
+        };
+        for input in [U::Empty {}, null_values, get_request_input("helloworld")] {
+            let result = client
+                .tests
+                .send_union_internal_get_request(input.clone())
+                .await;
+            assert_eq!(result.unwrap(), input);
+        }
+    }
+
+    #[tokio::test]
+    async fn get_requests_url_encode_params() {
+        let client = TestClient::create(get_config(headers()));
+        for value in ["hello world", "a b&c=d/\u{e9}?#+"] {
+            let input = get_request_input(value);
+            let result = client
+                .tests
+                .send_union_internal_get_request(input.clone())
+                .await;
+            assert_eq!(result.unwrap(), input);
+        }
+    }
+
+    #[tokio::test]
+    async fn non_nullable_strings_can_be_set_to_null_in_get_requests() {
+        use test_client::UnionInternalGetRequest as U;
+        let client = TestClient::create(get_config(headers()));
+        let input = U::WithFields {
+            string: "null".to_string(),
+            nullable_string: None,
+            optional_string: None,
+            float64: 1.5,
+            int64: 5,
+            boolean: true,
+            timestamp: DateTime::<Utc>::from_timestamp_millis(TARGET_MS)
+                .unwrap()
+                .fixed_offset(),
+            nullable_enum: None,
+        };
+        let result = client
+            .tests
+            .send_union_internal_get_request(input.clone())
+            .await;
+        assert_eq!(result.unwrap(), input);
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_union_variant_shapes() {
+        use test_client::*;
+        let client = TestClient::create(get_config(headers()));
+        let date = DateTime::<Utc>::from_timestamp_millis(TARGET_MS)
+            .unwrap()
+            .fixed_offset();
+        let mut record = BTreeMap::<String, i64>::new();
+        record.insert("a".to_string(), -1);
+        let internal = vec![
+            UnionVariantShapesInternal::Empty {},
+            UnionVariantShapesInternal::AllOptional {
+                first: None,
+                second: None,
+            },
+            UnionVariantShapesInternal::AllOptional {
+                first: None,
+                second: Some(1),
+            },
+            UnionVariantShapesInternal::AllOptional {
+                first: Some("a".to_string()),
+                second: Some(1),
+            },
+            UnionVariantShapesInternal::Mixed {
+                required: "a".to_string(),
+                nullable: None,
+                optional: None,
+            },
+            UnionVariantShapesInternal::Mixed {
+                required: "a".to_string(),
+                nullable: Some("c".to_string()),
+                optional: Some("b".to_string()),
+            },
+            UnionVariantShapesInternal::Nested {
+                array: vec![UnionVariantShapesInternalArrayElement {
+                    id: "a".to_string(),
+                }],
+                record,
+                object: UnionVariantShapesInternalObjectNested { timestamp: date },
+            },
+        ];
+        let external = vec![
+            UnionVariantShapesExternal::Empty(UnionVariantShapesExternalEmptyValue {}),
+            UnionVariantShapesExternal::AllOptional(UnionVariantShapesExternalAllOptionalValue {
+                first: None,
+                second: None,
+            }),
+            UnionVariantShapesExternal::AllOptional(UnionVariantShapesExternalAllOptionalValue {
+                first: None,
+                second: Some(1),
+            }),
+            UnionVariantShapesExternal::Mixed(UnionVariantShapesExternalMixedValue {
+                required: "a".to_string(),
+                nullable: None,
+                optional: None,
+            }),
+            UnionVariantShapesExternal::Mixed(UnionVariantShapesExternalMixedValue {
+                required: "a".to_string(),
+                nullable: Some("c".to_string()),
+                optional: Some("b".to_string()),
+            }),
+        ];
+        let adjacent = vec![
+            UnionVariantShapesAdjacent::Empty(UnionVariantShapesAdjacentEmptyData {}),
+            UnionVariantShapesAdjacent::AllOptional(UnionVariantShapesAdjacentAllOptionalData {
+                first: None,
+                second: None,
+            }),
+            UnionVariantShapesAdjacent::AllOptional(UnionVariantShapesAdjacentAllOptionalData {
+                first: None,
+                second: Some(1),
+            }),
+            UnionVariantShapesAdjacent::Mixed(UnionVariantShapesAdjacentMixedData {
+                required: "a".to_string(),
+                nullable: None,
+                optional: None,
+            }),
+            UnionVariantShapesAdjacent::Mixed(UnionVariantShapesAdjacentMixedData {
+                required: "a".to_string(),
+                nullable: Some("c".to_string()),
+                optional: Some("b".to_string()),
+            }),
+        ];
+        let defaults = UnionVariantShapes {
+            internal: internal[0].clone(),
+            external: external[0].clone(),
+            adjacent: adjacent[0].clone(),
+        };
+        let mut inputs = Vec::new();
+        for value in internal {
+            let mut input = defaults.clone();
+            input.internal = value;
+            inputs.push(input);
+        }
+        for value in external {
+            let mut input = defaults.clone();
+            input.external = value;
+            inputs.push(input);
+        }
+        for value in adjacent {
+            let mut input = defaults.clone();
+            input.adjacent = value;
+            inputs.push(input);
+        }
+        for input in inputs {
+            let result = client.tests.send_union_variant_shapes(input.clone()).await;
+            assert_eq!(result.unwrap(), input);
+        }
+    }
+
+    #[tokio::test]
+    async fn can_send_and_receive_union_variant_types() {
+        use test_client::*;
+        let client = TestClient::create(get_config(headers()));
+        let mut record = BTreeMap::<String, String>::new();
+        record.insert("a".to_string(), "b".to_string());
+        let any = serde_json::json!({ "a": 1 });
+        let hello = "hello world".to_string();
+        let external = vec![
+            UnionVariantTypesExternal::String(hello.clone()),
+            UnionVariantTypesExternal::Int64(-5),
+            UnionVariantTypesExternal::Uint64(5),
+            UnionVariantTypesExternal::Float64(1.5),
+            UnionVariantTypesExternal::Enumerator(UnionVariantTypesExternalEnumeratorValue::B),
+            UnionVariantTypesExternal::Record(record.clone()),
+            UnionVariantTypesExternal::Any(any.clone()),
+            UnionVariantTypesExternal::Any(serde_json::Value::Null),
+            UnionVariantTypesExternal::NullableString(None),
+            UnionVariantTypesExternal::NullableString(Some(hello.clone())),
+            UnionVariantTypesExternal::NullableArray(None),
+            UnionVariantTypesExternal::NullableArray(Some(vec![hello.clone()])),
+            UnionVariantTypesExternal::ExternalUnion(
+                UnionVariantTypesExternalExternalUnionValue::Text(hello.clone()),
+            ),
+            UnionVariantTypesExternal::InternalUnion(
+                UnionVariantTypesExternalInternalUnionValue::Circle { radius: 1.5 },
+            ),
+            UnionVariantTypesExternal::AdjacentUnion(
+                UnionVariantTypesExternalAdjacentUnionValue::Text(hello.clone()),
+            ),
+            UnionVariantTypesExternal::Class(hello.clone()),
+            UnionVariantTypesExternal::Default(hello.clone()),
+        ];
+        let adjacent = vec![
+            UnionVariantTypesAdjacent::String(hello.clone()),
+            UnionVariantTypesAdjacent::Int64(-5),
+            UnionVariantTypesAdjacent::Uint64(5),
+            UnionVariantTypesAdjacent::Float64(1.5),
+            UnionVariantTypesAdjacent::Enumerator(UnionVariantTypesAdjacentEnumeratorData::B),
+            UnionVariantTypesAdjacent::Record(record.clone()),
+            UnionVariantTypesAdjacent::Any(any.clone()),
+            UnionVariantTypesAdjacent::Any(serde_json::Value::Null),
+            UnionVariantTypesAdjacent::NullableString(None),
+            UnionVariantTypesAdjacent::NullableString(Some(hello.clone())),
+            UnionVariantTypesAdjacent::NullableArray(None),
+            UnionVariantTypesAdjacent::NullableArray(Some(vec![hello.clone()])),
+            UnionVariantTypesAdjacent::ExternalUnion(
+                UnionVariantTypesAdjacentExternalUnionData::Text(hello.clone()),
+            ),
+            UnionVariantTypesAdjacent::InternalUnion(
+                UnionVariantTypesAdjacentInternalUnionData::Circle { radius: 1.5 },
+            ),
+            UnionVariantTypesAdjacent::AdjacentUnion(
+                UnionVariantTypesAdjacentAdjacentUnionData::Text(hello.clone()),
+            ),
+            UnionVariantTypesAdjacent::Class(hello.clone()),
+            UnionVariantTypesAdjacent::Default(hello.clone()),
+        ];
+        let internal = vec![
+            UnionVariantTypesInternal::Class {
+                r#for: "a".to_string(),
+                default: "b".to_string(),
+            },
+            UnionVariantTypesInternal::Default {
+                class: "a".to_string(),
+                internal_union: UnionVariantTypesInternalInternalUnionDefault::Circle {
+                    radius: 1.5,
+                },
+                adjacent_union: UnionVariantTypesInternalAdjacentUnionDefault::Text(hello.clone()),
+                external_union: UnionVariantTypesInternalExternalUnionDefault::Text(hello.clone()),
+            },
+        ];
+        let defaults = UnionVariantTypes {
+            external: external[0].clone(),
+            adjacent: adjacent[0].clone(),
+            internal: internal[0].clone(),
+        };
+        let mut inputs = Vec::new();
+        for value in external {
+            let mut input = defaults.clone();
+            input.external = value;
+            inputs.push(input);
+        }
+        for value in adjacent {
+            let mut input = defaults.clone();
+            input.adjacent = value;
+            inputs.push(input);
+        }
+        for value in internal {
+            let mut input = defaults.clone();
+            input.internal = value;
+            inputs.push(input);
+        }
+        for input in inputs {
+            let result = client.tests.send_union_variant_types(input.clone()).await;
+            assert_eq!(result.unwrap(), input);
+        }
+    }
+
+    #[tokio::test]
+    async fn prefixed_client_can_send_and_receive_unions() {
+        use crate::test_client_prefixed::*;
+        let client = TestClientPrefixed::create(get_config(headers()));
+        let external = FooRecursiveUnionExternal::Child(Box::new(FooRecursiveUnionExternal::Text(
+            "hello world".to_string(),
+        )));
+        let result = client.send_recursive_union_external(external.clone()).await;
+        assert_eq!(result.unwrap(), external);
+        let internal = FooRecursiveUnionInternal::Child {
+            data: Box::new(FooRecursiveUnionInternal::Text {
+                data: "hello world".to_string(),
+            }),
+        };
+        let result = client.send_recursive_union_internal(internal.clone()).await;
+        assert_eq!(result.unwrap(), internal);
+        let adjacent = FooRecursiveUnionAdjacent::Child(Box::new(FooRecursiveUnionAdjacent::Text(
+            "hello world".to_string(),
+        )));
+        let result = client.send_recursive_union_adjacent(adjacent.clone()).await;
+        assert_eq!(result.unwrap(), adjacent);
+        let get_input = FooUnionInternalGetRequest::WithFields {
+            string: "helloworld".to_string(),
+            nullable_string: None,
+            optional_string: None,
+            float64: 1.5,
+            int64: 5,
+            boolean: true,
+            timestamp: DateTime::<Utc>::from_timestamp_millis(TARGET_MS)
+                .unwrap()
+                .fixed_offset(),
+            nullable_enum: Some(FooUnionInternalGetRequestNullableEnumWithFields::A),
+        };
+        let result = client
+            .send_union_internal_get_request(get_input.clone())
+            .await;
+        assert_eq!(result.unwrap(), get_input);
     }
 
     #[tokio::test]
@@ -459,10 +928,16 @@ mod tests {
             array: None,
             object: None,
             record: Some(record),
-            discriminator: Some(
-                crate::test_client::ObjectWithEveryOptionalTypeDiscriminator::A {
-                    title: "hello world".to_string(),
+            union_external: Some(
+                crate::test_client::ObjectWithEveryOptionalTypeUnionExternal::Boolean(true),
+            ),
+            union_internal: Some(
+                crate::test_client::ObjectWithEveryOptionalTypeUnionInternal::Circle {
+                    radius: 15.5,
                 },
+            ),
+            union_adjacent: Some(
+                crate::test_client::ObjectWithEveryOptionalTypeUnionAdjacent::Boolean(true),
             ),
             nested_object: Some(ObjectWithEveryOptionalTypeNestedObject {
                 id: "hello world".to_string(),

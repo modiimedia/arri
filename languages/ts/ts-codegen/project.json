@@ -30,7 +30,8 @@
       "executor": "nx:run-commands",
       "inputs": [
         "{projectRoot}/src",
-        "{workspaceRoot}/languages/ts/ts-codegen-reference/src/referenceClient.ts"
+        "{workspaceRoot}/languages/ts/ts-codegen-reference/src/referenceClient.ts",
+        "{workspaceRoot}/languages/ts/ts-codegen-reference/src/referenceClientMinimal.ts"
       ],
       "outputs": ["{workspaceRoot}/languages/ts/ts-codegen/.temp"],
       "options": {

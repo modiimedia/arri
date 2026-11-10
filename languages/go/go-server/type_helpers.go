@@ -8,6 +8,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// Deprecated: embed arri.Union with the `tagKey` tag instead.
 type DiscriminatorKey struct{}
 
 //// Optional Types ////

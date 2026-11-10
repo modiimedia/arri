@@ -2,6 +2,7 @@ import { type SchemaFormElements } from '@arrirpc/codegen-utils';
 
 import {
     type CodegenContext,
+    indentTail,
     isNullable,
     type KotlinProperty,
 } from './_common';
@@ -28,58 +29,47 @@ export function kotlinArrayFromSchema(
         isNullable: nullable,
         defaultValue,
         fromJson(input) {
-            if (nullable) {
-                return `when (${input}) {
-                    is JsonArray -> {
-                        val __value: ${typeName} = mutableListOf()
-                        for (__element in ${input}!!.jsonArray) {
-                            __value.add(
-                                ${subType.fromJson('__element')}
-                            )
-                        }
-                        __value
-                    }
-
-                    else -> null
-                }`;
-            }
             return `when (${input}) {
-                is JsonArray -> {
-                    val __value: ${typeName} = mutableListOf()
-                    for (__element in ${input}!!.jsonArray) {
-                        __value.add(
-                            ${subType.fromJson('__element')}
-                        )
-                    }
-                    __value
-                }
+    is JsonArray -> {
+        val __value: ${typeName} = mutableListOf()
+        for (__element in ${input}!!.jsonArray) {
+            __value.add(
+                ${indentTail(subType.fromJson('__element'), 16)}
+            )
+        }
+        __value
+    }
 
-                else -> mutableListOf()
-            }`;
+    else -> ${defaultValue}
+}`;
         },
         toJson(input, target) {
+            const elementToJson = indentTail(
+                subType.toJson('__element', target),
+                4,
+            );
             if (schema.isNullable) {
                 return `if (${input} == null) {
-                    ${target} += "null"
-                } else {
-                    ${target} += "["
-                    for ((__index, __element) in ${input}.withIndex()) {
-                        if (__index != 0) {
-                            ${target} += ","
-                        }
-                        ${subType.toJson('__element', target)}
-                    }
-                    ${target} += "]"
-                }`;
+    ${target} += "null"
+} else {
+    ${target} += "["
+    for ((__index, __element) in ${input}.withIndex()) {
+        if (__index != 0) {
+            ${target} += ","
+        }
+        ${indentTail(elementToJson, 4)}
+    }
+    ${target} += "]"
+}`;
             }
             return `${target} += "["
-                for ((__index, __element) in ${input}.withIndex()) {
-                    if (__index != 0) {
-                        ${target} += ","
-                    }
-                    ${subType.toJson('__element', target)}
-                }
-                ${target} += "]"`;
+for ((__index, __element) in ${input}.withIndex()) {
+    if (__index != 0) {
+        ${target} += ","
+    }
+    ${elementToJson}
+}
+${target} += "]"`;
         },
         toQueryString() {
             return `__logError("[WARNING] arrays cannot be serialized to query params. Skipping field at ${context.instancePath}.")`;

@@ -1,10 +1,75 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:arri_client/arri_client.dart';
+import 'package:http/testing.dart';
+import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
 main() {
   final nonExistentUrl = "http://thisurldoesntexist.blah";
+
+  test("encodeQueryParams() encodes keys and values", () {
+    expect(
+      encodeQueryParams({
+        "id": 1,
+        "my key": "a b&c=d/\u00e9?#+",
+        "nullable": null,
+        "isAdmin": false,
+      }),
+      equals(
+        "id=1&my+key=a+b%26c%3Dd%2F%C3%A9%3F%23%2B&nullable=null&isAdmin=false",
+      ),
+    );
+    expect(encodeQueryParams({}), equals(""));
+  });
+
+  group("dateTimeFromDynamic()", () {
+    final fallback = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    test("parses valid values", () {
+      final expected = DateTime.parse("2001-01-01T16:00:00.000Z");
+      expect(
+        dateTimeFromDynamic("2001-01-01T16:00:00.000Z", fallback),
+        equals(expected),
+      );
+      expect(dateTimeFromDynamic(expected, fallback), equals(expected));
+      expect(
+        nullableDateTimeFromDynamic("2001-01-01T16:00:00.000Z"),
+        equals(expected),
+      );
+    });
+    test("falls back for invalid strings", () {
+      expect(dateTimeFromDynamic("hello world", fallback), equals(fallback));
+      expect(dateTimeFromDynamic("", fallback), equals(fallback));
+      expect(nullableDateTimeFromDynamic("hello world"), equals(null));
+      expect(dateTimeListFromDynamic(["hello world"]), equals([fallback]));
+      expect(nullableDateTimeListFromDynamic(["hello world"]), equals([null]));
+    });
+  });
+
+  group("request timeouts", () {
+    final slowClient = MockClient((_) async {
+      await Future.delayed(Duration(milliseconds: 200));
+      return http.Response("ok", 200);
+    });
+    for (final params in [
+      null,
+      {"id": "1"},
+    ]) {
+      test("GET ${params == null ? "without" : "with"} params", () async {
+        await expectLater(
+          arriRequest(
+            "http://localhost",
+            httpClient: slowClient,
+            method: HttpMethod.get,
+            params: params,
+            timeout: Duration(milliseconds: 10),
+          ),
+          throwsA(isA<TimeoutException>()),
+        );
+      });
+    }
+  });
 
   test("invalid url", () async {
     final response =
@@ -240,6 +305,68 @@ data: {"hello":""";
 //     final message = WsEvent.fromString(input, (data) => null);
 //     expect(message is WsRawEvent, equals(true));
 //   });
+
+  test("EventSource handles partial UTF-8 sequences without data loss or delays", () async {
+    final controller = StreamController<List<int>>();
+    final client = MockClient.streaming((request, bodyStream) async {
+      return http.StreamedResponse(controller.stream, 200);
+    });
+
+    final messages = <String>[];
+    final errors = <ArriError>[];
+
+    final eventSource = EventSource<String>(
+      url: "http://example.com/sse",
+      httpClient: client,
+      parser: (input) => input,
+      onMessage: (msg, _) {
+        messages.add(msg);
+      },
+      onError: (err, _) {
+        errors.add(err);
+      },
+    );
+
+    // Let's send three chunks.
+    // Chunk 1 has a complete message 1, followed by a partial emoji.
+    // "id: 1\ndata: msg1\n\nid: 2\ndata: 🚀" (where the rocket emoji is split)
+    // 🚀 UTF-8 bytes: F0 9F 9A 80.
+    // Chunk 1 ends with F0 9F.
+    final chunk1Str = "id: 1\ndata: msg1\n\nid: 2\ndata: ";
+    final chunk1Bytes = [...utf8.encode(chunk1Str), 0xF0, 0x9F];
+
+    // Chunk 2 starts with 9A 80 (rest of rocket), ends the message, and then has message 3, followed by another partial emoji:
+    // "\n\nid: 3\ndata: msg2\n\nid: 4\ndata: 🚀" (where rocket is split, ending with F0 9F)
+    final chunk2StrStart = "\n\nid: 3\ndata: msg2\n\nid: 4\ndata: ";
+    final chunk2Bytes = [0x9A, 0x80, ...utf8.encode(chunk2StrStart), 0xF0, 0x9F];
+
+    // Chunk 3 has the rest of the second rocket:
+    // "\n\n"
+    final chunk3Bytes = [0x9A, 0x80, ...utf8.encode("\n\n")];
+
+    controller.add(chunk1Bytes);
+    await Future.delayed(Duration(milliseconds: 100));
+    // Without the bug, message 1 ("msg1") should be received immediately!
+    // But with the bug, it is NOT received because Chunk 1 threw a FormatException, so pendingBytes was set and it returned early.
+    expect(messages, contains("msg1"));
+
+    controller.add(chunk2Bytes);
+    await Future.delayed(Duration(milliseconds: 100));
+
+    controller.add(chunk3Bytes);
+    await Future.delayed(Duration(milliseconds: 100));
+
+    // Under the fixed code, all messages should be received successfully:
+    // 1. "msg1"
+    // 2. "🚀"
+    // 3. "msg2"
+    // 4. "🚀"
+    expect(messages, equals(["msg1", "🚀", "msg2", "🚀"]));
+    expect(errors, isEmpty);
+
+    eventSource.close();
+    await controller.close();
+  });
 }
 
 class ExampleMessage {

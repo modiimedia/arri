@@ -2,6 +2,19 @@ import XCTest
 @testable import ArriClient
 
 final class ArriClientTests: XCTestCase {
+    func testSetArriQueryItemsEncodesSpecialCharacters() {
+        var components = URLComponents(string: "http://localhost/rpcs/test")!
+        components.setArriQueryItems([
+            URLQueryItem(name: "id", value: "1"),
+            URLQueryItem(name: "my key", value: "a b&c=d/\u{e9}?#+"),
+        ])
+        XCTAssertEqual(
+            components.url!.absoluteString,
+            "http://localhost/rpcs/test?id=1&my%20key=a%20b%26c%3Dd/%C3%A9?%23%2B"
+        )
+        XCTAssertEqual(components.queryItems?[1].value, "a b&c=d/\u{e9}?#+")
+    }
+
     func testSseLineResult() {
         let idInput = "id: 1"
         let idInput2 = "id:12345"

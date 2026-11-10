@@ -13,12 +13,17 @@ export interface TsProperty {
     validationTemplate: (input: string) => string;
     fromJsonTemplate: (input: string, target: string) => string;
     toJsonTemplate: (input: string, target: string, key: string) => string;
-    toQueryStringTemplate: (
+    cloneTemplate: (input: string, target: string) => string;
+    setSearchParamTemplate: (
         input: string,
         target: string,
         key: string,
     ) => string;
     content: string;
+}
+
+export function defaultCloneTemplate(input: string, target: string) {
+    return `${target} = ${input};`;
 }
 
 export interface CodegenContext {
@@ -31,11 +36,16 @@ export interface CodegenContext {
     discriminatorKey: string;
     discriminatorValue: string;
     versionNumber: string;
-    usedFeatures: {
+    useRpcTypes: {
         sse: boolean;
         ws: boolean;
     };
     rpcGenerators: Partial<Record<string, RpcGenerator>>;
+    features: {
+        validateFn: boolean;
+        cloneFn: boolean;
+        validatorObj: boolean;
+    };
 }
 
 export function getJsDocComment(metadata: Schema['metadata']) {
@@ -56,6 +66,31 @@ export function getJsDocComment(metadata: Schema['metadata']) {
     return `/**
 ${descriptionParts.join('\n')}
 */\n`;
+}
+
+/**
+ * Property access for a raw JSON key. Uses dot notation when the key is a valid identifier and bracket notation otherwise.
+ */
+export function jsonKeyAccessor(target: string, key: string): string {
+    if (isValidIdentifier(key)) {
+        return `${target}.${key}`;
+    }
+    return `${target}[${JSON.stringify(key)}]`;
+}
+
+function isValidIdentifier(input: string): boolean {
+    if (input.length === 0) return false;
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i]!;
+        const isLetter =
+            (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
+        const isAllowedSymbol = char === '_' || char === '$';
+        const isDigit = char >= '0' && char <= '9';
+        if (isLetter || isAllowedSymbol) continue;
+        if (isDigit && i > 0) continue;
+        return false;
+    }
+    return true;
 }
 
 const illegalChars = '!#^&*()-+=?/][{}|\\~`\'"';
