@@ -66,6 +66,14 @@ The following is the list of all values that you can put for type:
 | int64     | JSON string containing a whole number that fits in a signed 64-bit integer    | "9223372036854775807"     |
 | uint64    | JSON string containing a whole number that fits in an unsigned 64-bit integer | "18446744073709551615"    |
 
+#### 64-bit integers
+
+Many JSON parsers (including JavaScript's) store every number as a 64-bit float, which can only represent whole numbers up to 2^53 exactly. To avoid losing precision, `int64` and `uint64` values **must be encoded as JSON strings**.
+
+When decoding, implementations **should also accept whole JSON numbers** (for example `9007199254740993` as well as `"9007199254740993"`). Rejecting them wouldn't prevent precision loss, because any loss already happened when the sender encoded the value, and accepting them makes it easier for third parties to interoperate with Arri.
+
+In both cases the value must be a whole number within the type's range. When the value is a string it must contain only an optional leading `-` followed by one or more ASCII digits (no whitespace, `+` sign, decimal point, exponent, or hex prefix).
+
 ### "Enum" Schema Form
 
 The enum schema is used to say that something needs to be a string in a given list of strings. For example,

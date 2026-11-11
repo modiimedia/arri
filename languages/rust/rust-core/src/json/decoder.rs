@@ -235,7 +235,7 @@ impl<'a> JsonDecoder<'a> {
         } else {
             text.parse::<f64>()
                 .ok()
-                .and_then(|v| Number::Float(v).as_i64().map(|v| v as i128))
+                .and_then(|v| Number::Float(v).as_i128())
         };
         value.ok_or_else(|| {
             if is_integer {
@@ -283,10 +283,14 @@ impl<'a> JsonDecoder<'a> {
         })
     }
 
-    /// Read a JSON string containing a whole number (used for int64 and uint64)
-    fn read_integer_string(&mut self, expected: &str) -> Result<i128, DecodeError> {
+    /// Read an int64 / uint64.
+    ///
+    /// Arri encodes these as strings so that clients which store every number as a float
+    /// (such as JavaScript) don't lose precision. Plain JSON numbers are accepted as well since any
+    /// precision loss has already happened on the sender's side.
+    fn read_large_integer(&mut self, expected: &str) -> Result<i128, DecodeError> {
         if self.peek_value() != Some(b'"') {
-            return Err(self.invalid_type(&format!("{expected} (as a string)")));
+            return self.read_integer(expected);
         }
         let text = self.read_str()?;
         parse_integer(text).ok_or_else(|| {
@@ -503,8 +507,8 @@ impl Decoder for JsonDecoder<'_> {
         decode_u16 => u16, "uint16", read_integer;
         decode_i32 => i32, "int32", read_integer;
         decode_u32 => u32, "uint32", read_integer;
-        decode_i64 => i64, "int64", read_integer_string;
-        decode_u64 => u64, "uint64", read_integer_string;
+        decode_i64 => i64, "int64", read_large_integer;
+        decode_u64 => u64, "uint64", read_large_integer;
     }
 
     fn decode_string(&mut self) -> Result<String, DecodeError> {
@@ -712,6 +716,14 @@ mod tests {
             from_str::<u64>("\"18446744073709551615\"").unwrap(),
             u64::MAX
         );
+        // int64 / uint64 are encoded as strings but plain numbers are accepted too
+        assert_eq!(from_str::<i64>("-42").unwrap(), -42);
+        assert_eq!(from_str::<i64>("-9223372036854775808").unwrap(), i64::MIN);
+        assert_eq!(from_str::<u64>("18446744073709551615").unwrap(), u64::MAX);
+        assert_eq!(
+            from_str::<u64>("1.5e19").unwrap(),
+            15_000_000_000_000_000_000
+        );
         assert_eq!(from_str::<f64>("-1.5e-3").unwrap(), -0.0015);
         assert_eq!(from_str::<f32>("1.1").unwrap(), 1.1f32);
         assert_eq!(from_str::<f64>("10").unwrap(), 10.0);
@@ -726,7 +738,13 @@ mod tests {
         assert_eq!(kind::<u32>("-1"), DecodeErrorKind::InvalidValue);
         assert_eq!(kind::<i32>("1.5"), DecodeErrorKind::InvalidValue);
         assert_eq!(kind::<i32>("\"1\""), DecodeErrorKind::InvalidType);
-        assert_eq!(kind::<i64>("1"), DecodeErrorKind::InvalidType);
+        assert_eq!(kind::<i64>("true"), DecodeErrorKind::InvalidType);
+        assert_eq!(kind::<i64>("1.5"), DecodeErrorKind::InvalidValue);
+        assert_eq!(kind::<u64>("-1"), DecodeErrorKind::InvalidValue);
+        assert_eq!(
+            kind::<i64>("9223372036854775808"),
+            DecodeErrorKind::InvalidValue
+        );
         assert_eq!(kind::<i64>("\"1.0\""), DecodeErrorKind::InvalidValue);
         assert_eq!(
             kind::<u64>("\"18446744073709551616\""),

@@ -55,7 +55,7 @@ impl Number {
     }
 
     /// The value as an integer if it's a whole number
-    fn as_i128(&self) -> Option<i128> {
+    pub(crate) fn as_i128(&self) -> Option<i128> {
         match *self {
             Number::Int(v) => Some(v as i128),
             Number::Uint(v) => Some(v as i128),
