@@ -90,7 +90,11 @@ pub trait DecodeFields: Sized {
     ) -> Result<Self, DecodeError>;
 }
 
+/// The kind of a [`DecodeError`].
+///
+/// More kinds may be added in the future, so matches on this enum outside of arri need a `_` arm.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum DecodeErrorKind {
     /// The input is malformed (e.g. invalid JSON)
     Syntax,

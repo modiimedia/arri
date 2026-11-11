@@ -71,7 +71,11 @@ pub trait EncodeFields {
     fn encode_fields<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError>;
 }
 
+/// An error that occurred while encoding.
+///
+/// More variants may be added in the future, so matches on this enum outside of arri need a `_` arm.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum EncodeError {
     /// `NaN` and infinite values cannot be represented in JSON
     NonFiniteFloat(f64),
