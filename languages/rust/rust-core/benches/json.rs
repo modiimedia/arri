@@ -1,21 +1,47 @@
 //! Compares arri's JSON encoding / decoding against serde_json using equivalent types.
 //!
-//! Run with `cargo bench -p arri --bench json`
+//! Run with `cargo bench -p arri --bench json --features chrono,serde`
 //!
-//! Both libraries decode the exact same input (the output of arri's encoder). The only intentional
-//! difference in the payloads is how timestamps are written (arri always writes milliseconds).
+//! Every payload is benchmarked twice:
+//!
+//! - `arri_timestamp/*`: both libraries use `arri::Timestamp` (serde through the `serde` feature).
+//!   Both sides run the exact same timestamp parsing / formatting code, so this isolates the cost
+//!   of the JSON encoding and decoding itself. **This is the apples to apples comparison.**
+//! - `chrono/*`: both libraries use `chrono::DateTime<Utc>`. arri converts to its own `Timestamp`
+//!   while serde uses chrono's serde implementation, so differences here also include the
+//!   timestamp implementations. This reflects what users of chrono will actually see.
+//!
+//! Both libraries decode the exact same input (the output of arri's encoder). 64 bit integers are
+//! intentionally left out since arri writes them as JSON strings and serde_json writes numbers.
 
 use std::{collections::BTreeMap, hint::black_box};
 
 use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 
+/// A timestamp type that both libraries can encode
+trait BenchTimestamp: Clone {
+    fn from_millis(millis: i64) -> Self;
+}
+
+impl BenchTimestamp for arri::Timestamp {
+    fn from_millis(millis: i64) -> Self {
+        arri::Timestamp::from_unix_millis(millis).unwrap()
+    }
+}
+
+impl BenchTimestamp for chrono::DateTime<chrono::Utc> {
+    fn from_millis(millis: i64) -> Self {
+        chrono::DateTime::from_timestamp_millis(millis).unwrap()
+    }
+}
+
 mod arri_types {
     use std::collections::BTreeMap;
 
-    use arri::{ArriModel, Nullable, Timestamp};
+    use arri::{ArriModel, Nullable};
 
     #[derive(ArriModel, Clone)]
-    pub struct User {
+    pub struct User<Ts> {
         pub id: String,
         pub name: String,
         pub email: Nullable<String>,
@@ -25,11 +51,11 @@ mod arri_types {
         pub score: f64,
         pub role: Role,
         pub tags: Vec<String>,
-        pub created_at: Timestamp,
+        pub created_at: Ts,
         pub settings: Settings,
     }
 
-    #[derive(ArriModel, Clone)]
+    #[derive(ArriModel, Clone, Copy)]
     pub enum Role {
         Standard,
         Admin,
@@ -45,9 +71,9 @@ mod arri_types {
 
     #[derive(ArriModel, Clone)]
     #[arri(tag_key = "type")]
-    pub enum Event {
+    pub enum Event<Ts> {
         Created {
-            user: User,
+            user: User<Ts>,
         },
         Renamed {
             id: String,
@@ -56,19 +82,50 @@ mod arri_types {
         },
         Deleted {
             id: String,
-            deleted_at: Timestamp,
+            deleted_at: Ts,
         },
+    }
+
+    /// A single large object
+    #[derive(ArriModel, Clone)]
+    pub struct Report<Ts> {
+        pub id: String,
+        pub title: String,
+        pub summary: String,
+        pub created_at: Ts,
+        pub updated_at: Nullable<Ts>,
+        pub version: u32,
+        pub priority: u8,
+        pub offset: i16,
+        pub ratio: f32,
+        pub score: f64,
+        pub is_public: bool,
+        pub is_archived: bool,
+        pub owner: User<Ts>,
+        pub tags: Vec<String>,
+        pub counters: BTreeMap<String, u32>,
+        pub sections: Vec<Section>,
+        pub authors: Vec<User<Ts>>,
+    }
+
+    #[derive(ArriModel, Clone)]
+    pub struct Section {
+        pub heading: String,
+        pub body: String,
+        pub order: u16,
+        pub is_collapsed: bool,
+        pub weight: f64,
+        pub attributes: BTreeMap<String, String>,
     }
 }
 
 mod serde_types {
     use std::collections::BTreeMap;
 
-    use chrono::{DateTime, Utc};
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Clone)]
-    pub struct User {
+    pub struct User<Ts> {
         pub id: String,
         pub name: String,
         pub email: Option<String>,
@@ -79,11 +136,11 @@ mod serde_types {
         pub score: f64,
         pub role: Role,
         pub tags: Vec<String>,
-        pub created_at: DateTime<Utc>,
+        pub created_at: Ts,
         pub settings: Settings,
     }
 
-    #[derive(Serialize, Deserialize, Clone)]
+    #[derive(Serialize, Deserialize, Clone, Copy)]
     pub enum Role {
         Standard,
         Admin,
@@ -99,9 +156,9 @@ mod serde_types {
 
     #[derive(Serialize, Deserialize, Clone)]
     #[serde(tag = "type")]
-    pub enum Event {
+    pub enum Event<Ts> {
         Created {
-            user: User,
+            user: User<Ts>,
         },
         Renamed {
             id: String,
@@ -110,14 +167,46 @@ mod serde_types {
         },
         Deleted {
             id: String,
-            deleted_at: DateTime<Utc>,
+            deleted_at: Ts,
         },
+    }
+
+    #[derive(Serialize, Deserialize, Clone)]
+    pub struct Report<Ts> {
+        pub id: String,
+        pub title: String,
+        pub summary: String,
+        pub created_at: Ts,
+        pub updated_at: Option<Ts>,
+        pub version: u32,
+        pub priority: u8,
+        pub offset: i16,
+        pub ratio: f32,
+        pub score: f64,
+        pub is_public: bool,
+        pub is_archived: bool,
+        pub owner: User<Ts>,
+        pub tags: Vec<String>,
+        pub counters: BTreeMap<String, u32>,
+        pub sections: Vec<Section>,
+        pub authors: Vec<User<Ts>>,
+    }
+
+    #[derive(Serialize, Deserialize, Clone)]
+    pub struct Section {
+        pub heading: String,
+        pub body: String,
+        pub order: u16,
+        pub is_collapsed: bool,
+        pub weight: f64,
+        pub attributes: BTreeMap<String, String>,
     }
 }
 
 const BIO: &str = "Likes \"quotes\", backslashes \\ and\nnewlines. Also unicode: café 🎉";
+const PARAGRAPH: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. \"Quoted text\" and a \\ backslash.\nNew line with unicode: naïve café 🎉 — done.\t";
 
-fn arri_user(i: usize) -> arri_types::User {
+fn arri_user<Ts: BenchTimestamp>(i: usize) -> arri_types::User<Ts> {
     let mut limits = BTreeMap::new();
     limits.insert("requests".to_string(), 1000 + i as u32);
     limits.insert("uploads".to_string(), 10);
@@ -139,7 +228,7 @@ fn arri_user(i: usize) -> arri_types::User {
             _ => arri_types::Role::Moderator,
         },
         tags: vec!["alpha".into(), "beta".into(), format!("tag{}", i % 7)],
-        created_at: arri::Timestamp::from_unix_millis(1_700_000_000_000 + i as i64 * 1000).unwrap(),
+        created_at: Ts::from_millis(1_700_000_000_000 + i as i64 * 1000),
         settings: arri_types::Settings {
             theme: "dark".into(),
             notifications: i.is_multiple_of(2),
@@ -148,7 +237,7 @@ fn arri_user(i: usize) -> arri_types::User {
     }
 }
 
-fn serde_user(user: &arri_types::User) -> serde_types::User {
+fn serde_user<Ts: Clone>(user: &arri_types::User<Ts>) -> serde_types::User<Ts> {
     serde_types::User {
         id: user.id.clone(),
         name: user.name.clone(),
@@ -163,7 +252,7 @@ fn serde_user(user: &arri_types::User) -> serde_types::User {
             arri_types::Role::Moderator => serde_types::Role::Moderator,
         },
         tags: user.tags.clone(),
-        created_at: user.created_at.into(),
+        created_at: user.created_at.clone(),
         settings: serde_types::Settings {
             theme: user.settings.theme.clone(),
             notifications: user.settings.notifications,
@@ -172,7 +261,7 @@ fn serde_user(user: &arri_types::User) -> serde_types::User {
     }
 }
 
-fn arri_event(i: usize) -> arri_types::Event {
+fn arri_event<Ts: BenchTimestamp>(i: usize) -> arri_types::Event<Ts> {
     match i % 3 {
         0 => arri_types::Event::Created { user: arri_user(i) },
         1 => arri_types::Event::Renamed {
@@ -182,12 +271,12 @@ fn arri_event(i: usize) -> arri_types::Event {
         },
         _ => arri_types::Event::Deleted {
             id: format!("user_{i}"),
-            deleted_at: arri::Timestamp::from_unix_millis(1_700_000_000_000 + i as i64).unwrap(),
+            deleted_at: Ts::from_millis(1_700_000_000_000 + i as i64),
         },
     }
 }
 
-fn serde_event(event: &arri_types::Event) -> serde_types::Event {
+fn serde_event<Ts: Clone>(event: &arri_types::Event<Ts>) -> serde_types::Event<Ts> {
     match event {
         arri_types::Event::Created { user } => serde_types::Event::Created {
             user: serde_user(user),
@@ -203,8 +292,78 @@ fn serde_event(event: &arri_types::Event) -> serde_types::Event {
         },
         arri_types::Event::Deleted { id, deleted_at } => serde_types::Event::Deleted {
             id: id.clone(),
-            deleted_at: (*deleted_at).into(),
+            deleted_at: deleted_at.clone(),
         },
+    }
+}
+
+fn arri_report<Ts: BenchTimestamp>() -> arri_types::Report<Ts> {
+    let sections = (0..200usize)
+        .map(|i| arri_types::Section {
+            heading: format!("Section {i}: an overview of item number {i}"),
+            body: PARAGRAPH.repeat(4),
+            order: i as u16,
+            is_collapsed: i.is_multiple_of(5),
+            weight: i as f64 / 7.0,
+            attributes: (0..5)
+                .map(|j| (format!("attribute_{j}"), format!("value {i}-{j}")))
+                .collect(),
+        })
+        .collect();
+    arri_types::Report {
+        id: "report_1".into(),
+        title: "Quarterly \"Large Object\" Report".into(),
+        // ~64KB of text with characters that need escaping
+        summary: PARAGRAPH.repeat(64 * 1024 / PARAGRAPH.len()),
+        created_at: Ts::from_millis(1_700_000_000_000),
+        updated_at: arri::Nullable::Present(Ts::from_millis(1_700_000_123_456)),
+        version: 42,
+        priority: 3,
+        offset: -120,
+        ratio: 0.75,
+        score: 98.6,
+        is_public: true,
+        is_archived: false,
+        owner: arri_user(0),
+        tags: (0..100).map(|i| format!("tag_{i}")).collect(),
+        counters: (0..1000u32)
+            .map(|i| (format!("counter_{i:04}"), i * 3))
+            .collect(),
+        sections,
+        authors: (0..50).map(arri_user).collect(),
+    }
+}
+
+fn serde_report<Ts: Clone>(report: &arri_types::Report<Ts>) -> serde_types::Report<Ts> {
+    serde_types::Report {
+        id: report.id.clone(),
+        title: report.title.clone(),
+        summary: report.summary.clone(),
+        created_at: report.created_at.clone(),
+        updated_at: report.updated_at.clone().into_option(),
+        version: report.version,
+        priority: report.priority,
+        offset: report.offset,
+        ratio: report.ratio,
+        score: report.score,
+        is_public: report.is_public,
+        is_archived: report.is_archived,
+        owner: serde_user(&report.owner),
+        tags: report.tags.clone(),
+        counters: report.counters.clone(),
+        sections: report
+            .sections
+            .iter()
+            .map(|s| serde_types::Section {
+                heading: s.heading.clone(),
+                body: s.body.clone(),
+                order: s.order,
+                is_collapsed: s.is_collapsed,
+                weight: s.weight,
+                attributes: s.attributes.clone(),
+            })
+            .collect(),
+        authors: report.authors.iter().map(serde_user).collect(),
     }
 }
 
@@ -235,17 +394,37 @@ where
     group.finish();
 }
 
-fn benchmarks(c: &mut Criterion) {
-    let user = arri_user(3);
-    bench_payload(c, "user", &user, &serde_user(&user));
+fn bench_all<Ts>(c: &mut Criterion, prefix: &str)
+where
+    Ts: BenchTimestamp
+        + arri::Encode
+        + arri::Decode
+        + serde::Serialize
+        + serde::de::DeserializeOwned,
+{
+    let user = arri_user::<Ts>(3);
+    bench_payload(c, &format!("{prefix}/user"), &user, &serde_user(&user));
 
-    let users: Vec<_> = (0..1000).map(arri_user).collect();
+    let users: Vec<_> = (0..1000).map(arri_user::<Ts>).collect();
     let serde_users: Vec<_> = users.iter().map(serde_user).collect();
-    bench_payload(c, "users_1000", &users, &serde_users);
+    bench_payload(c, &format!("{prefix}/users_1000"), &users, &serde_users);
 
-    let events: Vec<_> = (0..1000).map(arri_event).collect();
+    let events: Vec<_> = (0..1000).map(arri_event::<Ts>).collect();
     let serde_events: Vec<_> = events.iter().map(serde_event).collect();
-    bench_payload(c, "events_1000", &events, &serde_events);
+    bench_payload(c, &format!("{prefix}/events_1000"), &events, &serde_events);
+
+    let report = arri_report::<Ts>();
+    bench_payload(
+        c,
+        &format!("{prefix}/large_object"),
+        &report,
+        &serde_report(&report),
+    );
+}
+
+fn benchmarks(c: &mut Criterion) {
+    bench_all::<arri::Timestamp>(c, "arri_timestamp");
+    bench_all::<chrono::DateTime<chrono::Utc>>(c, "chrono");
 }
 
 criterion_group!(benches, benchmarks);

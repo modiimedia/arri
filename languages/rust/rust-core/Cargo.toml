@@ -40,4 +40,4 @@ trybuild = "1"
 [[bench]]
 name = "json"
 harness = false
-required-features = ["chrono"]
+required-features = ["chrono", "serde"]
