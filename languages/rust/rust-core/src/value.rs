@@ -498,14 +498,28 @@ impl Decoder for ValueDecoder {
 
     fn decode_f32(&mut self) -> Result<f32, DecodeError> {
         match self.take()? {
-            Value::Number(n) => Ok(n.as_f64() as f32),
+            Value::Number(n) => {
+                let v = n.as_f64() as f32;
+                if v.is_finite() {
+                    Ok(v)
+                } else {
+                    Err(DecodeError::invalid_value(format!(
+                        "{} is out of range for float32",
+                        n.as_f64()
+                    )))
+                }
+            }
             other => Err(DecodeError::invalid_type("float32", other.kind())),
         }
     }
 
     fn decode_f64(&mut self) -> Result<f64, DecodeError> {
         match self.take()? {
-            Value::Number(n) => Ok(n.as_f64()),
+            Value::Number(n) if n.as_f64().is_finite() => Ok(n.as_f64()),
+            Value::Number(n) => Err(DecodeError::invalid_value(format!(
+                "{} is out of range for float64",
+                n.as_f64()
+            ))),
             other => Err(DecodeError::invalid_type("float64", other.kind())),
         }
     }

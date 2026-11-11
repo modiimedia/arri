@@ -186,7 +186,9 @@ impl Timestamp {
                 "day is out of range for the month",
             ));
         }
-        if hour > 23 || minute > 59 || second > 60 {
+        // RFC 3339 allows a leap second (":60"), but `Timestamp` can't represent one and the other
+        // Arri implementations (JavaScript's `Date`, Go's `time.Parse`) reject it as well
+        if hour > 23 || minute > 59 || second > 59 {
             return Err(TimestampError::invalid_format("time is out of range"));
         }
 
@@ -543,7 +545,6 @@ mod tests {
                 "2001-01-01T16:00:00.1234567891234Z",
                 "2001-01-01T16:00:00.123456789Z",
             ),
-            ("2016-12-31T23:59:60Z", "2017-01-01T00:00:00.000Z"),
         ];
         for (input, expected) in cases {
             assert_eq!(Timestamp::parse(input).unwrap().to_rfc3339(), expected);
@@ -561,6 +562,9 @@ mod tests {
             "2001-01-32T16:00:00Z",
             "2001-01-01T24:00:00Z",
             "2001-01-01T16:60:00Z",
+            "2001-01-01T12:30:60Z",
+            // leap seconds aren't supported
+            "2016-12-31T23:59:60Z",
             "2001-01-01T16:00:00.Z",
             "2001-01-01T16:00:00+0100",
             "2001-01-01T16:00:00+24:00",

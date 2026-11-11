@@ -490,14 +490,23 @@ impl Decoder for JsonDecoder<'_> {
 
     fn decode_f32(&mut self) -> Result<f32, DecodeError> {
         let text = self.read_float("float32")?;
-        text.parse::<f32>()
-            .map_err(|_| DecodeError::invalid_value(format!("{text} is not a valid float32")))
+        // `parse` turns numbers that are too large into infinity, which can't be encoded again
+        match text.parse::<f32>() {
+            Ok(v) if v.is_finite() => Ok(v),
+            _ => Err(DecodeError::invalid_value(format!(
+                "{text} is out of range for float32"
+            ))),
+        }
     }
 
     fn decode_f64(&mut self) -> Result<f64, DecodeError> {
         let text = self.read_float("float64")?;
-        text.parse::<f64>()
-            .map_err(|_| DecodeError::invalid_value(format!("{text} is not a valid float64")))
+        match text.parse::<f64>() {
+            Ok(v) if v.is_finite() => Ok(v),
+            _ => Err(DecodeError::invalid_value(format!(
+                "{text} is out of range for float64"
+            ))),
+        }
     }
 
     json_decode_int! {
@@ -548,9 +557,12 @@ impl Decoder for JsonDecoder<'_> {
                         return Ok(Value::Number(Number::Uint(n)));
                     }
                 }
-                text.parse::<f64>()
-                    .map(|v| Value::Number(Number::Float(v)))
-                    .map_err(|_| DecodeError::syntax(format!("invalid number {text}")))
+                match text.parse::<f64>() {
+                    Ok(v) if v.is_finite() => Ok(Value::Number(Number::Float(v))),
+                    _ => Err(DecodeError::invalid_value(format!(
+                        "{text} is out of range for a number"
+                    ))),
+                }
             }
             Some(b'[') => {
                 self.begin_list()?;
@@ -727,6 +739,41 @@ mod tests {
         assert_eq!(from_str::<f64>("-1.5e-3").unwrap(), -0.0015);
         assert_eq!(from_str::<f32>("1.1").unwrap(), 1.1f32);
         assert_eq!(from_str::<f64>("10").unwrap(), 10.0);
+        // very small numbers round to zero
+        assert_eq!(from_str::<f64>("1e-400").unwrap(), 0.0);
+    }
+
+    #[test]
+    fn out_of_range_floats_are_rejected() {
+        // these would otherwise become infinity which can't be encoded
+        for input in ["1e400", "-1e400"] {
+            assert_eq!(
+                from_str::<f64>(input).unwrap_err().kind(),
+                DecodeErrorKind::InvalidValue
+            );
+            assert_eq!(
+                from_str::<Value>(input).unwrap_err().kind(),
+                DecodeErrorKind::InvalidValue
+            );
+        }
+        // valid float64 but too large for float32
+        assert_eq!(from_str::<f64>("1e39").unwrap(), 1e39);
+        assert_eq!(
+            from_str::<f32>("1e39").unwrap_err().kind(),
+            DecodeErrorKind::InvalidValue
+        );
+        assert_eq!(from_str::<f32>("3.4028235e38").unwrap(), f32::MAX);
+        // the value decoder (used when buffering) behaves the same way
+        let mut d = crate::ValueDecoder::new(Value::Number(Number::Float(1e39)));
+        assert_eq!(
+            f32::decode(&mut d).unwrap_err().kind(),
+            DecodeErrorKind::InvalidValue
+        );
+        let mut d = crate::ValueDecoder::new(Value::Number(Number::Float(f64::INFINITY)));
+        assert_eq!(
+            f64::decode(&mut d).unwrap_err().kind(),
+            DecodeErrorKind::InvalidValue
+        );
     }
 
     #[test]
@@ -859,14 +906,14 @@ mod tests {
     #[test]
     fn any_values() {
         let value = from_str::<Value>(
-            r#"{"a":null,"b":[true,"x",-1,18446744073709551615,1.5,1e400,100000000000000000000000]}"#,
+            r#"{"a":null,"b":[true,"x",-1,18446744073709551615,1.5,1e300,100000000000000000000000]}"#,
         )
         .unwrap();
         let b = value.get("b").unwrap().as_list().unwrap();
         assert_eq!(b[2], Value::Number(Number::Int(-1)));
         assert!(matches!(b[3], Value::Number(Number::Uint(u64::MAX))));
         assert_eq!(b[4], Value::Number(Number::Float(1.5)));
-        assert_eq!(b[5], Value::Number(Number::Float(f64::INFINITY)));
+        assert_eq!(b[5], Value::Number(Number::Float(1e300)));
         assert_eq!(b[6], Value::Number(Number::Float(1e23)));
     }
 

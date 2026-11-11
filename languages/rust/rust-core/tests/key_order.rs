@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use arri::{ArriModel, DecodeError, Nullable, Timestamp, Value, json};
+use arri::{ArriModel, DecodeError, DecodeErrorKind, Nullable, Timestamp, Value, json};
 
 #[derive(ArriModel, Debug, PartialEq)]
 struct Inner {
@@ -116,6 +116,10 @@ fn bodies() -> Vec<(&'static str, String)> {
         ("float32 as string", with("float32", "\"1.1\"")),
         ("float32 integer", with("float32", "7")),
         ("float64 null", with("float64", "null")),
+        ("float64 overflow", with("float64", "1e400")),
+        ("float32 overflow", with("float32", "1e39")),
+        ("any overflow", with("any", "[1e400]")),
+        ("time leap second", with("time", "\"2016-12-31T23:59:60Z\"")),
         ("time invalid", with("time", "\"2001-02-30T00:00:00Z\"")),
         ("time as number", with("time", "1")),
         (
@@ -157,10 +161,10 @@ fn bodies_are_well_formed() {
     // make sure the helpers produced the intended JSON
     assert!(json::from_str::<Value>(&format!("{{{VALID}}}")).is_ok());
     for (name, body) in bodies() {
-        assert!(
-            json::from_str::<Value>(&format!("{{{body}}}")).is_ok(),
-            "{name}: {body}"
-        );
+        // some bodies are intentionally invalid (e.g. out of range numbers) but they must be valid JSON
+        if let Err(err) = json::from_str::<Value>(&format!("{{{body}}}")) {
+            assert_ne!(err.kind(), DecodeErrorKind::Syntax, "{name}: {body}");
+        }
     }
     assert!(json::from_str::<Fields>(&format!("{{{VALID}}}")).is_ok());
 }
