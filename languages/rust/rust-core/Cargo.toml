@@ -2,13 +2,15 @@
 name = "arri"
 version = "0.85.0"
 edition = "2024"
+rust-version = "1.88"
 description = "Schema generation and encoding / decoding for Arri RPC models"
 license = "MIT"
 homepage = "https://github.com/modiimedia/arri"
 repository = "https://github.com/modiimedia/arri"
 keywords = ["arrirpc", "arri", "rpc", "schema"]
 categories = ["encoding", "web-programming"]
-include = ["/src"]
+readme = "README.md"
+include = ["/src", "/README.md"]
 
 [features]
 default = ["derive"]

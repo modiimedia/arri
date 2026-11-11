@@ -59,6 +59,11 @@
 // allows the derive macro output (which references `::arri`) to be used inside this crate
 extern crate self as arri;
 
+// runs the examples in the README as doc tests so they stay up to date
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;
+
 mod decode;
 mod encode;
 mod impls;
