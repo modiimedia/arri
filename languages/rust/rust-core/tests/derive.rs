@@ -1351,3 +1351,68 @@ mod duplicate_keys {
         );
     }
 }
+
+mod tag_key_conflicts {
+    use arri::{ArriModel, EncodeFields, json};
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Inner {
+        a: i32,
+        #[arri(rename = "renamedB")]
+        b: Option<i32>,
+        // skipped fields aren't written so they can't conflict with the tag
+        #[arri(skip)]
+        r#type: String,
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(tag_key = "type")]
+    enum Union {
+        A(Inner),
+        B(Box<Inner>),
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(tag_key = "type")]
+    enum Generic<T> {
+        A(T),
+    }
+
+    #[test]
+    fn keys_list_every_key_that_can_be_written() {
+        assert_eq!(<Inner as EncodeFields>::KEYS, &["a", "renamedB"]);
+        assert_eq!(<Box<Inner> as EncodeFields>::KEYS, &["a", "renamedB"]);
+        assert_eq!(<&Inner as EncodeFields>::KEYS, &["a", "renamedB"]);
+    }
+
+    #[test]
+    fn contains_key() {
+        use arri::__private::contains_key;
+        assert!(contains_key(&["a", "type"], "type"));
+        assert!(!contains_key(&["a", "types"], "type"));
+        assert!(!contains_key(&["a", "typ"], "type"));
+        assert!(!contains_key(&[], "type"));
+        assert!(contains_key(&[""], ""));
+    }
+
+    #[test]
+    fn variants_without_conflicts_compile() {
+        let inner = || Inner {
+            a: 1,
+            b: None,
+            r#type: String::new(),
+        };
+        assert_eq!(
+            json::to_string(&Union::A(inner())).unwrap(),
+            r#"{"type":"A","a":1}"#
+        );
+        assert_eq!(
+            json::to_string(&Union::B(Box::new(inner()))).unwrap(),
+            r#"{"type":"B","a":1}"#
+        );
+        assert_eq!(
+            json::to_string(&Generic::A(inner())).unwrap(),
+            r#"{"type":"A","a":1}"#
+        );
+    }
+}

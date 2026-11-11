@@ -184,6 +184,26 @@ pub fn check_unknown_key(
     Ok(usize::MAX)
 }
 
+/// `keys.contains(&key)` that can be used in constants
+pub const fn contains_key(keys: &[&str], key: &str) -> bool {
+    let key = key.as_bytes();
+    let mut i = 0;
+    while i < keys.len() {
+        let candidate = keys[i].as_bytes();
+        if candidate.len() == key.len() {
+            let mut j = 0;
+            while j < key.len() && candidate[j] == key[j] {
+                j += 1;
+            }
+            if j == key.len() {
+                return true;
+            }
+        }
+        i += 1;
+    }
+    false
+}
+
 #[cold]
 pub fn duplicate_key(name: &str) -> DecodeError {
     DecodeError::duplicate_key(name)

@@ -101,6 +101,30 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// - newtype variants (`Variant(T)`) use the schema of `T`
 /// - struct variants are anonymous objects
 ///
+/// The variants of internally tagged unions (`#[arri(tag_key = "...")]`) share an object with the
+/// tag, so they must be objects and none of their fields can use the tag's key. Using it is a
+/// compile error. For a generic union whose newtype variant holds a type parameter, the check
+/// happens when the union is encoded with a specific type, so it shows up in `cargo build`
+/// and `cargo test` but not in `cargo check`:
+///
+/// ```compile_fail,E0080
+/// use arri::ArriModel;
+///
+/// #[derive(ArriModel)]
+/// struct Shape {
+///     kind: String,
+/// }
+///
+/// #[derive(ArriModel)]
+/// #[arri(tag_key = "kind")]
+/// enum Message<T> {
+///     Data(T),
+/// }
+///
+/// // `Shape` has a field named "kind", which conflicts with the tag
+/// let json = arri::json::to_string(&Message::Data(Shape { kind: "circle".into() }));
+/// ```
+///
 /// # Metadata
 ///
 /// - The type name becomes `metadata.id`. For generic types the [generic name](ArriSchema::generic_name)

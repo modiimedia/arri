@@ -65,6 +65,12 @@ pub trait Encode {
     note = "variants of internally tagged unions (`#[arri(tag_key = \"...\")]` without `value_key`) must be objects. Use a struct variant, or a newtype variant containing a struct that derives `ArriModel`"
 )]
 pub trait EncodeFields {
+    /// Every key that [`EncodeFields::encode_fields`] may write.
+    ///
+    /// Used to check at compile time that the variants of internally tagged unions don't have a
+    /// field with the same key as the union's tag.
+    const KEYS: &'static [&'static str];
+
     /// The number of keys that [`EncodeFields::encode_fields`] will write
     fn field_count(&self) -> usize;
     /// Write each key / value pair without opening or closing the object
@@ -158,6 +164,8 @@ macro_rules! impl_encode_pointer {
             }
 
             impl<T: EncodeFields + ?Sized> EncodeFields for $ty<T> {
+                const KEYS: &'static [&'static str] = T::KEYS;
+
                 #[inline]
                 fn field_count(&self) -> usize {
                     T::field_count(self)
@@ -182,6 +190,8 @@ impl<T: Encode + ?Sized> Encode for &T {
 }
 
 impl<T: EncodeFields + ?Sized> EncodeFields for &T {
+    const KEYS: &'static [&'static str] = T::KEYS;
+
     #[inline]
     fn field_count(&self) -> usize {
         T::field_count(self)

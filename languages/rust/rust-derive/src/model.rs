@@ -423,6 +423,11 @@ impl<'a> Container<'a> {
         generics
     }
 
+    /// Whether the type has any generic parameters (types, lifetimes, or consts)
+    pub fn has_generic_params(&self) -> bool {
+        !self.generics.params.is_empty()
+    }
+
     /// Type parameters that are used directly as the type of an internally tagged newtype variant.
     /// These need `EncodeFields` / `DecodeFields` bounds.
     pub fn internal_newtype_params(&self) -> Vec<Ident> {

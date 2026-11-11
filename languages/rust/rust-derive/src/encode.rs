@@ -1,5 +1,6 @@
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{quote, quote_spanned};
+use syn::spanned::Spanned;
 
 use crate::model::{Body, Container, Field, Tagging, VariantKind, binding};
 
@@ -26,6 +27,7 @@ pub fn expand(c: &Container) -> TokenStream {
                 .collect();
             let count = field_count(fields, &accessors);
             let encode_fields = encode_fields(c, fields, &accessors);
+            let keys = fields.iter().filter(|f| !f.is_skipped()).map(|f| &f.key);
             quote! {
                 #[automatically_derived]
                 impl #impl_generics #k::Encode for #ident #ty_generics #where_clause {
@@ -38,6 +40,8 @@ pub fn expand(c: &Container) -> TokenStream {
 
                 #[automatically_derived]
                 impl #impl_generics #k::EncodeFields for #ident #ty_generics #where_clause {
+                    const KEYS: &'static [&'static str] = &[#(#keys),*];
+
                     fn field_count(&self) -> usize {
                         #count
                     }
@@ -148,10 +152,53 @@ pub fn expand(c: &Container) -> TokenStream {
                 };
                 quote!(#pattern => { #body })
             });
+            // newtype variants of internally tagged unions can't contain a field with the same key
+            // as the tag. Struct variants are checked by the macro itself, but the fields of a
+            // newtype variant's type aren't visible here so the compiler checks them instead.
+            let tag_key_checks: Vec<_> = match tagging {
+                Tagging::Internal { tag_key } => variants
+                    .iter()
+                    .filter_map(|variant| match &variant.kind {
+                        VariantKind::Newtype(ty) => Some((variant, ty)),
+                        _ => None,
+                    })
+                    .map(|(variant, ty)| {
+                        // the message is a format string so braces are escaped
+                        let message = format!(
+                            "the type in variant `{ident}::{}` has a field with the key \"{tag_key}\" which conflicts with the union's tag_key",
+                            variant.ident
+                        )
+                        .replace('{', "{{")
+                        .replace('}', "}}");
+                        // spanned so that the error points at the variant's type
+                        quote_spanned! {ty.span()=>
+                            if #k::__private::contains_key(<#ty as #k::EncodeFields>::KEYS, #tag_key) {
+                                ::core::panic!(#message);
+                            }
+                        }
+                    })
+                    .collect(),
+                _ => Vec::new(),
+            };
+            // without generic parameters the check runs when the crate is compiled. Otherwise it
+            // runs once `encode` is used with specific types.
+            let (eager_check, deferred_check) = if tag_key_checks.is_empty() {
+                (TokenStream::new(), TokenStream::new())
+            } else if c.has_generic_params() {
+                (TokenStream::new(), quote!(const { #(#tag_key_checks)* };))
+            } else {
+                (
+                    quote!(const _: () = { #(#tag_key_checks)* };),
+                    TokenStream::new(),
+                )
+            };
             quote! {
+                #eager_check
+
                 #[automatically_derived]
                 impl #impl_generics #k::Encode for #ident #ty_generics #where_clause {
                     fn encode<__E: #k::Encoder + ?Sized>(&self, e: &mut __E) -> #result {
+                        #deferred_check
                         match self {
                             #(#arms)*
                         }
