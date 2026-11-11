@@ -18,21 +18,32 @@ pub fn expand(c: &Container) -> TokenStream {
     match &c.body {
         Body::Struct(fields) => {
             let decode_fields = decode_fields(c, fields, quote!(Self));
+            // the fields are read by a single helper so that the code isn't generated twice
             quote! {
+                #[automatically_derived]
+                impl #impl_generics #ident #ty_generics #where_clause {
+                    #[doc(hidden)]
+                    #[inline]
+                    fn __arri_decode_fields<__D: #k::Decoder + ?Sized>(
+                        d: &mut __D,
+                        tag_key: #k::__private::Option<&str>,
+                    ) -> #result {
+                        #decode_fields
+                    }
+                }
+
                 #[automatically_derived]
                 impl #impl_generics #k::Decode for #ident #ty_generics #where_clause {
                     fn decode<__D: #k::Decoder + ?Sized>(d: &mut __D) -> #result {
                         d.begin_object()?;
-                        let tag_key: #k::__private::Option<&str> = #k::__private::None;
-                        #decode_fields
+                        Self::__arri_decode_fields(d, #k::__private::None)
                     }
 
                     fn decode_internally_tagged<__D: #k::Decoder + ?Sized>(
                         d: &mut __D,
                         tag_key: &str,
                     ) -> #result {
-                        let tag_key: #k::__private::Option<&str> = #k::__private::Some(tag_key);
-                        #decode_fields
+                        Self::__arri_decode_fields(d, #k::__private::Some(tag_key))
                     }
                 }
             }

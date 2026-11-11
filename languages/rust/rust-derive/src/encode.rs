@@ -26,13 +26,36 @@ pub fn expand(c: &Container) -> TokenStream {
                 .collect();
             let count = field_count(fields, &accessors);
             let encode_fields = encode_fields(c, fields, &accessors);
+            // the fields are written by a single helper so that the code isn't generated twice
+            // (generating it for both trait methods made compile times noticeably slower)
             quote! {
+                #[automatically_derived]
+                impl #impl_generics #ident #ty_generics #where_clause {
+                    #[doc(hidden)]
+                    #[inline]
+                    fn __arri_encode_object<__E: #k::Encoder + ?Sized>(
+                        &self,
+                        e: &mut __E,
+                        tag: #k::__private::Option<(&str, &str)>,
+                    ) -> #result {
+                        let count: usize = #count;
+                        match tag {
+                            #k::__private::Some((tag_key, tag)) => {
+                                e.begin_object(1 + count)?;
+                                e.encode_key(tag_key)?;
+                                e.encode_str(tag)?;
+                            }
+                            #k::__private::None => e.begin_object(count)?,
+                        }
+                        #encode_fields
+                        e.end_object()
+                    }
+                }
+
                 #[automatically_derived]
                 impl #impl_generics #k::Encode for #ident #ty_generics #where_clause {
                     fn encode<__E: #k::Encoder + ?Sized>(&self, e: &mut __E) -> #result {
-                        e.begin_object(#count)?;
-                        #encode_fields
-                        e.end_object()
+                        self.__arri_encode_object(e, #k::__private::None)
                     }
 
                     fn encode_internally_tagged<__E: #k::Encoder + ?Sized>(
@@ -41,11 +64,7 @@ pub fn expand(c: &Container) -> TokenStream {
                         tag_key: &str,
                         tag: &str,
                     ) -> #result {
-                        e.begin_object(1 + #count)?;
-                        e.encode_key(tag_key)?;
-                        e.encode_str(tag)?;
-                        #encode_fields
-                        e.end_object()
+                        self.__arri_encode_object(e, #k::__private::Some((tag_key, tag)))
                     }
                 }
             }
