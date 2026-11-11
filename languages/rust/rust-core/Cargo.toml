@@ -1,6 +1,6 @@
 [package]
 name = "arri"
-version = "0.1.0"
+version = "0.85.0"
 edition = "2024"
 description = "Schema generation and encoding / decoding for Arri RPC models"
 license = "MIT"
@@ -24,7 +24,7 @@ indexmap = ["dep:indexmap"]
 serde = ["dep:serde"]
 
 [dependencies]
-arri_derive = { path = "../rust-derive", version = "0.1.0", optional = true }
+arri_derive = { path = "../rust-derive", version = "0.85.0", optional = true }
 chrono = { version = "0.4", optional = true, default-features = false }
 time = { version = "0.3", optional = true, default-features = false }
 indexmap = { version = "2", optional = true }
