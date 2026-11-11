@@ -356,3 +356,39 @@ fn malformed_input_never_panics() {
         }
     }
 }
+
+#[test]
+fn definitions_match_app_definition() {
+    let app_def: Value = json::from_str(&test_file("AppDefinition.json")).unwrap();
+    let mut ctx = arri::SchemaContext::new();
+    ObjectWithEveryType::type_def(&mut ctx);
+    ObjectWithNullableFields::type_def(&mut ctx);
+    RecursiveObject::type_def(&mut ctx);
+    let definitions = ctx.into_definitions().unwrap();
+    let ids: Vec<&str> = definitions.iter().map(|(id, _)| id.as_str()).collect();
+    assert_eq!(
+        ids,
+        [
+            "ObjectWithEveryType",
+            "Enumerator",
+            "NestedObject",
+            "UnionExternal",
+            "UnionInternal",
+            "UnionAdjacent",
+            "ObjectWithNullableFields",
+            "RecursiveObject",
+        ]
+    );
+    for (id, def) in definitions {
+        // Enumerator isn't listed in the reference definitions
+        let Some(expected) = app_def.get("definitions").and_then(|d| d.get(&id)) else {
+            assert_eq!(id, "Enumerator");
+            continue;
+        };
+        assert_eq!(
+            json::to_string(&normalize(to_value(&def).unwrap())).unwrap(),
+            json::to_string(&normalize(expected.clone())).unwrap(),
+            "definition for {id} does not match AppDefinition.json"
+        );
+    }
+}

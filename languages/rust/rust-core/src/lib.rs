@@ -67,7 +67,9 @@ pub use encode::{Encode, EncodeError, EncodeFields, Encoder};
 pub use nullable::Nullable;
 /// The variants of [`Nullable`] are exported so they can be used without a prefix (like `Some` and `None`)
 pub use nullable::Nullable::{Null, Present};
-pub use schema::{ArriSchema, SchemaContext, type_def_of};
+pub use schema::{
+    ArriSchema, SchemaCollision, SchemaContext, SchemaError, definitions_of, type_def_of,
+};
 pub use timestamp::{Timestamp, TimestampError};
 pub use type_def::{Form, Metadata, Properties, Type, TypeDef, Union};
 pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value};

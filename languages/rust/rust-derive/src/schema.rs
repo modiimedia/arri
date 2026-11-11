@@ -103,7 +103,7 @@ pub fn expand(c: &Container) -> TokenStream {
 fn named(c: &Container, def: TokenStream) -> TokenStream {
     let k = &c.krate;
     quote! {
-        ctx.named(<Self as #k::ArriSchema>::generic_name(), |ctx| {
+        ctx.named::<Self>(<Self as #k::ArriSchema>::generic_name(), |ctx| {
             let _ = &ctx;
             #def
         })

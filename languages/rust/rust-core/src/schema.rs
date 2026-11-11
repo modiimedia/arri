@@ -5,7 +5,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{Type, TypeDef};
+use crate::{Form, Type, TypeDef};
 
 /// A type that can describe itself with an Arri Type Definition
 #[diagnostic::on_unimplemented(
@@ -37,6 +37,9 @@ pub trait ArriSchema {
     /// Build the type definition for this type.
     ///
     /// Use [`type_def_of`] to get the type definition of a type outside of an `ArriSchema` implementation.
+    ///
+    /// Named types (structs, enums, and unions) should build their definition inside of
+    /// [`SchemaContext::named`].
     fn type_def(ctx: &mut SchemaContext) -> TypeDef;
 }
 
@@ -45,13 +48,62 @@ pub fn type_def_of<T: ArriSchema + ?Sized>() -> TypeDef {
     T::type_def(&mut SchemaContext::new())
 }
 
-/// State that is shared while building a type definition.
+/// Returns every named type (struct, enum, or union) used by `T`, including `T` itself if it's named.
 ///
-/// It tracks which named types are currently being built so that recursive types
-/// can be closed with a `ref` schema instead of recursing forever.
+/// See [`SchemaContext::into_definitions`].
+pub fn definitions_of<T: ArriSchema + ?Sized>() -> Result<Vec<(String, TypeDef)>, SchemaError> {
+    let mut ctx = SchemaContext::new();
+    T::type_def(&mut ctx);
+    ctx.into_definitions()
+}
+
+/// State that is shared while building type definitions.
+///
+/// - It tracks which named types are currently being built so that recursive types can be
+///   closed with a `ref` schema instead of recursing forever.
+/// - It records every named type that gets built so that they can be listed in the `definitions`
+///   section of an app definition (see [`SchemaContext::into_definitions`]).
+/// - It detects when two Rust types with different schemas produce the same id.
+///
+/// The same context can be passed to multiple [`ArriSchema::type_def`] calls to collect the
+/// definitions of many types at once:
+///
+/// ```
+/// use arri::{ArriModel, ArriSchema, SchemaContext};
+///
+/// #[derive(ArriModel)]
+/// struct User {
+///     id: String,
+/// }
+///
+/// #[derive(ArriModel)]
+/// struct GetUserParams {
+///     id: String,
+/// }
+///
+/// let mut ctx = SchemaContext::new();
+/// GetUserParams::type_def(&mut ctx);
+/// User::type_def(&mut ctx);
+/// let definitions = ctx.into_definitions().unwrap();
+/// let ids: Vec<&str> = definitions.iter().map(|(id, _)| id.as_str()).collect();
+/// assert_eq!(ids, ["GetUserParams", "User"]);
+/// ```
 #[derive(Debug, Default)]
 pub struct SchemaContext {
-    in_progress: Vec<String>,
+    /// the id and rust type of each named type that is currently being built
+    in_progress: Vec<(String, &'static str)>,
+    definitions: Vec<Definition>,
+    /// maps an id to its position in `definitions`
+    index: HashMap<String, usize>,
+    collisions: Vec<SchemaCollision>,
+}
+
+#[derive(Debug)]
+struct Definition {
+    id: String,
+    rust_type: &'static str,
+    /// `None` while the type is still being built
+    def: Option<TypeDef>,
 }
 
 impl SchemaContext {
@@ -61,27 +113,193 @@ impl SchemaContext {
 
     /// Returns `true` if a type with this id is currently being built
     pub fn is_building(&self, id: &str) -> bool {
-        self.in_progress.iter().any(|item| item == id)
+        self.in_progress.iter().any(|(item, _)| item == id)
     }
 
-    /// Build a named type definition.
+    /// Build the definition of the named type `T`.
     ///
-    /// If a type with the same id is already being built (meaning the type is recursive) a `ref`
-    /// schema is returned instead. Otherwise `build` is called and `metadata.id` is set on the result.
-    pub fn named(
+    /// If `T` is already being built (meaning the type is recursive) a `ref` schema is returned instead.
+    /// Otherwise `build` is called, `metadata.id` is set on the result, and the result is recorded
+    /// as a definition.
+    pub fn named<T: ?Sized>(
         &mut self,
         id: impl Into<String>,
         build: impl FnOnce(&mut Self) -> TypeDef,
     ) -> TypeDef {
         let id = id.into();
-        if self.is_building(&id) {
-            return TypeDef::reference(id);
+        let rust_type = std::any::type_name::<T>();
+        if let Some((_, building)) = self.in_progress.iter().find(|(item, _)| *item == id) {
+            if *building == rust_type {
+                return TypeDef::reference(id);
+            }
+            // A different type with the same id is still being built so its schema can't be
+            // compared yet. Since a `ref` would point to the wrong type this is always a collision.
+            let first = *building;
+            self.add_collision(&id, first, rust_type);
         }
-        self.in_progress.push(id);
+        // the slot is reserved before building so that definitions are listed in the order they're
+        // first encountered (parents before children)
+        if !self.index.contains_key(&id) {
+            self.index.insert(id.clone(), self.definitions.len());
+            self.definitions.push(Definition {
+                id: id.clone(),
+                rust_type,
+                def: None,
+            });
+        }
+        self.in_progress.push((id, rust_type));
         let mut def = build(self);
-        let id = self.in_progress.pop().expect("in_progress cannot be empty");
-        def.metadata.id = Some(id);
+        let (id, _) = self.in_progress.pop().expect("in_progress cannot be empty");
+        def.metadata.id = Some(id.clone());
+        self.record(&id, rust_type, &def);
         def
+    }
+
+    fn record(&mut self, id: &str, rust_type: &'static str, def: &TypeDef) {
+        let entry = &mut self.definitions[self.index[id]];
+        let first = entry.rust_type;
+        match &entry.def {
+            None if first == rust_type => entry.def = Some(def.clone()),
+            // the slot belongs to a different type that's still being built. The collision has already been recorded.
+            None => {}
+            // the same type (or a different type with an identical schema) has already been recorded
+            Some(existing) if same_definition(existing, def) => {}
+            Some(_) => self.add_collision(id, first, rust_type),
+        }
+    }
+
+    fn add_collision(&mut self, id: &str, first_type: &'static str, second_type: &'static str) {
+        let collision = SchemaCollision {
+            id: id.to_string(),
+            first_type,
+            second_type,
+        };
+        if !self.collisions.contains(&collision) {
+            self.collisions.push(collision);
+        }
+    }
+
+    /// Returns every named type (struct, enum, or union) that was built with this context as
+    /// `(id, definition)` pairs.
+    ///
+    /// - Definitions are listed in the order they were first encountered
+    /// - Each definition is complete. Nested named types are included inline (only recursive references use `ref`)
+    /// - Different Rust types that produce identical schemas with the same id are merged into one definition
+    ///
+    /// Returns an error if different Rust types produced different schemas with the same id.
+    pub fn into_definitions(self) -> Result<Vec<(String, TypeDef)>, SchemaError> {
+        if !self.collisions.is_empty() {
+            return Err(SchemaError {
+                collisions: self.collisions,
+            });
+        }
+        Ok(self
+            .definitions
+            .into_iter()
+            .filter_map(|entry| entry.def.map(|def| (entry.id, def)))
+            .collect())
+    }
+}
+
+/// Two different Rust types produced different schemas with the same id
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SchemaCollision {
+    pub id: String,
+    /// The Rust type that first used the id (as reported by [`std::any::type_name`])
+    pub first_type: &'static str,
+    /// The Rust type that used the id with a different schema
+    pub second_type: &'static str,
+}
+
+impl std::fmt::Display for SchemaCollision {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "the id \"{}\" is used by `{}` and `{}` which have different schemas",
+            self.id, self.first_type, self.second_type
+        )
+    }
+}
+
+/// An error produced by [`SchemaContext::into_definitions`]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SchemaError {
+    collisions: Vec<SchemaCollision>,
+}
+
+impl SchemaError {
+    pub fn collisions(&self) -> &[SchemaCollision] {
+        &self.collisions
+    }
+}
+
+impl std::fmt::Display for SchemaError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (i, collision) in self.collisions.iter().enumerate() {
+            if i > 0 {
+                f.write_str("\n")?;
+            }
+            write!(f, "{collision}")?;
+        }
+        f.write_str(
+            "\nType ids must be unique. Rename one of the types or give it a different id with `#[arri(id = \"...\")]`.",
+        )
+    }
+}
+
+impl std::error::Error for SchemaError {}
+
+/// Compare two definitions that share an id.
+///
+/// Nested named types are compared by id only (rather than by their contents) because each of them
+/// is compared against its own definition separately. This also means that a nested type that was
+/// closed with a `ref` (because it was recursive) matches the same type written out inline.
+fn same_definition(a: &TypeDef, b: &TypeDef) -> bool {
+    a.is_nullable == b.is_nullable && a.metadata == b.metadata && same_form(&a.form, &b.form)
+}
+
+fn nested_id(def: &TypeDef) -> Option<&str> {
+    match &def.form {
+        Form::Ref(id) => Some(id),
+        _ => def.metadata.id.as_deref(),
+    }
+}
+
+fn same_nested(a: &TypeDef, b: &TypeDef) -> bool {
+    match (nested_id(a), nested_id(b)) {
+        (Some(a_id), Some(b_id)) => a_id == b_id && a.is_nullable == b.is_nullable,
+        (None, None) => same_definition(a, b),
+        _ => false,
+    }
+}
+
+fn same_entries(a: &[(String, TypeDef)], b: &[(String, TypeDef)]) -> bool {
+    a.len() == b.len()
+        && a.iter()
+            .zip(b)
+            .all(|((a_key, a_def), (b_key, b_def))| a_key == b_key && same_nested(a_def, b_def))
+}
+
+fn same_form(a: &Form, b: &Form) -> bool {
+    match (a, b) {
+        (Form::Empty, Form::Empty) => true,
+        (Form::Type(a), Form::Type(b)) => a == b,
+        (Form::Enum(a), Form::Enum(b)) => a == b,
+        (Form::Elements(a), Form::Elements(b)) | (Form::Values(a), Form::Values(b)) => {
+            same_nested(a, b)
+        }
+        (Form::Properties(a), Form::Properties(b)) => {
+            a.is_strict == b.is_strict
+                && same_entries(&a.properties, &b.properties)
+                && same_entries(&a.optional_properties, &b.optional_properties)
+        }
+        (Form::Union(a), Form::Union(b)) => {
+            a.tag_key == b.tag_key
+                && a.value_key == b.value_key
+                && same_entries(&a.variants, &b.variants)
+        }
+        (Form::Ref(a), Form::Ref(b)) => a == b,
+        _ => false,
     }
 }
 
@@ -237,9 +455,9 @@ mod tests {
     #[test]
     fn recursive_types_produce_refs() {
         let mut ctx = SchemaContext::new();
-        let def = ctx.named("Tree", |ctx| {
+        let def = ctx.named::<()>("Tree", |ctx| {
             assert!(ctx.is_building("Tree"));
-            TypeDef::elements(ctx.named("Tree", |_| unreachable!()))
+            TypeDef::elements(ctx.named::<()>("Tree", |_| unreachable!()))
         });
         assert_eq!(
             def.to_json(),

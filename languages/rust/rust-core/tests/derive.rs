@@ -715,3 +715,246 @@ mod prelude {
         assert_eq!(decoded, profile);
     }
 }
+
+mod definitions {
+    use arri::{ArriModel, ArriSchema, Nullable, SchemaContext, definitions_of, type_def_of};
+
+    fn ids(definitions: &[(String, arri::TypeDef)]) -> Vec<&str> {
+        definitions.iter().map(|(id, _)| id.as_str()).collect()
+    }
+
+    #[derive(ArriModel)]
+    struct User {
+        id: String,
+    }
+
+    #[derive(ArriModel)]
+    #[allow(dead_code)]
+    enum Role {
+        Admin,
+        Standard,
+    }
+
+    #[derive(ArriModel)]
+    struct Root {
+        owner: User,
+        members: Vec<User>,
+        role: Nullable<Role>,
+        tags: Vec<String>,
+    }
+
+    #[test]
+    fn named_types_are_collected_once_in_order() {
+        let definitions = definitions_of::<Root>().unwrap();
+        assert_eq!(ids(&definitions), ["Root", "User", "Role"]);
+        // nested types are written out inline (not replaced with refs) and nullability belongs to the field
+        assert_eq!(definitions[0].1, type_def_of::<Root>());
+        assert_eq!(definitions[1].1, type_def_of::<User>());
+        assert!(!definitions[2].1.is_nullable);
+    }
+
+    #[test]
+    fn non_named_types_produce_no_definitions() {
+        assert!(definitions_of::<Vec<String>>().unwrap().is_empty());
+        assert_eq!(
+            ids(&definitions_of::<Vec<Nullable<User>>>().unwrap()),
+            ["User"]
+        );
+    }
+
+    #[test]
+    fn one_context_can_collect_many_types() {
+        let mut ctx = SchemaContext::new();
+        User::type_def(&mut ctx);
+        Root::type_def(&mut ctx);
+        User::type_def(&mut ctx);
+        assert_eq!(
+            ids(&ctx.into_definitions().unwrap()),
+            ["User", "Root", "Role"]
+        );
+    }
+
+    #[derive(ArriModel)]
+    struct Tree {
+        children: Vec<Tree>,
+    }
+
+    #[derive(ArriModel)]
+    struct A {
+        b: Nullable<Box<B>>,
+    }
+
+    #[derive(ArriModel)]
+    struct B {
+        a: Nullable<Box<A>>,
+    }
+
+    #[derive(ArriModel)]
+    struct MutualRoot {
+        a: A,
+        b: B,
+    }
+
+    #[test]
+    fn recursive_types() {
+        let definitions = definitions_of::<Tree>().unwrap();
+        assert_eq!(ids(&definitions), ["Tree"]);
+        assert_eq!(
+            definitions[0].1.to_json(),
+            r#"{"properties":{"children":{"elements":{"ref":"Tree"}}},"metadata":{"id":"Tree"}}"#
+        );
+        // `B` is first built inside of `A` (where `A` is a ref) and then on its own (where `A` is inline).
+        // These are the same type so they must not be treated as a collision.
+        let definitions = definitions_of::<MutualRoot>().unwrap();
+        assert_eq!(ids(&definitions), ["MutualRoot", "A", "B"]);
+    }
+
+    mod same {
+        #[derive(arri::ArriModel)]
+        pub struct User {
+            pub id: String,
+        }
+    }
+
+    mod different {
+        #[derive(arri::ArriModel)]
+        pub struct User {
+            pub id: u32,
+        }
+    }
+
+    mod documented {
+        /// A user
+        #[derive(arri::ArriModel)]
+        pub struct User {
+            pub id: String,
+        }
+    }
+
+    #[derive(ArriModel)]
+    struct Page<T> {
+        items: Vec<T>,
+    }
+
+    #[derive(ArriModel)]
+    struct SameSchemas {
+        a: User,
+        b: same::User,
+        c: Page<User>,
+        d: Page<Box<User>>,
+    }
+
+    #[test]
+    fn identical_schemas_with_the_same_id_are_merged() {
+        let definitions = definitions_of::<SameSchemas>().unwrap();
+        assert_eq!(ids(&definitions), ["SameSchemas", "User", "UserPage"]);
+    }
+
+    #[derive(ArriModel)]
+    struct DifferentSchemas {
+        a: User,
+        b: different::User,
+        // the same collision should only be reported once
+        c: different::User,
+    }
+
+    #[test]
+    fn different_schemas_with_the_same_id_are_an_error() {
+        let err = definitions_of::<DifferentSchemas>().unwrap_err();
+        assert_eq!(err.collisions().len(), 1);
+        let collision = &err.collisions()[0];
+        assert_eq!(collision.id, "User");
+        assert_eq!(collision.first_type, "derive::definitions::User");
+        assert_eq!(
+            collision.second_type,
+            "derive::definitions::different::User"
+        );
+        assert_eq!(
+            err.to_string(),
+            "the id \"User\" is used by `derive::definitions::User` and `derive::definitions::different::User` which have different schemas\nType ids must be unique. Rename one of the types or give it a different id with `#[arri(id = \"...\")]`."
+        );
+    }
+
+    #[test]
+    fn metadata_is_part_of_the_schema() {
+        #[derive(ArriModel)]
+        struct Docs {
+            a: User,
+            b: documented::User,
+        }
+        let err = definitions_of::<Docs>().unwrap_err();
+        assert_eq!(err.collisions()[0].id, "User");
+    }
+
+    #[derive(ArriModel)]
+    #[allow(clippy::upper_case_acronyms)]
+    struct AB {
+        x: bool,
+    }
+
+    #[derive(ArriModel)]
+    struct BC {
+        y: bool,
+    }
+
+    #[derive(ArriModel)]
+    struct C {
+        z: bool,
+    }
+
+    #[derive(ArriModel)]
+    struct Pair<L, R> {
+        left: L,
+        right: R,
+    }
+
+    #[derive(ArriModel)]
+    struct UserArray {
+        users: Vec<User>,
+    }
+
+    #[test]
+    fn generic_ids_that_collide_are_an_error() {
+        #[derive(ArriModel)]
+        struct Pairs {
+            // both are "ABCPair"
+            a: Pair<AB, C>,
+            b: Pair<A, BC>,
+        }
+        let err = definitions_of::<Pairs>().unwrap_err();
+        assert_eq!(err.collisions()[0].id, "ABCPair");
+
+        #[derive(ArriModel)]
+        struct Pages {
+            // both are "UserArrayPage"
+            a: Page<Vec<User>>,
+            b: Page<UserArray>,
+        }
+        let err = definitions_of::<Pages>().unwrap_err();
+        assert_eq!(err.collisions()[0].id, "UserArrayPage");
+    }
+
+    mod nested {
+        #[derive(arri::ArriModel)]
+        pub struct User {
+            pub inner: super::User,
+        }
+    }
+
+    #[test]
+    fn collisions_between_a_type_and_one_it_contains() {
+        // `super::User` is built while `nested::User` is still being built so it can't be closed
+        // with a ref (that would point at the wrong type)
+        let err = definitions_of::<nested::User>().unwrap_err();
+        assert_eq!(
+            err.collisions()[0].first_type,
+            "derive::definitions::nested::User"
+        );
+        assert_eq!(err.collisions()[0].second_type, "derive::definitions::User");
+        // the schema itself still describes the right shape
+        assert_eq!(
+            type_def_of::<nested::User>().to_json(),
+            r#"{"properties":{"inner":{"properties":{"id":{"type":"string"}},"metadata":{"id":"User"}}},"metadata":{"id":"User"}}"#
+        );
+    }
+}
