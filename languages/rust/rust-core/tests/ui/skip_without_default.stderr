@@ -1,0 +1,11 @@
+error[E0277]: the trait bound `NoDefault: Default` is not satisfied
+ --> tests/ui/skip_without_default.rs:9:13
+  |
+9 |     handle: NoDefault,
+  |             ^^^^^^^^^ the trait `Default` is not implemented for `NoDefault`
+  |
+help: consider annotating `NoDefault` with `#[derive(Default)]`
+  |
+3 + #[derive(Default)]
+4 | struct NoDefault;
+  |

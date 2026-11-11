@@ -13,7 +13,7 @@ pub fn expand(c: &Container) -> TokenStream {
         Body::Newtype(inner) => quote!(<#inner as #k::ArriSchema>::generic_name()),
         _ => {
             let id = &c.id;
-            let params: Vec<_> = c.generics.type_params().map(|p| &p.ident).collect();
+            let params = c.schema_params();
             if params.is_empty() {
                 quote!(#k::__private::Cow::Borrowed(#id))
             } else {
@@ -114,7 +114,7 @@ fn named(c: &Container, def: TokenStream) -> TokenStream {
 fn properties_def(c: &Container, fields: &[Field]) -> TokenStream {
     let k = &c.krate;
     let strict = c.strict;
-    let pushes = fields.iter().map(|field| {
+    let pushes = fields.iter().filter(|f| !f.is_skipped()).map(|field| {
         let key = &field.key;
         let ty = field.ty;
         let def = with_docs(

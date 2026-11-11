@@ -24,6 +24,15 @@ pub struct VariantAttrs {
 #[derive(Default)]
 pub struct FieldAttrs {
     pub rename: Option<LitStr>,
+    pub skip: Option<syn::Path>,
+    /// path to a function that produces the value of a skipped field
+    pub default: Option<(syn::Path, LitStr)>,
+}
+
+impl FieldAttrs {
+    pub fn is_empty(&self) -> bool {
+        self.rename.is_none() && self.skip.is_none() && self.default.is_none()
+    }
 }
 
 /// Metadata that comes from standard attributes (doc comments and `#[deprecated]`)
@@ -155,8 +164,18 @@ impl FieldAttrs {
                 if meta.path.is_ident("rename") {
                     let value = parse_non_empty_str(&meta)?;
                     set_once(&mut out.rename, value, &meta)
+                } else if meta.path.is_ident("skip") {
+                    set_once(&mut out.skip, meta.path.clone(), &meta)
+                } else if meta.path.is_ident("default") {
+                    let value = parse_non_empty_str(&meta)?;
+                    let path: syn::Path = value.parse()?;
+                    set_once(&mut out.default, (path, value), &meta)
                 } else {
-                    Err(unknown_attr(&meta, "a field", "`rename`"))
+                    Err(unknown_attr(
+                        &meta,
+                        "a field",
+                        "`rename`, `skip`, `default`",
+                    ))
                 }
             })?;
         }

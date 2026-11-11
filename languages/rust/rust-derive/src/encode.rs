@@ -99,12 +99,20 @@ pub fn expand(c: &Container) -> TokenStream {
                     }
                     VariantKind::Struct(fields) => {
                         let bindings: Vec<_> = (0..fields.len()).map(binding).collect();
-                        let idents = fields.iter().map(|f| f.ident);
+                        // skipped fields are matched with `_` so they don't produce unused bindings
+                        let patterns = fields.iter().zip(&bindings).map(|(f, b)| {
+                            let ident = f.ident;
+                            if f.is_skipped() {
+                                quote!(#ident: _)
+                            } else {
+                                quote!(#ident: #b)
+                            }
+                        });
                         let accessors: Vec<_> = bindings.iter().map(|b| quote!(#b)).collect();
                         let count = field_count(fields, &accessors);
                         let encode_fields = encode_fields(c, fields, &accessors);
                         (
-                            quote!(Self::#variant_ident { #(#idents: #bindings),* }),
+                            quote!(Self::#variant_ident { #(#patterns),* }),
                             count.clone(),
                             quote! {
                                 e.begin_object(#count)?;
@@ -157,11 +165,14 @@ pub fn expand(c: &Container) -> TokenStream {
 /// An expression that counts how many keys will be written. `accessors` are expressions that
 /// evaluate to a reference to each field.
 fn field_count(fields: &[Field], accessors: &[TokenStream]) -> TokenStream {
-    let required = fields.iter().filter(|f| !f.optional).count();
+    let required = fields
+        .iter()
+        .filter(|f| !f.optional && !f.is_skipped())
+        .count();
     let optional = fields
         .iter()
         .zip(accessors)
-        .filter(|(f, _)| f.optional)
+        .filter(|(f, _)| f.optional && !f.is_skipped())
         .map(|(_, access)| quote!((#access).is_some() as usize));
     quote!(#required #(+ #optional)*)
 }
@@ -169,21 +180,25 @@ fn field_count(fields: &[Field], accessors: &[TokenStream]) -> TokenStream {
 /// Statements that write each key / value pair
 fn encode_fields(c: &Container, fields: &[Field], accessors: &[TokenStream]) -> TokenStream {
     let k = &c.krate;
-    let statements = fields.iter().zip(accessors).map(|(field, access)| {
-        let key = &field.key;
-        if field.optional {
-            quote! {
-                if let #k::__private::Some(__value) = #access {
+    let statements = fields
+        .iter()
+        .zip(accessors)
+        .filter(|(field, _)| !field.is_skipped())
+        .map(|(field, access)| {
+            let key = &field.key;
+            if field.optional {
+                quote! {
+                    if let #k::__private::Some(__value) = #access {
+                        e.encode_key(#key)?;
+                        #k::Encode::encode(__value, e)?;
+                    }
+                }
+            } else {
+                quote! {
                     e.encode_key(#key)?;
-                    #k::Encode::encode(__value, e)?;
+                    #k::Encode::encode(#access, e)?;
                 }
             }
-        } else {
-            quote! {
-                e.encode_key(#key)?;
-                #k::Encode::encode(#access, e)?;
-            }
-        }
-    });
+        });
     quote!(#(#statements)*)
 }

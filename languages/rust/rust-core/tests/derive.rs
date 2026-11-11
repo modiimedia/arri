@@ -958,3 +958,178 @@ mod definitions {
         );
     }
 }
+
+mod skip {
+    use std::marker::PhantomData;
+
+    use arri::{ArriModel, ArriSchema, DecodeErrorKind, json, type_def_of};
+
+    /// Doesn't implement any arri traits
+    #[derive(Debug, Default, PartialEq)]
+    struct Cache(Vec<u8>);
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct User {
+        id: String,
+        #[arri(skip)]
+        cache: Cache,
+        #[arri(skip, default = "default_role")]
+        role: String,
+        #[arri(skip)]
+        hits: Option<u32>,
+    }
+
+    fn default_role() -> String {
+        "standard".to_string()
+    }
+
+    #[test]
+    fn skipped_fields_are_excluded_from_the_schema() {
+        assert_eq!(
+            type_def_of::<User>().to_json(),
+            r#"{"properties":{"id":{"type":"string"}},"metadata":{"id":"User"}}"#
+        );
+    }
+
+    #[test]
+    fn skipped_fields_are_not_encoded() {
+        let user = User {
+            id: "1".into(),
+            cache: Cache(vec![1, 2, 3]),
+            role: "admin".into(),
+            hits: Some(10),
+        };
+        assert_eq!(json::to_string(&user).unwrap(), r#"{"id":"1"}"#);
+    }
+
+    #[test]
+    fn skipped_fields_use_defaults_when_decoding() {
+        let user: User = json::from_str(r#"{"id":"1"}"#).unwrap();
+        assert_eq!(
+            user,
+            User {
+                id: "1".into(),
+                cache: Cache::default(),
+                role: "standard".into(),
+                hits: None,
+            }
+        );
+        // a key matching a skipped field is treated like any other unknown key
+        let user: User = json::from_str(r#"{"id":"1","role":"admin","cache":[1]}"#).unwrap();
+        assert_eq!(user.role, "standard");
+    }
+
+    #[derive(ArriModel, Debug)]
+    #[arri(strict)]
+    struct StrictUser {
+        id: String,
+        #[arri(skip)]
+        #[allow(dead_code)]
+        cache: Cache,
+    }
+
+    #[test]
+    fn strict_structs_reject_keys_of_skipped_fields() {
+        let err = json::from_str::<StrictUser>(r#"{"id":"1","cache":[]}"#).unwrap_err();
+        assert_eq!(err.kind(), DecodeErrorKind::UnknownField);
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct KeyReuse {
+        #[arri(skip)]
+        name: String,
+        // a skipped field doesn't reserve its key
+        #[arri(rename = "name")]
+        display_name: String,
+    }
+
+    #[test]
+    fn skipped_fields_do_not_reserve_keys() {
+        let value: KeyReuse = json::from_str(r#"{"name":"a"}"#).unwrap();
+        assert_eq!(value.display_name, "a");
+        assert_eq!(value.name, "");
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(tag_key = "type")]
+    enum Event {
+        Created {
+            id: String,
+            // doesn't conflict with the tag key since it's skipped
+            #[arri(skip)]
+            r#type: String,
+        },
+        Deleted {
+            #[arri(skip)]
+            cache: Cache,
+        },
+    }
+
+    #[test]
+    fn skipped_fields_in_struct_variants() {
+        let event = Event::Created {
+            id: "1".into(),
+            r#type: "ignored".into(),
+        };
+        assert_eq!(
+            json::to_string(&event).unwrap(),
+            r#"{"type":"Created","id":"1"}"#
+        );
+        assert_eq!(
+            json::from_str::<Event>(r#"{"type":"Created","id":"1"}"#).unwrap(),
+            Event::Created {
+                id: "1".into(),
+                r#type: String::new(),
+            }
+        );
+        let event = Event::Deleted {
+            cache: Cache(vec![1]),
+        };
+        assert_eq!(json::to_string(&event).unwrap(), r#"{"type":"Deleted"}"#);
+        assert_eq!(
+            type_def_of::<Event>().to_json(),
+            r#"{"tagKey":"type","union":{"Created":{"properties":{"id":{"type":"string"}}},"Deleted":{"properties":{}}},"metadata":{"id":"Event"}}"#
+        );
+    }
+
+    /// `T` is only used by a skipped field so it doesn't need to implement the arri traits
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Tagged<T> {
+        name: String,
+        #[arri(skip)]
+        marker: PhantomData<T>,
+    }
+
+    #[test]
+    fn type_params_only_used_by_skipped_fields_are_ignored() {
+        // Cache doesn't implement ArriSchema / Encode / Decode
+        assert_eq!(<Tagged<Cache>>::generic_name(), "Tagged");
+        let value = Tagged::<Cache> {
+            name: "a".into(),
+            marker: PhantomData,
+        };
+        let encoded = json::to_string(&value).unwrap();
+        assert_eq!(json::from_str::<Tagged<Cache>>(&encoded).unwrap(), value);
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Holder<T, U> {
+        value: T,
+        #[arri(skip)]
+        extra: U,
+    }
+
+    #[test]
+    fn skipped_generic_fields_require_default() {
+        // U = Cache needs Default (which it has) but no arri traits
+        let value: Holder<u8, Cache> = json::from_str(r#"{"value":1}"#).unwrap();
+        assert_eq!(
+            value,
+            Holder {
+                value: 1,
+                extra: Cache::default()
+            }
+        );
+        assert_eq!(<Holder<u8, Cache>>::generic_name(), "Uint8Holder");
+    }
+}

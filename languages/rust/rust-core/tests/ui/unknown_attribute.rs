@@ -2,7 +2,7 @@ use arri::ArriModel;
 
 #[derive(ArriModel)]
 struct Foo {
-    #[arri(skip)]
+    #[arri(flatten)]
     a: String,
 }
 

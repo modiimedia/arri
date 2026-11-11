@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use proc_macro2::{Span, TokenStream};
-use quote::{format_ident, quote};
+use proc_macro2::{Span, TokenStream, TokenTree};
+use quote::{ToTokens, format_ident, quote, quote_spanned};
 use syn::{
     Data, DeriveInput, Fields, GenericArgument, Generics, Ident, LitStr, PathArguments, Type,
     WherePredicate, ext::IdentExt, spanned::Spanned,
@@ -39,9 +39,35 @@ pub struct Field<'a> {
     pub ident: &'a Ident,
     pub key: String,
     /// The type used for the schema / encoding / decoding. For `Option<T>` fields this is `T`.
+    /// For skipped fields this is the type exactly as written.
     pub ty: &'a Type,
     pub optional: bool,
     pub docs: Docs,
+    /// `Some` if the field is excluded from the schema and encoding (`#[arri(skip)]`)
+    pub skip: Option<Skip>,
+}
+
+/// How a skipped field gets its value when decoding
+pub enum Skip {
+    /// `Default::default()`
+    Default,
+    /// `#[arri(skip, default = "path::to::fn")]`
+    With(syn::Path),
+}
+
+impl Field<'_> {
+    pub fn is_skipped(&self) -> bool {
+        self.skip.is_some()
+    }
+
+    /// The expression that produces the value of a skipped field
+    pub fn skipped_value(&self) -> TokenStream {
+        let ty = self.ty;
+        match &self.skip {
+            Some(Skip::With(path)) => quote_spanned!(path.span()=> #path()),
+            _ => quote_spanned!(ty.span()=> <#ty as ::core::default::Default>::default()),
+        }
+    }
 }
 
 pub struct EnumValue<'a> {
@@ -111,6 +137,25 @@ fn reject_container_attr<T: Spanned>(
     }
 }
 
+/// Newtype fields use the schema of their type directly so field attributes don't apply to them
+fn reject_field_attrs(field: &syn::Field, location: &str) -> syn::Result<()> {
+    let attrs = FieldAttrs::parse(&field.attrs)?;
+    if attrs.is_empty() {
+        return Ok(());
+    }
+    let span = attrs
+        .skip
+        .as_ref()
+        .map(|p| p.span())
+        .or(attrs.rename.as_ref().map(|r| r.span()))
+        .or(attrs.default.as_ref().map(|(_, lit)| lit.span()))
+        .unwrap_or_else(|| field.span());
+    error(
+        span,
+        format!("arri field attributes are not supported on {location}"),
+    )
+}
+
 fn parse_fields<'a>(
     fields: &'a syn::FieldsNamed,
     rename_all: Option<RenameRule>,
@@ -120,6 +165,29 @@ fn parse_fields<'a>(
     for field in &fields.named {
         let ident = field.ident.as_ref().expect("named fields have identifiers");
         let attrs = FieldAttrs::parse(&field.attrs)?;
+        if attrs.skip.is_some() {
+            reject_container_attr(&attrs.rename, "rename", "skipped fields")?;
+            let skip = match attrs.default {
+                Some((path, _)) => Skip::With(path),
+                None => Skip::Default,
+            };
+            // skipped fields keep their original type and don't reserve a key
+            output.push(Field {
+                ident,
+                key: ident.unraw().to_string(),
+                ty: &field.ty,
+                optional: false,
+                docs: Docs::default(),
+                skip: Some(skip),
+            });
+            continue;
+        }
+        if let Some((_, lit)) = &attrs.default {
+            return error(
+                lit.span(),
+                "`default` can only be used alongside `skip` (`#[arri(skip, default = \"...\")]`)",
+            );
+        }
         let key = match &attrs.rename {
             Some(rename) => rename.value(),
             None => {
@@ -146,6 +214,7 @@ fn parse_fields<'a>(
             ty,
             optional,
             docs: Docs::parse(&field.attrs)?,
+            skip: None,
         });
     }
     Ok(output)
@@ -183,6 +252,7 @@ impl<'a> Container<'a> {
                             location,
                         )?;
                         let field = fields.unnamed.first().expect("length was checked");
+                        reject_field_attrs(field, "newtype structs")?;
                         if option_inner(&field.ty).is_some() {
                             return error(
                                 field.ty.span(),
@@ -271,10 +341,76 @@ impl<'a> Container<'a> {
         })
     }
 
-    /// Generics with an additional `T: <bound>` predicate for every type parameter
+    /// Types that make up the schema (every field / variant type that isn't skipped)
+    fn schema_types(&self) -> Vec<&Type> {
+        fn non_skipped<'b>(fields: &'b [Field<'b>]) -> impl Iterator<Item = &'b Type> {
+            fields.iter().filter(|f| !f.is_skipped()).map(|f| f.ty)
+        }
+        match &self.body {
+            Body::Struct(fields) => non_skipped(fields).collect(),
+            Body::Newtype(ty) => vec![*ty],
+            Body::Enum(_) => Vec::new(),
+            Body::Union(_, variants) => variants
+                .iter()
+                .flat_map(|v| -> Vec<&Type> {
+                    match &v.kind {
+                        VariantKind::Unit => Vec::new(),
+                        VariantKind::Newtype(ty) => vec![*ty],
+                        VariantKind::Struct(fields) => non_skipped(fields).collect(),
+                    }
+                })
+                .collect(),
+        }
+    }
+
+    /// Type parameters that affect the schema.
+    ///
+    /// Parameters that are only used by skipped fields (e.g. `PhantomData<T>`) don't get arri
+    /// trait bounds and aren't part of the type's id.
+    pub fn schema_params(&self) -> Vec<&Ident> {
+        let types = self.schema_types();
+        self.generics
+            .type_params()
+            .map(|p| &p.ident)
+            .filter(|param| types.iter().any(|ty| mentions(ty.to_token_stream(), param)))
+            .collect()
+    }
+
+    /// Skipped fields
+    fn skipped_fields(&self) -> Vec<&Field<'_>> {
+        match &self.body {
+            Body::Struct(fields) => fields.iter().filter(|f| f.is_skipped()).collect(),
+            Body::Union(_, variants) => variants
+                .iter()
+                .flat_map(|v| match &v.kind {
+                    VariantKind::Struct(fields) => {
+                        fields.iter().filter(|f| f.is_skipped()).collect()
+                    }
+                    _ => Vec::new(),
+                })
+                .collect(),
+            _ => Vec::new(),
+        }
+    }
+
+    /// `FieldType: Default` predicates for skipped fields that use `Default` and depend on a type parameter
+    pub fn skipped_default_predicates(&self) -> Vec<WherePredicate> {
+        let params: Vec<&Ident> = self.generics.type_params().map(|p| &p.ident).collect();
+        self.skipped_fields()
+            .into_iter()
+            .filter(|f| matches!(f.skip, Some(Skip::Default)))
+            .filter(|f| params.iter().any(|p| mentions(f.ty.to_token_stream(), p)))
+            .map(|f| {
+                let ty = f.ty;
+                syn::parse_quote!(#ty: ::core::default::Default)
+            })
+            .collect()
+    }
+
+    /// Generics with an additional `T: <bound>` predicate for every type parameter that affects the schema
     pub fn bounded_generics(&self, bound: TokenStream, extra: &[(Ident, TokenStream)]) -> Generics {
         let mut generics = self.generics.clone();
-        let params: Vec<Ident> = generics.type_params().map(|p| p.ident.clone()).collect();
+        let params: Vec<Ident> = self.schema_params().into_iter().cloned().collect();
         let where_clause = generics.make_where_clause();
         for param in params {
             let predicate: WherePredicate = syn::parse_quote!(#param: #bound);
@@ -381,7 +517,9 @@ fn parse_variants<'a>(
                     "rename_all",
                     "newtype variants",
                 )?;
-                let ty = &fields.unnamed.first().expect("length was checked").ty;
+                let field = fields.unnamed.first().expect("length was checked");
+                reject_field_attrs(field, "newtype variants")?;
+                let ty = &field.ty;
                 if option_inner(ty).is_some() {
                     return error(
                         ty.span(),
@@ -399,7 +537,8 @@ fn parse_variants<'a>(
             Fields::Named(fields) => {
                 let fields = parse_fields(fields, field_rename_all)?;
                 if let Tagging::Internal { tag_key } = tagging
-                    && let Some(field) = fields.iter().find(|f| &f.key == tag_key)
+                    && let Some(field) =
+                        fields.iter().find(|f| !f.is_skipped() && &f.key == tag_key)
                 {
                     return error(
                         field.ident.span(),
@@ -417,6 +556,15 @@ fn parse_variants<'a>(
         });
     }
     Ok(variants)
+}
+
+/// Returns `true` if `tokens` contains the identifier `ident`
+fn mentions(tokens: TokenStream, ident: &Ident) -> bool {
+    tokens.into_iter().any(|token| match token {
+        TokenTree::Ident(other) => other == *ident,
+        TokenTree::Group(group) => mentions(group.stream(), ident),
+        _ => false,
+    })
 }
 
 /// Binding names used when destructuring fields (`__f0`, `__f1`, ...)

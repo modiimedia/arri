@@ -120,6 +120,35 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// Field attributes:
 ///
 /// - `#[arri(rename = "...")]`: override the field's key
+/// - `#[arri(skip)]`: exclude the field from the schema and from encoding. When decoding the field
+///   is set to `Default::default()`. The field's type doesn't need to implement any arri traits.
+///   Type parameters that are only used by skipped fields don't need to implement them either,
+///   and aren't part of the type's id.
+/// - `#[arri(skip, default = "path::to::fn")]`: same as `skip` but the value comes from calling `fn()`
+///
+/// ```
+/// use arri::ArriModel;
+///
+/// #[derive(Default)]
+/// struct Connection;
+///
+/// #[derive(ArriModel)]
+/// struct Session {
+///     id: String,
+///     #[arri(skip)]
+///     connection: Connection,
+///     #[arri(skip, default = "default_retries")]
+///     retries: u8,
+/// }
+///
+/// fn default_retries() -> u8 {
+///     3
+/// }
+///
+/// let session: Session = arri::json::from_str(r#"{"id":"1"}"#).unwrap();
+/// assert_eq!(session.retries, 3);
+/// assert_eq!(arri::json::to_string(&session).unwrap(), r#"{"id":"1"}"#);
+/// ```
 #[cfg(feature = "derive")]
 pub use arri_derive::ArriModel;
 

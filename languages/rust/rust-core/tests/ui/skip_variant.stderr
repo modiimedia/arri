@@ -1,0 +1,5 @@
+error: unknown arri attribute `skip` on a variant. Supported attributes: `rename`, `rename_all`
+ --> tests/ui/skip_variant.rs:6:12
+  |
+6 |     #[arri(skip)]
+  |            ^^^^

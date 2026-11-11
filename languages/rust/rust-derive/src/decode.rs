@@ -11,7 +11,11 @@ pub fn expand(c: &Container) -> TokenStream {
         .into_iter()
         .map(|param| (param, quote!(#k::DecodeFields)))
         .collect();
-    let generics = c.bounded_generics(quote!(#k::Decode), &extra);
+    let mut generics = c.bounded_generics(quote!(#k::Decode), &extra);
+    generics
+        .make_where_clause()
+        .predicates
+        .extend(c.skipped_default_predicates());
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let result = quote!(#k::__private::Result<Self, #k::DecodeError>);
     let strict = c.strict;
@@ -152,11 +156,12 @@ fn decode_fields(c: &Container, fields: &[Field], ctor: TokenStream) -> TokenStr
     let k = &c.krate;
     let strict = c.strict;
     let slots: Vec<_> = (0..fields.len()).map(binding).collect();
-    let declarations = fields.iter().zip(&slots).map(|(field, slot)| {
+    let decoded = || fields.iter().zip(&slots).filter(|(f, _)| !f.is_skipped());
+    let declarations = decoded().map(|(field, slot)| {
         let ty = field.ty;
         quote!(let mut #slot: #k::__private::Option<#ty> = #k::__private::None;)
     });
-    let arms = fields.iter().zip(&slots).map(|(field, slot)| {
+    let arms = decoded().map(|(field, slot)| {
         let ty = field.ty;
         let key = &field.key;
         quote! {
@@ -170,7 +175,10 @@ fn decode_fields(c: &Container, fields: &[Field], ctor: TokenStream) -> TokenStr
     let assignments = fields.iter().zip(&slots).map(|(field, slot)| {
         let ident = field.ident;
         let key = &field.key;
-        if field.optional {
+        if field.is_skipped() {
+            let value = field.skipped_value();
+            quote!(#ident: #value)
+        } else if field.optional {
             quote!(#ident: #slot)
         } else {
             quote! {

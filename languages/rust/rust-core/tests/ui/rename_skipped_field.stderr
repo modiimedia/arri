@@ -1,0 +1,5 @@
+error: `rename` is not supported on skipped fields
+ --> tests/ui/rename_skipped_field.rs:5:27
+  |
+5 |     #[arri(skip, rename = "b")]
+  |                           ^^^

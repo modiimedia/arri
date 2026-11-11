@@ -1,0 +1,5 @@
+error: `default` can only be used alongside `skip` (`#[arri(skip, default = "...")]`)
+ --> tests/ui/default_without_skip.rs:5:22
+  |
+5 |     #[arri(default = "make_name")]
+  |                      ^^^^^^^^^^^
