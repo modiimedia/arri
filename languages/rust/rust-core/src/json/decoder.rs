@@ -24,6 +24,60 @@ pub struct JsonDecoder<'a> {
     scratch: String,
 }
 
+/// Powers of ten that are exactly representable as an `f64`
+const F64_POW10: [f64; 23] = [
+    1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16,
+    1e17, 1e18, 1e19, 1e20, 1e21, 1e22,
+];
+
+/// Powers of ten that are exactly representable as an `f32`
+const F32_POW10: [f32; 11] = [1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10];
+
+/// A JSON number split into its sign, significant digits, and base 10 exponent
+/// (`mantissa * 10^exponent`). See [`JsonDecoder::scan_float`].
+type NumberParts = (bool, u64, i32);
+
+/// Parse a JSON number as an `f64`.
+///
+/// Numbers with at most 15 significant digits and a small exponent (most real world numbers) are
+/// computed with a single multiplication or division. Both operands are exact and IEEE 754
+/// operations are correctly rounded, so the result is the same as a full parse
+/// (Clinger's fast path). Everything else falls back to `str::parse`.
+#[inline]
+fn parse_f64(text: &str, parts: Option<NumberParts>) -> Option<f64> {
+    if let Some((negative, mantissa, exponent)) = parts
+        && mantissa <= 1 << 53
+        && (-22..=22).contains(&exponent)
+    {
+        let value = mantissa as f64;
+        let value = if exponent < 0 {
+            value / F64_POW10[-exponent as usize]
+        } else {
+            value * F64_POW10[exponent as usize]
+        };
+        return Some(if negative { -value } else { value });
+    }
+    text.parse().ok()
+}
+
+/// Same as [`parse_f64`] but for `f32` (computed in `f32` to avoid rounding twice)
+#[inline]
+fn parse_f32(text: &str, parts: Option<NumberParts>) -> Option<f32> {
+    if let Some((negative, mantissa, exponent)) = parts
+        && mantissa <= 1 << 24
+        && (-10..=10).contains(&exponent)
+    {
+        let value = mantissa as f32;
+        let value = if exponent < 0 {
+            value / F32_POW10[-exponent as usize]
+        } else {
+            value * F32_POW10[exponent as usize]
+        };
+        return Some(if negative { -value } else { value });
+    }
+    text.parse().ok()
+}
+
 /// Parse a string containing an optional minus sign followed by one or more ASCII digits
 pub(crate) fn parse_integer(s: &str) -> Option<i128> {
     let (negative, digits) = match s.strip_prefix('-') {
@@ -298,11 +352,122 @@ impl<'a> JsonDecoder<'a> {
         })
     }
 
-    fn read_float(&mut self, expected: &str) -> Result<&'a str, DecodeError> {
+    #[inline]
+    fn read_float(
+        &mut self,
+        expected: &str,
+    ) -> Result<(&'a str, Option<NumberParts>), DecodeError> {
         match self.peek_value() {
-            Some(b'-' | b'0'..=b'9') => Ok(self.scan_number()?.0),
+            Some(b'-' | b'0'..=b'9') => {
+                let (text, _, parts) = self.scan_float()?;
+                Ok((text, parts))
+            }
             _ => Err(self.invalid_type(expected)),
         }
+    }
+
+    /// Same as [`JsonDecoder::scan_number`], but also splits the number into its sign, significant
+    /// digits, and base 10 exponent in the same pass so that floats don't need to be read twice.
+    ///
+    /// Returns `(text, is_integer, parts)`. `parts` is `None` when there are more than 19
+    /// significant digits.
+    #[inline]
+    fn scan_float(&mut self) -> Result<(&'a str, bool, Option<NumberParts>), DecodeError> {
+        let bytes = self.bytes();
+        let start = self.pos;
+        let mut pos = self.pos;
+        let negative = bytes.get(pos) == Some(&b'-');
+        if negative {
+            pos += 1;
+        }
+        let mut mantissa: u64 = 0;
+        let mut significant_digits = 0;
+        let mut exponent: i32 = 0;
+        let mut exact = true;
+        let mut is_integer = true;
+        match bytes.get(pos) {
+            // a leading zero can't be followed by more digits
+            Some(b'0') => pos += 1,
+            Some(b'1'..=b'9') => {
+                while let Some(&b) = bytes.get(pos) {
+                    if !b.is_ascii_digit() {
+                        break;
+                    }
+                    if significant_digits < 19 {
+                        mantissa = mantissa * 10 + (b - b'0') as u64;
+                        significant_digits += 1;
+                    } else {
+                        exact = false;
+                    }
+                    pos += 1;
+                }
+            }
+            _ => {
+                self.pos = pos;
+                return Err(self.unexpected("a digit"));
+            }
+        }
+        if bytes.get(pos) == Some(&b'.') {
+            is_integer = false;
+            pos += 1;
+            let digits_start = pos;
+            while let Some(&b) = bytes.get(pos) {
+                if !b.is_ascii_digit() {
+                    break;
+                }
+                let digit = (b - b'0') as u64;
+                if mantissa == 0 && digit == 0 {
+                    // leading zeros of the fraction only shift the exponent
+                    exponent -= 1;
+                } else if significant_digits < 19 {
+                    mantissa = mantissa * 10 + digit;
+                    significant_digits += 1;
+                    exponent -= 1;
+                } else {
+                    exact = false;
+                }
+                pos += 1;
+            }
+            if pos == digits_start {
+                self.pos = pos;
+                return Err(self.unexpected("a digit"));
+            }
+        }
+        if let Some(b'e' | b'E') = bytes.get(pos) {
+            is_integer = false;
+            pos += 1;
+            let negative_exponent = match bytes.get(pos) {
+                Some(b'-') => {
+                    pos += 1;
+                    true
+                }
+                Some(b'+') => {
+                    pos += 1;
+                    false
+                }
+                _ => false,
+            };
+            let digits_start = pos;
+            let mut value: i32 = 0;
+            while let Some(&b) = bytes.get(pos) {
+                if !b.is_ascii_digit() {
+                    break;
+                }
+                // larger exponents are out of range for the fast path anyway
+                if value < 100_000 {
+                    value = value * 10 + (b - b'0') as i32;
+                }
+                pos += 1;
+            }
+            if pos == digits_start {
+                self.pos = pos;
+                return Err(self.unexpected("a digit"));
+            }
+            exponent += if negative_exponent { -value } else { value };
+        }
+        self.pos = pos;
+        let parts = exact.then_some((negative, mantissa, exponent));
+        Ok((&self.input[start..pos], is_integer, parts))
     }
 
     /// Read a JSON string and append its unescaped contents to `out`. Expects the cursor to be on the opening quote.
@@ -461,6 +626,7 @@ impl<'a> JsonDecoder<'a> {
 macro_rules! json_decode_int {
     ($($method:ident => $ty:ty, $name:literal, $reader:ident);* $(;)?) => {
         $(
+            #[inline]
             fn $method(&mut self) -> Result<$ty, DecodeError> {
                 let n = self.$reader($name)?;
                 <$ty>::try_from(n).map_err(|_| {
@@ -472,6 +638,7 @@ macro_rules! json_decode_int {
 }
 
 impl Decoder for JsonDecoder<'_> {
+    #[inline]
     fn decode_null(&mut self) -> Result<bool, DecodeError> {
         if self.peek_value() == Some(b'n') {
             self.expect_literal(b"null")?;
@@ -480,6 +647,7 @@ impl Decoder for JsonDecoder<'_> {
         Ok(false)
     }
 
+    #[inline]
     fn decode_bool(&mut self) -> Result<bool, DecodeError> {
         match self.peek_value() {
             Some(b't') => self.expect_literal(b"true").map(|_| true),
@@ -488,21 +656,23 @@ impl Decoder for JsonDecoder<'_> {
         }
     }
 
+    #[inline]
     fn decode_f32(&mut self) -> Result<f32, DecodeError> {
-        let text = self.read_float("float32")?;
+        let (text, parts) = self.read_float("float32")?;
         // `parse` turns numbers that are too large into infinity, which can't be encoded again
-        match text.parse::<f32>() {
-            Ok(v) if v.is_finite() => Ok(v),
+        match parse_f32(text, parts) {
+            Some(v) if v.is_finite() => Ok(v),
             _ => Err(DecodeError::invalid_value(format!(
                 "{text} is out of range for float32"
             ))),
         }
     }
 
+    #[inline]
     fn decode_f64(&mut self) -> Result<f64, DecodeError> {
-        let text = self.read_float("float64")?;
-        match text.parse::<f64>() {
-            Ok(v) if v.is_finite() => Ok(v),
+        let (text, parts) = self.read_float("float64")?;
+        match parse_f64(text, parts) {
+            Some(v) if v.is_finite() => Ok(v),
             _ => Err(DecodeError::invalid_value(format!(
                 "{text} is out of range for float64"
             ))),
@@ -520,6 +690,7 @@ impl Decoder for JsonDecoder<'_> {
         decode_u64 => u64, "uint64", read_large_integer;
     }
 
+    #[inline]
     fn decode_string(&mut self) -> Result<String, DecodeError> {
         if self.peek_value() != Some(b'"') {
             return Err(self.invalid_type("string"));
@@ -527,6 +698,7 @@ impl Decoder for JsonDecoder<'_> {
         self.read_str().map(str::to_string)
     }
 
+    #[inline]
     fn decode_str(&mut self) -> Result<&str, DecodeError> {
         if self.peek_value() != Some(b'"') {
             return Err(self.invalid_type("string"));
@@ -534,6 +706,7 @@ impl Decoder for JsonDecoder<'_> {
         self.read_str()
     }
 
+    #[inline]
     fn decode_timestamp(&mut self) -> Result<Timestamp, DecodeError> {
         if self.peek_value() != Some(b'"') {
             return Err(self.invalid_type("timestamp"));
@@ -542,13 +715,14 @@ impl Decoder for JsonDecoder<'_> {
         Timestamp::parse(text).map_err(|e| DecodeError::invalid_value(e.to_string()))
     }
 
+    #[inline]
     fn decode_any(&mut self) -> Result<Value, DecodeError> {
         match self.peek_value() {
             Some(b'n') => self.expect_literal(b"null").map(|_| Value::Null),
             Some(b't' | b'f') => self.decode_bool().map(Value::Bool),
             Some(b'"') => self.decode_string().map(Value::String),
             Some(b'-' | b'0'..=b'9') => {
-                let (text, is_integer) = self.scan_number()?;
+                let (text, is_integer, parts) = self.scan_float()?;
                 if is_integer && let Some(n) = parse_integer(text) {
                     if let Ok(n) = i64::try_from(n) {
                         return Ok(Value::Number(Number::Int(n)));
@@ -557,8 +731,8 @@ impl Decoder for JsonDecoder<'_> {
                         return Ok(Value::Number(Number::Uint(n)));
                     }
                 }
-                match text.parse::<f64>() {
-                    Ok(v) if v.is_finite() => Ok(Value::Number(Number::Float(v))),
+                match parse_f64(text, parts) {
+                    Some(v) if v.is_finite() => Ok(Value::Number(Number::Float(v))),
                     _ => Err(DecodeError::invalid_value(format!(
                         "{text} is out of range for a number"
                     ))),
@@ -587,6 +761,7 @@ impl Decoder for JsonDecoder<'_> {
         }
     }
 
+    #[inline]
     fn begin_object(&mut self) -> Result<Option<usize>, DecodeError> {
         if self.peek_value() != Some(b'{') {
             return Err(self.invalid_type("object"));
@@ -595,6 +770,7 @@ impl Decoder for JsonDecoder<'_> {
         Ok(None)
     }
 
+    #[inline]
     fn next_key(&mut self) -> Result<Option<&str>, DecodeError> {
         match self.peek_value() {
             Some(b'}') => {
@@ -635,6 +811,7 @@ impl Decoder for JsonDecoder<'_> {
         result.map(|_| Some(self.scratch.as_str()))
     }
 
+    #[inline]
     fn begin_list(&mut self) -> Result<Option<usize>, DecodeError> {
         if self.peek_value() != Some(b'[') {
             return Err(self.invalid_type("array"));
@@ -643,6 +820,7 @@ impl Decoder for JsonDecoder<'_> {
         Ok(None)
     }
 
+    #[inline]
     fn next_element(&mut self) -> Result<bool, DecodeError> {
         match self.peek_value() {
             Some(b']') => {
@@ -659,6 +837,7 @@ impl Decoder for JsonDecoder<'_> {
         Ok(true)
     }
 
+    #[inline]
     fn skip_value(&mut self) -> Result<(), DecodeError> {
         match self.peek_value() {
             Some(b'n') => self.expect_literal(b"null"),
@@ -741,6 +920,103 @@ mod tests {
         assert_eq!(from_str::<f64>("10").unwrap(), 10.0);
         // very small numbers round to zero
         assert_eq!(from_str::<f64>("1e-400").unwrap(), 0.0);
+    }
+
+    #[test]
+    fn fast_float_parsing_matches_std() {
+        let mut inputs: Vec<String> = [
+            "0",
+            "-0",
+            "0.0",
+            "-0.0",
+            "1",
+            "-1",
+            "0.1",
+            "0.2",
+            "0.3",
+            "1.5",
+            "123.456",
+            "1e22",
+            "1e23",
+            "9007199254740992",
+            "9007199254740993",
+            "9007199254740991.5",
+            "1e-22",
+            "1e-23",
+            "4.9e-324",
+            "2.2250738585072014e-308",
+            "1.7976931348623157e308",
+            "0e500",
+            "1E+2",
+            "1.0e-5",
+            "123456789012345678",
+            "1234567890123456789",
+            "12345678901234567890",
+            "0.000000000000000000001",
+            "16777216",
+            "16777217",
+            "3.4028235e38",
+            "1.1754944e-38",
+            "1e10",
+            "1e11",
+            "0.30000000000000004",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        let mut x: u64 = 0x9E37_79B9_7F4A_7C15;
+        let mut next = || {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            x
+        };
+        for _ in 0..300_000 {
+            let r = next();
+            let digits = 1 + (r % 20) as u32;
+            let mantissa = next() % 10u64.pow(digits.min(19));
+            let point = (next() % (digits as u64 + 1)) as usize;
+            let mut s = mantissa.to_string();
+            if point > 0 && point < s.len() {
+                s.insert(s.len() - point, '.');
+            }
+            if r % 3 == 0 {
+                let e = (next() % 60) as i64 - 30;
+                s.push_str(&format!("e{e}"));
+            }
+            if r % 2 == 0 {
+                s.insert(0, '-');
+            }
+            inputs.push(s);
+        }
+        for input in &inputs {
+            let expected64 = input.parse::<f64>().unwrap();
+            if expected64.is_finite() {
+                let actual = from_str::<f64>(input).unwrap();
+                assert_eq!(actual.to_bits(), expected64.to_bits(), "{input}");
+                // `Value` keeps integers as integers
+                if let Value::Number(Number::Float(v)) = from_str::<Value>(input).unwrap() {
+                    assert_eq!(v.to_bits(), expected64.to_bits(), "{input}");
+                }
+            }
+            let expected32 = input.parse::<f32>().unwrap();
+            if expected32.is_finite() {
+                let actual = from_str::<f32>(input).unwrap();
+                assert_eq!(actual.to_bits(), expected32.to_bits(), "{input}");
+            }
+        }
+        // syntax is validated the same way as other numbers
+        for invalid in [
+            "-", "01", "-01", "1.", "--1", "+1", "1e", "1e+", ".5", "1.e5", "0x1",
+        ] {
+            for kind in [
+                from_str::<f64>(invalid).unwrap_err().kind(),
+                from_str::<f32>(invalid).unwrap_err().kind(),
+                from_str::<Value>(invalid).unwrap_err().kind(),
+            ] {
+                assert_eq!(kind, DecodeErrorKind::Syntax, "{invalid}");
+            }
+        }
     }
 
     #[test]
