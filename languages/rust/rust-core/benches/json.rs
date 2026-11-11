@@ -89,6 +89,28 @@ mod arri_types {
         },
     }
 
+    /// Internally tagged union whose variants wrap other types (newtype variants)
+    #[derive(ArriModel, Clone)]
+    #[arri(tag_key = "type")]
+    pub enum WrappedEvent<Ts> {
+        Created(User<Ts>),
+        Renamed(Rename),
+        Deleted(Box<Deletion<Ts>>),
+    }
+
+    #[derive(ArriModel, Clone)]
+    pub struct Rename {
+        pub id: String,
+        pub old_name: String,
+        pub new_name: String,
+    }
+
+    #[derive(ArriModel, Clone)]
+    pub struct Deletion<Ts> {
+        pub id: String,
+        pub deleted_at: Ts,
+    }
+
     /// A single large object
     #[derive(ArriModel, Clone)]
     pub struct Report<Ts> {
@@ -172,6 +194,27 @@ mod serde_types {
             id: String,
             deleted_at: Ts,
         },
+    }
+
+    #[derive(Serialize, Deserialize, Clone)]
+    #[serde(tag = "type")]
+    pub enum WrappedEvent<Ts> {
+        Created(User<Ts>),
+        Renamed(Rename),
+        Deleted(Box<Deletion<Ts>>),
+    }
+
+    #[derive(Serialize, Deserialize, Clone)]
+    pub struct Rename {
+        pub id: String,
+        pub old_name: String,
+        pub new_name: String,
+    }
+
+    #[derive(Serialize, Deserialize, Clone)]
+    pub struct Deletion<Ts> {
+        pub id: String,
+        pub deleted_at: Ts,
     }
 
     #[derive(Serialize, Deserialize, Clone)]
@@ -297,6 +340,47 @@ fn serde_event<Ts: Clone>(event: &arri_types::Event<Ts>) -> serde_types::Event<T
             id: id.clone(),
             deleted_at: deleted_at.clone(),
         },
+    }
+}
+
+fn arri_wrapped_event<Ts: BenchTimestamp>(i: usize) -> arri_types::WrappedEvent<Ts> {
+    match arri_event::<Ts>(i) {
+        arri_types::Event::Created { user } => arri_types::WrappedEvent::Created(user),
+        arri_types::Event::Renamed {
+            id,
+            old_name,
+            new_name,
+        } => arri_types::WrappedEvent::Renamed(arri_types::Rename {
+            id,
+            old_name,
+            new_name,
+        }),
+        arri_types::Event::Deleted { id, deleted_at } => {
+            arri_types::WrappedEvent::Deleted(Box::new(arri_types::Deletion { id, deleted_at }))
+        }
+    }
+}
+
+fn serde_wrapped_event<Ts: Clone>(
+    event: &arri_types::WrappedEvent<Ts>,
+) -> serde_types::WrappedEvent<Ts> {
+    match event {
+        arri_types::WrappedEvent::Created(user) => {
+            serde_types::WrappedEvent::Created(serde_user(user))
+        }
+        arri_types::WrappedEvent::Renamed(r) => {
+            serde_types::WrappedEvent::Renamed(serde_types::Rename {
+                id: r.id.clone(),
+                old_name: r.old_name.clone(),
+                new_name: r.new_name.clone(),
+            })
+        }
+        arri_types::WrappedEvent::Deleted(d) => {
+            serde_types::WrappedEvent::Deleted(Box::new(serde_types::Deletion {
+                id: d.id.clone(),
+                deleted_at: d.deleted_at.clone(),
+            }))
+        }
     }
 }
 
@@ -478,6 +562,16 @@ where
         &format!("{prefix}/events_1000"),
         &events,
         &serde_events,
+        "age",
+    );
+
+    let wrapped_events: Vec<_> = (0..1000).map(arri_wrapped_event::<Ts>).collect();
+    let serde_wrapped_events: Vec<_> = wrapped_events.iter().map(serde_wrapped_event).collect();
+    bench_payload(
+        c,
+        &format!("{prefix}/wrapped_events_1000"),
+        &wrapped_events,
+        &serde_wrapped_events,
         "age",
     );
 
