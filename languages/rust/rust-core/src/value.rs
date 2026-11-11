@@ -7,7 +7,9 @@ use crate::{
 
 /// A dynamically typed value. Corresponds to the "empty" schema form which accepts anything.
 ///
-/// Object entries are stored in a `Vec` so that the original key order is preserved.
+/// Object entries are stored in a `Vec` so that the original key order is preserved. Duplicate keys
+/// are kept as well since a `Value` represents arbitrary input. They're rejected once the value is
+/// decoded into a type with a schema (see [`DecodeErrorKind::DuplicateKey`](crate::DecodeErrorKind::DuplicateKey)).
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum Value {
     #[default]

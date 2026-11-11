@@ -44,6 +44,9 @@ pub fn decode_external<T: DecodeVariant, D: Decoder + ?Sized>(d: &mut D) -> Resu
     let tag = T::VARIANTS[index];
     let value = T::decode_variant(d, index).map_err(|e| e.in_field(tag))?;
     if let Some(key) = d.next_key()? {
+        if key == tag {
+            return Err(DecodeError::duplicate_key(tag));
+        }
         return Err(DecodeError::invalid_value(format!(
             "unexpected key \"{key}\", externally tagged unions must have exactly one key"
         )));
@@ -78,14 +81,24 @@ pub fn decode_internal<T: DecodeVariant, D: Decoder + ?Sized>(
         let value = d.decode_any().map_err(|e| e.in_field(&key))?;
         entries.push((key, value));
     }
-    let index = match entries.iter().rev().find(|(k, _)| k == tag_key) {
-        Some((_, Value::String(tag))) => {
-            variant_index::<T>(tag).map_err(|e| e.in_field(tag_key))?
+    let mut tag_position = None;
+    for (i, (key, _)) in entries.iter().enumerate() {
+        if key == tag_key {
+            if tag_position.is_some() {
+                return Err(DecodeError::duplicate_key(tag_key));
+            }
+            tag_position = Some(i);
         }
-        Some(_) => {
+    }
+    let Some(tag_position) = tag_position else {
+        return Err(DecodeError::missing_field(tag_key));
+    };
+    // the variant's fields treat the tag key as a duplicate so it's removed before decoding them
+    let index = match entries.remove(tag_position).1 {
+        Value::String(tag) => variant_index::<T>(&tag).map_err(|e| e.in_field(tag_key))?,
+        _ => {
             return Err(DecodeError::invalid_value("union tag must be a string").in_field(tag_key));
         }
-        None => return Err(DecodeError::missing_field(tag_key)),
     };
     let mut buffered = ValueDecoder::new(Value::Object(entries));
     buffered.begin_object()?;
@@ -120,8 +133,14 @@ pub fn decode_adjacent<T: DecodeVariant, D: Decoder + ?Sized>(
         };
         match key {
             Key::Tag => {
+                if index.is_some() {
+                    return Err(DecodeError::duplicate_key(tag_key));
+                }
                 let tag = d.decode_str().map_err(|e| e.in_field(tag_key))?;
                 index = Some(variant_index::<T>(tag).map_err(|e| e.in_field(tag_key))?);
+            }
+            Key::Value if result.is_some() || buffered.is_some() => {
+                return Err(DecodeError::duplicate_key(value_key));
             }
             Key::Value => match index {
                 Some(index) => {
@@ -147,29 +166,38 @@ pub fn decode_adjacent<T: DecodeVariant, D: Decoder + ?Sized>(
 
 /// Used by derived code when a key doesn't match any field.
 ///
-/// Returns an error if unknown keys aren't allowed. Otherwise returns `usize::MAX` which derived
-/// code treats as "skip this value".
+/// `tag_key` is the tag of an internally tagged union which has already been read, so seeing it
+/// again is a duplicate. Otherwise returns an error if unknown keys aren't allowed, or
+/// `usize::MAX` which derived code treats as "skip this value".
 #[inline]
 pub fn check_unknown_key(
     key: &str,
-    skip_key: Option<&str>,
+    tag_key: Option<&str>,
     strict: bool,
 ) -> Result<usize, DecodeError> {
-    if strict && skip_key != Some(key) {
+    if tag_key == Some(key) {
+        return Err(DecodeError::duplicate_key(key));
+    }
+    if strict {
         return Err(DecodeError::unknown_field(key));
     }
     Ok(usize::MAX)
+}
+
+#[cold]
+pub fn duplicate_key(name: &str) -> DecodeError {
+    DecodeError::duplicate_key(name)
 }
 
 /// Read the remaining keys of an object that has no fields of its own
 #[inline]
 pub fn decode_no_fields<D: Decoder + ?Sized>(
     d: &mut D,
-    skip_key: Option<&str>,
+    tag_key: Option<&str>,
     strict: bool,
 ) -> Result<(), DecodeError> {
     while let Some(key) = d.next_key()? {
-        check_unknown_key(key, skip_key, strict)?;
+        check_unknown_key(key, tag_key, strict)?;
         d.skip_value()?;
     }
     Ok(())

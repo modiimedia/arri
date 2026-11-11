@@ -132,6 +132,23 @@ fn bodies() -> Vec<(&'static str, String)> {
         ("optional null", format!(r#"{VALID},"optional":null"#)),
         ("unknown key", format!(r#"{VALID},"extra":[1,{{"a":2}}]"#)),
         ("missing field", without("float64")),
+        ("duplicate field", format!(r#"{VALID},"int32":1"#)),
+        (
+            "duplicate optional field",
+            format!(r#"{VALID},"optional":"a","optional":"b""#),
+        ),
+        (
+            "duplicate nested field",
+            with("inner", r#"{"id":"1","tags":[],"id":"2"}"#),
+        ),
+        (
+            "duplicate record key",
+            with("record", r#"{"x":"1","x":"2"}"#),
+        ),
+        (
+            "duplicate unknown key",
+            format!(r#"{VALID},"extra":1,"extra":2"#),
+        ),
     ]
 }
 

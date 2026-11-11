@@ -190,6 +190,18 @@ While:
 
 Would accept that same input
 
+#### Duplicate Keys
+
+JSON parsers disagree on what to do when an object contains the same key more than once (some keep the first value, some keep the last, and some keep both), so an input with duplicate keys can mean different things to different services. To avoid this, implementations **should reject** inputs where a key that is defined in **properties** / **optionalProperties** appears more than once. For example:
+
+```json
+{ "name": "Abraham Lincoln", "isAdmin": false, "isAdmin": true }
+```
+
+Is rejected even if both values are the same. Keys that are not part of the schema are ignored (unless `isStrict` is set), so repeating them has no effect.
+
+Some implementations use JSON parsers that don't report duplicate keys (for example JavaScript's `JSON.parse`, which keeps the last value). Those implementations may accept duplicate keys, but they must never produce them when encoding.
+
 ### "Values" Schema Form
 
 To describe a record/dictionary, where you don't know the keys but you do know what type the values should have, use a "values" schema. The value of the **values** keyword is another ATD schema. For example,
@@ -200,7 +212,7 @@ To describe a record/dictionary, where you don't know the keys but you do know w
 
 Accepts objects where all the values are booleans. So it would acccept `{}` or `{"a": true, "b": false}`.
 
-Be aware that only string keys are supported.
+Be aware that only string keys are supported. Like the properties form, inputs that contain the same key more than once should be rejected (see [duplicate keys](#duplicate-keys)).
 
 ### "Union" Schema Form
 
@@ -293,6 +305,7 @@ When both `tagKey` and `valueKey` are set the tag and the variant's value are pl
 
 - If the input doesn't match one of the variants specified in `union` then it is rejected. (Although clients should fallback to the first variant rather than rejecting the input. See [creating tolerant clients](../docs/creating-a-custom-generator.md#creating-tolerant-clients).)
 - Externally tagged and adjacently tagged unions can use any schema form for their variants. This includes `isNullable` variants.
+- The tag (the key for externally tagged unions, or `tagKey` for internally / adjacently tagged unions) and `valueKey` must not appear more than once in the same object. Implementations should reject inputs where they do (see [duplicate keys](#duplicate-keys)).
 - The `tagKey` and `valueKey` are JSON keys. Code generators should convert them to the naming conventions of the target language while keeping the original key when serializing / deserializing.
 
 ### "Discriminator" Schema Form

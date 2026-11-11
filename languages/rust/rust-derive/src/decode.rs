@@ -36,7 +36,7 @@ pub fn expand(c: &Container) -> TokenStream {
                 impl #impl_generics #k::DecodeFields for #ident #ty_generics #where_clause {
                     fn decode_fields<__D: #k::Decoder + ?Sized>(
                         d: &mut __D,
-                        skip_key: #k::__private::Option<&str>,
+                        tag_key: #k::__private::Option<&str>,
                     ) -> #result {
                         #decode_fields
                     }
@@ -83,7 +83,7 @@ pub fn expand(c: &Container) -> TokenStream {
                 },
             };
             // for internally tagged unions the variant's fields share an object with the tag
-            let (internal, skip_key) = match tagging {
+            let (internal, tag_key_arg) = match tagging {
                 Tagging::Internal { tag_key } => (true, quote!(#k::__private::Some(#tag_key))),
                 _ => (false, quote!(#k::__private::None)),
             };
@@ -97,11 +97,11 @@ pub fn expand(c: &Container) -> TokenStream {
                 let body = match &variant.kind {
                     VariantKind::Unit => quote! {
                         #open
-                        #k::__private::decode_no_fields(d, #skip_key, #strict)?;
+                        #k::__private::decode_no_fields(d, #tag_key_arg, #strict)?;
                         #k::__private::Ok(Self::#variant_ident)
                     },
                     VariantKind::Newtype(ty) if internal => quote! {
-                        <#ty as #k::DecodeFields>::decode_fields(d, #skip_key).map(Self::#variant_ident)
+                        <#ty as #k::DecodeFields>::decode_fields(d, #tag_key_arg).map(Self::#variant_ident)
                     },
                     VariantKind::Newtype(ty) => quote! {
                         <#ty as #k::Decode>::decode(d).map(Self::#variant_ident)
@@ -110,7 +110,7 @@ pub fn expand(c: &Container) -> TokenStream {
                         let decode_fields = decode_fields(c, fields, quote!(Self::#variant_ident));
                         quote! {
                             #open
-                            let skip_key: #k::__private::Option<&str> = #skip_key;
+                            let tag_key: #k::__private::Option<&str> = #tag_key_arg;
                             #decode_fields
                         }
                     }
@@ -147,7 +147,7 @@ pub fn expand(c: &Container) -> TokenStream {
 
 /// Reads the remaining entries of an open object into the given fields and constructs `ctor`.
 ///
-/// Expects `d` and `skip_key: Option<&str>` to be in scope.
+/// Expects `d` and `tag_key: Option<&str>` to be in scope.
 ///
 /// Each key is first matched to the index of its field. This lets the key be borrowed from the
 /// decoder (no copying) since the borrow ends before the field's value is decoded.
@@ -169,6 +169,9 @@ fn decode_fields(c: &Container, fields: &[Field], ctor: TokenStream) -> TokenStr
         let key = &field.key;
         quote! {
             #index => {
+                if #slot.is_some() {
+                    return #k::__private::Err(#k::__private::duplicate_key(#key));
+                }
                 #slot = #k::__private::Some(
                     <#ty as #k::Decode>::decode(d).map_err(|e| e.in_field(#key))?,
                 );
@@ -197,7 +200,7 @@ fn decode_fields(c: &Container, fields: &[Field], ctor: TokenStream) -> TokenStr
         while let #k::__private::Some(key) = d.next_key()? {
             let index: usize = match key {
                 #(#key_arms)*
-                _ => #k::__private::check_unknown_key(key, skip_key, #strict)?,
+                _ => #k::__private::check_unknown_key(key, tag_key, #strict)?,
             };
             match index {
                 #(#value_arms)*

@@ -82,10 +82,11 @@ pub trait Decode: Sized {
 pub trait DecodeFields: Sized {
     /// Read the remaining entries of an object that has already been opened with [`Decoder::begin_object`].
     ///
-    /// `skip_key` is a key that should always be ignored (such as the tag of an internally tagged union)
+    /// `tag_key` is the key of an internally tagged union's tag, which has already been read.
+    /// Finding it again is a [`DecodeErrorKind::DuplicateKey`] error.
     fn decode_fields<D: Decoder + ?Sized>(
         d: &mut D,
-        skip_key: Option<&str>,
+        tag_key: Option<&str>,
     ) -> Result<Self, DecodeError>;
 }
 
@@ -102,6 +103,8 @@ pub enum DecodeErrorKind {
     MissingField,
     /// An unknown key was found on a strict object
     UnknownField,
+    /// A key appeared more than once in the same object
+    DuplicateKey,
     /// An enum value or union tag that isn't recognized
     UnknownVariant,
     Custom,
@@ -160,6 +163,13 @@ impl DecodeError {
         Self::new(
             DecodeErrorKind::UnknownField,
             format!("unknown field \"{name}\""),
+        )
+    }
+
+    pub fn duplicate_key(name: &str) -> Self {
+        Self::new(
+            DecodeErrorKind::DuplicateKey,
+            format!("duplicate key \"{name}\""),
         )
     }
 
@@ -298,9 +308,9 @@ macro_rules! impl_decode_pointer {
                 #[inline]
                 fn decode_fields<D: Decoder + ?Sized>(
                     d: &mut D,
-                    skip_key: Option<&str>,
+                    tag_key: Option<&str>,
                 ) -> Result<Self, DecodeError> {
-                    T::decode_fields(d, skip_key).map($ty::new)
+                    T::decode_fields(d, tag_key).map($ty::new)
                 }
             }
         )*
@@ -342,25 +352,33 @@ impl<T: Decode> Decode for VecDeque<T> {
     }
 }
 
+/// Reads the remaining entries of a record.
+///
+/// `insert` returns an error (usually [`DecodeError::duplicate_key`]) if the key was already present.
 pub(crate) fn decode_map<V: Decode, D: Decoder + ?Sized>(
     d: &mut D,
-    mut insert: impl FnMut(String, V),
+    mut insert: impl FnMut(String, V) -> Result<(), DecodeError>,
 ) -> Result<(), DecodeError> {
     while let Some(key) = d.next_key()? {
         // record keys are stored so they need to be owned
         let key = key.to_string();
         let value = V::decode(d).map_err(|e| e.in_field(&key))?;
-        insert(key, value);
+        insert(key, value)?;
     }
     Ok(())
 }
 
 impl<V: Decode, S: BuildHasher + Default> Decode for HashMap<String, V, S> {
     fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError> {
+        use std::collections::hash_map::Entry;
         let len = d.begin_object()?.unwrap_or(0);
         let mut output = HashMap::with_capacity_and_hasher(len.min(MAX_PREALLOCATE), S::default());
-        decode_map(d, |k, v| {
-            output.insert(k, v);
+        decode_map(d, |k, v| match output.entry(k) {
+            Entry::Occupied(e) => Err(DecodeError::duplicate_key(e.key())),
+            Entry::Vacant(e) => {
+                e.insert(v);
+                Ok(())
+            }
         })?;
         Ok(output)
     }
@@ -368,10 +386,15 @@ impl<V: Decode, S: BuildHasher + Default> Decode for HashMap<String, V, S> {
 
 impl<V: Decode> Decode for BTreeMap<String, V> {
     fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError> {
+        use std::collections::btree_map::Entry;
         d.begin_object()?;
         let mut output = BTreeMap::new();
-        decode_map(d, |k, v| {
-            output.insert(k, v);
+        decode_map(d, |k, v| match output.entry(k) {
+            Entry::Occupied(e) => Err(DecodeError::duplicate_key(e.key())),
+            Entry::Vacant(e) => {
+                e.insert(v);
+                Ok(())
+            }
         })?;
         Ok(output)
     }

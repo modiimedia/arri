@@ -182,9 +182,14 @@ mod structs {
     }
 
     #[test]
-    fn duplicate_keys_keep_the_last_value() {
-        let inner: Inner = json::from_str(r#"{"name":"a","count":1,"name":"b"}"#).unwrap();
-        assert_eq!(inner.name, "b");
+    fn duplicate_keys_are_rejected() {
+        let err = decode_err::<Inner>(r#"{"name":"a","count":1,"name":"b"}"#);
+        assert_eq!(err.kind(), DecodeErrorKind::DuplicateKey);
+        assert_eq!(err.message(), "duplicate key \"name\"");
+        assert_eq!(err.instance_path(), "");
+        // escaped keys are compared after unescaping
+        let err = decode_err::<Inner>(r#"{"name":"a","count":1,"name":"b"}"#);
+        assert_eq!(err.kind(), DecodeErrorKind::DuplicateKey);
     }
 
     /// A user id
@@ -1151,5 +1156,198 @@ mod skip {
             }
         );
         assert_eq!(<Holder<u8, Cache>>::generic_name(), "Uint8Holder");
+    }
+}
+
+mod duplicate_keys {
+    use std::collections::{BTreeMap, HashMap};
+
+    use arri::{ArriModel, DecodeErrorKind, Value, json};
+
+    fn kind<T: ArriModel + std::fmt::Debug>(input: &str) -> DecodeErrorKind {
+        json::from_str::<T>(input)
+            .expect_err("expected decoding to fail")
+            .kind()
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Fields {
+        a: i32,
+        b: Option<i32>,
+        #[arri(skip)]
+        skipped: i32,
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(strict)]
+    struct StrictFields {
+        a: i32,
+        #[arri(skip)]
+        skipped: i32,
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Outer {
+        inner: Fields,
+        list: Vec<Fields>,
+    }
+
+    #[test]
+    fn struct_fields() {
+        assert_eq!(
+            kind::<Fields>(r#"{"a":1,"a":2}"#),
+            DecodeErrorKind::DuplicateKey
+        );
+        // optional fields
+        assert_eq!(
+            kind::<Fields>(r#"{"a":1,"b":1,"b":2}"#),
+            DecodeErrorKind::DuplicateKey
+        );
+        // even when the value is the same
+        assert_eq!(
+            kind::<Fields>(r#"{"a":1,"a":1}"#),
+            DecodeErrorKind::DuplicateKey
+        );
+        // nested objects report where the duplicate was found
+        let err = json::from_str::<Outer>(r#"{"inner":{"a":1},"list":[{"a":1},{"a":1,"a":2}]}"#)
+            .unwrap_err();
+        assert_eq!(err.kind(), DecodeErrorKind::DuplicateKey);
+        assert_eq!(err.instance_path(), "/list/1");
+        // a duplicate of a field of the outer object
+        assert_eq!(
+            kind::<Outer>(r#"{"inner":{"a":1},"list":[],"inner":{"a":2}}"#),
+            DecodeErrorKind::DuplicateKey
+        );
+    }
+
+    #[test]
+    fn ignored_keys_may_repeat() {
+        // unknown keys and the keys of skipped fields are ignored so repeating them changes nothing
+        let value: Fields =
+            json::from_str(r#"{"x":1,"a":1,"x":2,"skipped":1,"skipped":2}"#).unwrap();
+        assert_eq!(
+            value,
+            Fields {
+                a: 1,
+                b: None,
+                skipped: 0
+            }
+        );
+        // strict objects reject them for being unknown
+        assert_eq!(
+            kind::<StrictFields>(r#"{"a":1,"skipped":1}"#),
+            DecodeErrorKind::UnknownField
+        );
+    }
+
+    #[test]
+    fn records() {
+        assert_eq!(
+            kind::<HashMap<String, i32>>(r#"{"a":1,"b":2,"a":3}"#),
+            DecodeErrorKind::DuplicateKey
+        );
+        assert_eq!(
+            kind::<BTreeMap<String, i32>>(r#"{"a":1,"b":2,"a":3}"#),
+            DecodeErrorKind::DuplicateKey
+        );
+        let err = json::from_str::<HashMap<String, i32>>(r#"{"a":1,"a":2}"#).unwrap_err();
+        assert_eq!(err.message(), "duplicate key \"a\"");
+    }
+
+    #[test]
+    fn any_values_keep_duplicates() {
+        // `Value` represents arbitrary JSON so it keeps every entry
+        let value: Value = json::from_str(r#"{"a":1,"a":2}"#).unwrap();
+        assert_eq!(json::to_string(&value).unwrap(), r#"{"a":1,"a":2}"#);
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    enum External {
+        A(i32),
+        B(i32),
+    }
+
+    #[test]
+    fn externally_tagged() {
+        assert_eq!(
+            kind::<External>(r#"{"A":1,"A":2}"#),
+            DecodeErrorKind::DuplicateKey
+        );
+        // a second tag is still an error, just not a duplicate
+        assert_eq!(
+            kind::<External>(r#"{"A":1,"B":2}"#),
+            DecodeErrorKind::InvalidValue
+        );
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(tag_key = "type")]
+    enum Internal {
+        Unit,
+        Struct { a: i32 },
+        Newtype(Fields),
+    }
+
+    #[test]
+    fn internally_tagged() {
+        for input in [
+            // tag first (the tag is consumed before the variant's fields are read)
+            r#"{"type":"Unit","type":"Unit"}"#,
+            r#"{"type":"Struct","a":1,"type":"Struct"}"#,
+            r#"{"type":"Struct","a":1,"type":"Unit"}"#,
+            r#"{"type":"Newtype","a":1,"type":"Newtype"}"#,
+            // tag later (the object is buffered until the tag is found)
+            r#"{"a":1,"type":"Struct","type":"Struct"}"#,
+            r#"{"a":1,"type":"Struct","type":"Unit"}"#,
+            r#"{"a":1,"type":"Newtype","type":"Newtype"}"#,
+            // duplicate fields
+            r#"{"type":"Struct","a":1,"a":2}"#,
+            r#"{"a":1,"a":2,"type":"Struct"}"#,
+            r#"{"type":"Newtype","a":1,"a":2}"#,
+            r#"{"a":1,"type":"Newtype","a":2}"#,
+        ] {
+            assert_eq!(
+                kind::<Internal>(input),
+                DecodeErrorKind::DuplicateKey,
+                "{input}"
+            );
+        }
+        assert_eq!(
+            json::from_str::<Internal>(r#"{"a":1,"type":"Struct"}"#).unwrap(),
+            Internal::Struct { a: 1 }
+        );
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(tag_key = "t", value_key = "v")]
+    enum Adjacent {
+        Unit,
+        Struct { a: i32 },
+    }
+
+    #[test]
+    fn adjacently_tagged() {
+        for input in [
+            r#"{"t":"Struct","t":"Struct","v":{"a":1}}"#,
+            r#"{"t":"Struct","v":{"a":1},"t":"Unit"}"#,
+            r#"{"v":{"a":1},"t":"Struct","t":"Struct"}"#,
+            r#"{"t":"Struct","v":{"a":1},"v":{"a":2}}"#,
+            r#"{"v":{"a":1},"v":{"a":2},"t":"Struct"}"#,
+            r#"{"v":{"a":1},"t":"Struct","v":{"a":2}}"#,
+            // duplicate fields inside the value
+            r#"{"t":"Struct","v":{"a":1,"a":2}}"#,
+            r#"{"v":{"a":1,"a":2},"t":"Struct"}"#,
+        ] {
+            assert_eq!(
+                kind::<Adjacent>(input),
+                DecodeErrorKind::DuplicateKey,
+                "{input}"
+            );
+        }
+        // unknown keys may still repeat
+        assert_eq!(
+            json::from_str::<Adjacent>(r#"{"x":1,"t":"Unit","x":2,"v":{}}"#).unwrap(),
+            Adjacent::Unit
+        );
     }
 }
