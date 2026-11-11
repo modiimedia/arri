@@ -345,7 +345,7 @@ pub struct TaggedDecoder<'a, D: ?Sized> {
 }
 
 impl<'a, D: Decoder + ?Sized> TaggedDecoder<'a, D> {
-    #[inline]
+    #[inline(always)]
     pub fn new(inner: &'a mut D, tag_key: &'a str) -> Self {
         Self {
             inner,
@@ -363,7 +363,7 @@ fn tagged_not_an_object(expected: &str) -> DecodeError {
 macro_rules! tagged_decode {
     ($($method:ident -> $ty:ty, $expected:literal;)*) => {
         $(
-            #[inline]
+            #[inline(always)]
             fn $method(&mut self) -> Result<$ty, DecodeError> {
                 if self.depth == 0 {
                     return Err(tagged_not_an_object($expected));
@@ -393,7 +393,7 @@ impl<D: Decoder + ?Sized> Decoder for TaggedDecoder<'_, D> {
         decode_any -> Value, "any";
     }
 
-    #[inline]
+    #[inline(always)]
     fn decode_null(&mut self) -> Result<bool, DecodeError> {
         // the variant's value is an object that has already been opened, so it isn't null
         if self.depth == 0 {
@@ -402,7 +402,7 @@ impl<D: Decoder + ?Sized> Decoder for TaggedDecoder<'_, D> {
         self.inner.decode_null()
     }
 
-    #[inline]
+    #[inline(always)]
     fn begin_object(&mut self) -> Result<Option<usize>, DecodeError> {
         if self.depth == 0 {
             self.depth = 1;
@@ -413,7 +413,7 @@ impl<D: Decoder + ?Sized> Decoder for TaggedDecoder<'_, D> {
         Ok(len)
     }
 
-    #[inline]
+    #[inline(always)]
     fn next_key(&mut self) -> Result<Option<&str>, DecodeError> {
         if self.depth == 0 {
             return Err(DecodeError::custom(
@@ -432,7 +432,7 @@ impl<D: Decoder + ?Sized> Decoder for TaggedDecoder<'_, D> {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     fn begin_list(&mut self) -> Result<Option<usize>, DecodeError> {
         if self.depth == 0 {
             return Err(tagged_not_an_object("array"));
@@ -442,7 +442,7 @@ impl<D: Decoder + ?Sized> Decoder for TaggedDecoder<'_, D> {
         Ok(len)
     }
 
-    #[inline]
+    #[inline(always)]
     fn next_element(&mut self) -> Result<bool, DecodeError> {
         let has_next = self.inner.next_element()?;
         if !has_next {
@@ -451,7 +451,7 @@ impl<D: Decoder + ?Sized> Decoder for TaggedDecoder<'_, D> {
         Ok(has_next)
     }
 
-    #[inline]
+    #[inline(always)]
     fn skip_value(&mut self) -> Result<(), DecodeError> {
         if self.depth == 0 {
             // skip the rest of the variant's object
