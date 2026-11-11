@@ -1,3 +1,6 @@
+use std::io::Write;
+
+use super::scan::find_special;
 use crate::{EncodeError, Encoder, Number, Timestamp};
 
 /// An [`Encoder`] that writes JSON.
@@ -101,7 +104,13 @@ impl JsonEncoder {
         self.buf.push(b'"');
         let bytes = v.as_bytes();
         let mut start = 0;
-        for (i, &b) in bytes.iter().enumerate() {
+        loop {
+            // copy everything up to the next byte that needs escaping in one go
+            let i = find_special(bytes, start);
+            self.buf.extend_from_slice(&bytes[start..i]);
+            let Some(&b) = bytes.get(i) else {
+                break;
+            };
             let escape: &[u8] = match b {
                 b'"' => b"\\\"",
                 b'\\' => b"\\\\",
@@ -110,10 +119,8 @@ impl JsonEncoder {
                 b'\t' => b"\\t",
                 0x08 => b"\\b",
                 0x0c => b"\\f",
-                0x00..=0x1f => b"",
-                _ => continue,
+                _ => b"",
             };
-            self.buf.extend_from_slice(&bytes[start..i]);
             if escape.is_empty() {
                 const HEX: &[u8; 16] = b"0123456789abcdef";
                 self.buf.extend_from_slice(&[
@@ -129,7 +136,6 @@ impl JsonEncoder {
             }
             start = i + 1;
         }
-        self.buf.extend_from_slice(&bytes[start..]);
         self.buf.push(b'"');
     }
 
@@ -142,13 +148,13 @@ impl JsonEncoder {
         // `Display` never uses exponents so very large / small numbers would be written with
         // hundreds of digits. Use exponent notation for those instead (both are valid JSON).
         let use_exponent = abs != 0.0 && !(1e-7..1e21).contains(&abs);
-        let formatted = match (is_f32, use_exponent) {
-            (true, false) => (v as f32).to_string(),
-            (true, true) => format!("{:e}", v as f32),
-            (false, false) => v.to_string(),
-            (false, true) => format!("{v:e}"),
+        // writing to a Vec<u8> can't fail
+        let _ = match (is_f32, use_exponent) {
+            (true, false) => write!(self.buf, "{}", v as f32),
+            (true, true) => write!(self.buf, "{:e}", v as f32),
+            (false, false) => write!(self.buf, "{v}"),
+            (false, true) => write!(self.buf, "{v:e}"),
         };
-        self.buf.extend_from_slice(formatted.as_bytes());
         self.needs_comma = true;
         Ok(())
     }

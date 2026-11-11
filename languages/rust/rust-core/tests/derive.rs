@@ -170,6 +170,18 @@ mod structs {
     }
 
     #[test]
+    fn escaped_keys_match_fields() {
+        let inner: Inner = json::from_str(r#"{"n\u0061me":"a","\u0063ount":2}"#).unwrap();
+        assert_eq!(
+            inner,
+            Inner {
+                name: "a".into(),
+                count: 2
+            }
+        );
+    }
+
+    #[test]
     fn duplicate_keys_keep_the_last_value() {
         let inner: Inner = json::from_str(r#"{"name":"a","count":1,"name":"b"}"#).unwrap();
         assert_eq!(inner.name, "b");
@@ -226,6 +238,14 @@ mod enums {
             assert_eq!(json::from_str::<Role>(&encoded).unwrap(), role);
         }
         assert_eq!(json::to_string(&Role::SuperUser).unwrap(), r#""SuperUser""#);
+    }
+
+    #[test]
+    fn escaped_values_are_matched() {
+        assert_eq!(
+            json::from_str::<Role>(r#""\u0041DMIN""#).unwrap(),
+            Role::Admin
+        );
     }
 
     #[test]

@@ -10,42 +10,40 @@ pub use std::vec::Vec;
 
 /// Implemented by derived unions. Decodes a variant once its tag is known.
 pub trait DecodeVariant: Sized {
-    /// Every tag value that the union accepts
+    /// Every tag value that the union accepts, in declaration order
     const VARIANTS: &'static [&'static str];
 
-    /// Decode the variant with the given `tag`.
+    /// Decode the variant at `index` in [`DecodeVariant::VARIANTS`].
     ///
     /// For externally and adjacently tagged unions the decoder is positioned at the variant's value.
     /// For internally tagged unions the decoder is positioned inside of an object that has already
     /// been opened, and the remaining keys of that object belong to the variant.
-    fn decode_variant<D: Decoder + ?Sized>(
-        d: &mut D,
-        tag: &str,
-        key: &mut String,
-    ) -> Result<Self, DecodeError>;
+    fn decode_variant<D: Decoder + ?Sized>(d: &mut D, index: usize) -> Result<Self, DecodeError>;
 }
 
-fn check_variant<T: DecodeVariant>(tag: &str) -> Result<(), DecodeError> {
-    if T::VARIANTS.contains(&tag) {
-        Ok(())
-    } else {
-        Err(DecodeError::unknown_variant(tag, T::VARIANTS))
-    }
+/// Returns the position of `tag` in `T::VARIANTS`
+#[inline]
+fn variant_index<T: DecodeVariant>(tag: &str) -> Result<usize, DecodeError> {
+    T::VARIANTS
+        .iter()
+        .position(|variant| *variant == tag)
+        .ok_or_else(|| DecodeError::unknown_variant(tag, T::VARIANTS))
 }
 
 /// `{ "<tag>": <value> }`
 pub fn decode_external<T: DecodeVariant, D: Decoder + ?Sized>(d: &mut D) -> Result<T, DecodeError> {
     d.begin_object()?;
-    let mut tag = String::new();
-    if !d.next_key(&mut tag)? {
-        return Err(DecodeError::invalid_value(
-            "expected an object with exactly one key indicating the union variant",
-        ));
-    }
-    check_variant::<T>(&tag).map_err(|e| e.in_field(&tag))?;
-    let mut key = String::new();
-    let value = T::decode_variant(d, &tag, &mut key).map_err(|e| e.in_field(&tag))?;
-    if d.next_key(&mut key)? {
+    let index = match d.next_key()? {
+        Some(tag) => variant_index::<T>(tag).map_err(|e| e.in_field(tag))?,
+        None => {
+            return Err(DecodeError::invalid_value(
+                "expected an object with exactly one key indicating the union variant",
+            ));
+        }
+    };
+    let tag = T::VARIANTS[index];
+    let value = T::decode_variant(d, index).map_err(|e| e.in_field(tag))?;
+    if let Some(key) = d.next_key()? {
         return Err(DecodeError::invalid_value(format!(
             "unexpected key \"{key}\", externally tagged unions must have exactly one key"
         )));
@@ -59,38 +57,39 @@ pub fn decode_internal<T: DecodeVariant, D: Decoder + ?Sized>(
     tag_key: &str,
 ) -> Result<T, DecodeError> {
     d.begin_object()?;
-    let mut key = String::new();
-    if !d.next_key(&mut key)? {
-        return Err(DecodeError::missing_field(tag_key));
-    }
+    let first_key = match d.next_key()? {
+        Some(key) => key,
+        None => return Err(DecodeError::missing_field(tag_key)),
+    };
 
     // fast path: the tag is the first key (arri encoders always write it first)
-    if key == tag_key {
-        let tag = d.decode_string().map_err(|e| e.in_field(tag_key))?;
-        check_variant::<T>(&tag).map_err(|e| e.in_field(tag_key))?;
-        return T::decode_variant(d, &tag, &mut key);
+    if first_key == tag_key {
+        let tag = d.decode_str().map_err(|e| e.in_field(tag_key))?;
+        let index = variant_index::<T>(tag).map_err(|e| e.in_field(tag_key))?;
+        return T::decode_variant(d, index);
     }
 
     // slow path: buffer the object until the tag is found and then decode the variant from the buffer
-    let mut entries: Vec<(String, Value)> = Vec::new();
-    loop {
+    let first_key = first_key.to_string();
+    let first_value = d.decode_any().map_err(|e| e.in_field(&first_key))?;
+    let mut entries: Vec<(String, Value)> = vec![(first_key, first_value)];
+    while let Some(key) = d.next_key()? {
+        let key = key.to_string();
         let value = d.decode_any().map_err(|e| e.in_field(&key))?;
-        entries.push((std::mem::take(&mut key), value));
-        if !d.next_key(&mut key)? {
-            break;
-        }
+        entries.push((key, value));
     }
-    let tag = match entries.iter().rev().find(|(k, _)| k == tag_key) {
-        Some((_, Value::String(tag))) => tag.clone(),
+    let index = match entries.iter().rev().find(|(k, _)| k == tag_key) {
+        Some((_, Value::String(tag))) => {
+            variant_index::<T>(tag).map_err(|e| e.in_field(tag_key))?
+        }
         Some(_) => {
             return Err(DecodeError::invalid_value("union tag must be a string").in_field(tag_key));
         }
         None => return Err(DecodeError::missing_field(tag_key)),
     };
-    check_variant::<T>(&tag).map_err(|e| e.in_field(tag_key))?;
     let mut buffered = ValueDecoder::new(Value::Object(entries));
     buffered.begin_object()?;
-    T::decode_variant(&mut buffered, &tag, &mut key)
+    T::decode_variant(&mut buffered, index)
 }
 
 /// `{ "<tag_key>": "<tag>", "<value_key>": <value> }`
@@ -100,67 +99,78 @@ pub fn decode_adjacent<T: DecodeVariant, D: Decoder + ?Sized>(
     value_key: &str,
     strict: bool,
 ) -> Result<T, DecodeError> {
+    enum Key {
+        Tag,
+        Value,
+        Other,
+    }
     d.begin_object()?;
-    let mut key = String::new();
-    let mut tag: Option<String> = None;
+    let mut index: Option<usize> = None;
     let mut result: Option<T> = None;
     // used when the value appears before the tag
     let mut buffered: Option<Value> = None;
-    while d.next_key(&mut key)? {
-        if key == tag_key {
-            let value = d.decode_string().map_err(|e| e.in_field(tag_key))?;
-            check_variant::<T>(&value).map_err(|e| e.in_field(tag_key))?;
-            tag = Some(value);
+    while let Some(key) = d.next_key()? {
+        let key = if key == tag_key {
+            Key::Tag
         } else if key == value_key {
-            match &tag {
-                Some(tag) => {
-                    result = Some(
-                        T::decode_variant(d, tag, &mut key).map_err(|e| e.in_field(value_key))?,
-                    );
+            Key::Value
+        } else {
+            check_unknown_key(key, None, strict)?;
+            Key::Other
+        };
+        match key {
+            Key::Tag => {
+                let tag = d.decode_str().map_err(|e| e.in_field(tag_key))?;
+                index = Some(variant_index::<T>(tag).map_err(|e| e.in_field(tag_key))?);
+            }
+            Key::Value => match index {
+                Some(index) => {
+                    result = Some(T::decode_variant(d, index).map_err(|e| e.in_field(value_key))?);
                 }
                 None => buffered = Some(d.decode_any().map_err(|e| e.in_field(value_key))?),
-            }
-        } else {
-            unknown_key(d, &key, None, strict)?;
+            },
+            Key::Other => d.skip_value()?,
         }
     }
-    let Some(tag) = tag else {
+    let Some(index) = index else {
         return Err(DecodeError::missing_field(tag_key));
     };
     if let Some(result) = result {
         return Ok(result);
     }
     match buffered {
-        Some(value) => T::decode_variant(&mut ValueDecoder::new(value), &tag, &mut key)
+        Some(value) => T::decode_variant(&mut ValueDecoder::new(value), index)
             .map_err(|e| e.in_field(value_key)),
         None => Err(DecodeError::missing_field(value_key)),
     }
 }
 
-/// Handle a key that doesn't belong to any field
+/// Used by derived code when a key doesn't match any field.
+///
+/// Returns an error if unknown keys aren't allowed. Otherwise returns `usize::MAX` which derived
+/// code treats as "skip this value".
 #[inline]
-pub fn unknown_key<D: Decoder + ?Sized>(
-    d: &mut D,
+pub fn check_unknown_key(
     key: &str,
     skip_key: Option<&str>,
     strict: bool,
-) -> Result<(), DecodeError> {
+) -> Result<usize, DecodeError> {
     if strict && skip_key != Some(key) {
         return Err(DecodeError::unknown_field(key));
     }
-    d.skip_value()
+    Ok(usize::MAX)
 }
 
 /// Read the remaining keys of an object that has no fields of its own
 #[inline]
 pub fn decode_no_fields<D: Decoder + ?Sized>(
     d: &mut D,
-    key: &mut String,
     skip_key: Option<&str>,
     strict: bool,
 ) -> Result<(), DecodeError> {
-    while d.next_key(key)? {
-        unknown_key(d, key, skip_key, strict)?;
+    while let Some(key) = d.next_key()? {
+        check_unknown_key(key, skip_key, strict)?;
+        d.skip_value()?;
     }
     Ok(())
 }

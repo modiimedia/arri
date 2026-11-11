@@ -16,6 +16,7 @@
 
 mod decoder;
 mod encoder;
+mod scan;
 
 pub(crate) use decoder::parse_integer;
 pub use decoder::{DEFAULT_MAX_DEPTH, JsonDecoder};

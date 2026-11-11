@@ -32,16 +32,22 @@ pub trait Decoder {
     fn decode_i64(&mut self) -> Result<i64, DecodeError>;
     fn decode_u64(&mut self) -> Result<u64, DecodeError>;
     fn decode_string(&mut self) -> Result<String, DecodeError>;
+    /// Decode a string without taking ownership of it.
+    ///
+    /// The returned string is only valid until the next call to the decoder. Use this when the
+    /// string only needs to be inspected (such as enum values) to avoid an allocation.
+    fn decode_str(&mut self) -> Result<&str, DecodeError>;
     fn decode_timestamp(&mut self) -> Result<Timestamp, DecodeError>;
     /// Decode any value
     fn decode_any(&mut self) -> Result<Value, DecodeError>;
 
     /// Start reading an object. Returns the number of entries if the format knows it ahead of time.
     fn begin_object(&mut self) -> Result<Option<usize>, DecodeError>;
-    /// Read the next key of the current object into `key`.
+    /// Read the next key of the current object.
     ///
-    /// Returns `false` (and closes the object) when there are no more entries.
-    fn next_key(&mut self, key: &mut String) -> Result<bool, DecodeError>;
+    /// Returns `None` (and closes the object) when there are no more entries. The returned key
+    /// is only valid until the next call to the decoder, which allows decoders to avoid copying it.
+    fn next_key(&mut self) -> Result<Option<&str>, DecodeError>;
 
     /// Start reading a list. Returns the number of elements if the format knows it ahead of time.
     fn begin_list(&mut self) -> Result<Option<usize>, DecodeError>;
@@ -76,11 +82,9 @@ pub trait Decode: Sized {
 pub trait DecodeFields: Sized {
     /// Read the remaining entries of an object that has already been opened with [`Decoder::begin_object`].
     ///
-    /// - `key` is a scratch buffer that may be reused between calls
-    /// - `skip_key` is a key that should always be ignored (such as the tag of an internally tagged union)
+    /// `skip_key` is a key that should always be ignored (such as the tag of an internally tagged union)
     fn decode_fields<D: Decoder + ?Sized>(
         d: &mut D,
-        key: &mut String,
         skip_key: Option<&str>,
     ) -> Result<Self, DecodeError>;
 }
@@ -294,10 +298,9 @@ macro_rules! impl_decode_pointer {
                 #[inline]
                 fn decode_fields<D: Decoder + ?Sized>(
                     d: &mut D,
-                    key: &mut String,
                     skip_key: Option<&str>,
                 ) -> Result<Self, DecodeError> {
-                    T::decode_fields(d, key, skip_key).map($ty::new)
+                    T::decode_fields(d, skip_key).map($ty::new)
                 }
             }
         )*
@@ -343,10 +346,11 @@ pub(crate) fn decode_map<V: Decode, D: Decoder + ?Sized>(
     d: &mut D,
     mut insert: impl FnMut(String, V),
 ) -> Result<(), DecodeError> {
-    let mut key = String::new();
-    while d.next_key(&mut key)? {
+    while let Some(key) = d.next_key()? {
+        // record keys are stored so they need to be owned
+        let key = key.to_string();
         let value = V::decode(d).map_err(|e| e.in_field(&key))?;
-        insert(std::mem::take(&mut key), value);
+        insert(key, value);
     }
     Ok(())
 }

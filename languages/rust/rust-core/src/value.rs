@@ -425,6 +425,8 @@ impl Encoder for ValueEncoder {
 pub struct ValueDecoder {
     next: Option<Value>,
     stack: Vec<Frame>,
+    /// holds the most recent key / borrowed string so that a reference to it can be returned
+    current: String,
 }
 
 #[derive(Debug)]
@@ -438,6 +440,7 @@ impl ValueDecoder {
         Self {
             next: Some(value),
             stack: Vec::new(),
+            current: String::new(),
         }
     }
 
@@ -523,6 +526,16 @@ impl Decoder for ValueDecoder {
         }
     }
 
+    fn decode_str(&mut self) -> Result<&str, DecodeError> {
+        match self.take()? {
+            Value::String(v) => {
+                self.current = v;
+                Ok(&self.current)
+            }
+            other => Err(DecodeError::invalid_type("string", other.kind())),
+        }
+    }
+
     fn decode_timestamp(&mut self) -> Result<Timestamp, DecodeError> {
         match self.take()? {
             Value::String(v) => {
@@ -547,17 +560,17 @@ impl Decoder for ValueDecoder {
         }
     }
 
-    fn next_key(&mut self, key: &mut String) -> Result<bool, DecodeError> {
+    fn next_key(&mut self) -> Result<Option<&str>, DecodeError> {
         match self.stack.last_mut() {
             Some(Frame::Object(entries)) => match entries.next() {
                 Some((k, v)) => {
-                    *key = k;
+                    self.current = k;
                     self.next = Some(v);
-                    Ok(true)
+                    Ok(Some(&self.current))
                 }
                 None => {
                     self.stack.pop();
-                    Ok(false)
+                    Ok(None)
                 }
             },
             _ => Err(DecodeError::custom(

@@ -28,4 +28,13 @@ time = { version = "0.3", optional = true, default-features = false }
 indexmap = { version = "2", optional = true }
 
 [dev-dependencies]
+chrono = { version = "0.4", default-features = false, features = ["serde", "alloc"] }
+criterion = { version = "0.8.2", default-features = false, features = ["cargo_bench_support"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json.workspace = true
 trybuild = "1"
+
+[[bench]]
+name = "json"
+harness = false
+required-features = ["chrono"]

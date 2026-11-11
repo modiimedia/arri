@@ -1,3 +1,4 @@
+use super::scan::find_special;
 use crate::{DecodeError, DecodeErrorKind, Decoder, Number, Timestamp, Value};
 
 /// The default maximum nesting depth of objects and lists
@@ -225,6 +226,9 @@ impl<'a> JsonDecoder<'a> {
             Some(b'-' | b'0'..=b'9') => {}
             _ => return Err(self.invalid_type(expected)),
         }
+        if let Some(value) = self.read_simple_integer() {
+            return Ok(value);
+        }
         let (text, is_integer) = self.scan_number()?;
         let value = if is_integer {
             parse_integer(text)
@@ -242,20 +246,52 @@ impl<'a> JsonDecoder<'a> {
         })
     }
 
+    /// Fast path for the common case of a plain integer literal (e.g. `-123`) that fits in 64 bits.
+    ///
+    /// Returns `None` without consuming anything for anything else (fractions, exponents,
+    /// overflow, or invalid input) so that the general purpose path can handle it.
+    #[inline]
+    fn read_simple_integer(&mut self) -> Option<i128> {
+        let bytes = self.bytes();
+        let mut pos = self.pos;
+        let negative = bytes.get(pos) == Some(&b'-');
+        if negative {
+            pos += 1;
+        }
+        let digits_start = pos;
+        let mut value: u64 = 0;
+        while let Some(&b) = bytes.get(pos) {
+            if !b.is_ascii_digit() {
+                break;
+            }
+            value = value.checked_mul(10)?.checked_add((b - b'0') as u64)?;
+            pos += 1;
+        }
+        let digit_count = pos - digits_start;
+        // leading zeros, fractions, and exponents are handled by the general purpose path
+        if digit_count == 0
+            || (digit_count > 1 && bytes[digits_start] == b'0')
+            || matches!(bytes.get(pos), Some(b'.' | b'e' | b'E'))
+        {
+            return None;
+        }
+        self.pos = pos;
+        Some(if negative {
+            -(value as i128)
+        } else {
+            value as i128
+        })
+    }
+
     /// Read a JSON string containing a whole number (used for int64 and uint64)
     fn read_integer_string(&mut self, expected: &str) -> Result<i128, DecodeError> {
         if self.peek_value() != Some(b'"') {
             return Err(self.invalid_type(&format!("{expected} (as a string)")));
         }
-        let mut scratch = std::mem::take(&mut self.scratch);
-        scratch.clear();
-        let result = self.read_string_into(&mut scratch).and_then(|_| {
-            parse_integer(&scratch).ok_or_else(|| {
-                DecodeError::invalid_value(format!("\"{scratch}\" is not a valid {expected}"))
-            })
-        });
-        self.scratch = scratch;
-        result
+        let text = self.read_str()?;
+        parse_integer(text).ok_or_else(|| {
+            DecodeError::invalid_value(format!("\"{text}\" is not a valid {expected}"))
+        })
     }
 
     fn read_float(&mut self, expected: &str) -> Result<&'a str, DecodeError> {
@@ -271,6 +307,7 @@ impl<'a> JsonDecoder<'a> {
         self.pos += 1;
         let mut start = self.pos;
         loop {
+            self.pos = find_special(bytes, self.pos);
             let Some(&b) = bytes.get(self.pos) else {
                 return Err(self.unexpected("'\"'"));
             };
@@ -286,15 +323,33 @@ impl<'a> JsonDecoder<'a> {
                     self.read_escape(out)?;
                     start = self.pos;
                 }
-                0x00..=0x1f => {
+                _ => {
                     return Err(DecodeError::syntax(format!(
                         "unescaped control character in string at byte {}",
                         self.pos
                     )));
                 }
-                _ => self.pos += 1,
             }
         }
+    }
+
+    /// Read a JSON string without copying it when possible. Expects the cursor to be on the opening quote.
+    ///
+    /// Strings without escape sequences are borrowed directly from the input. Otherwise they are
+    /// unescaped into a scratch buffer that is reused between calls.
+    fn read_str(&mut self) -> Result<&str, DecodeError> {
+        let bytes = self.bytes();
+        let start = self.pos + 1;
+        let end = find_special(bytes, start);
+        if bytes.get(end) == Some(&b'"') {
+            self.pos = end + 1;
+            return Ok(&self.input[start..end]);
+        }
+        let mut scratch = std::mem::take(&mut self.scratch);
+        scratch.clear();
+        let result = self.read_string_into(&mut scratch);
+        self.scratch = scratch;
+        result.map(|_| self.scratch.as_str())
     }
 
     /// Reads an escape sequence. The cursor should be on the character after the backslash.
@@ -368,6 +423,7 @@ impl<'a> JsonDecoder<'a> {
         let bytes = self.bytes();
         self.pos += 1;
         loop {
+            self.pos = find_special(bytes, self.pos);
             match bytes.get(self.pos) {
                 None => return Err(self.unexpected("'\"'")),
                 Some(b'"') => {
@@ -387,13 +443,12 @@ impl<'a> JsonDecoder<'a> {
                         _ => return Err(self.unexpected("a valid escape sequence")),
                     }
                 }
-                Some(0x00..=0x1f) => {
+                Some(_) => {
                     return Err(DecodeError::syntax(format!(
                         "unescaped control character in string at byte {}",
                         self.pos
                     )));
                 }
-                Some(_) => self.pos += 1,
             }
         }
     }
@@ -456,22 +511,22 @@ impl Decoder for JsonDecoder<'_> {
         if self.peek_value() != Some(b'"') {
             return Err(self.invalid_type("string"));
         }
-        let mut output = String::new();
-        self.read_string_into(&mut output)?;
-        Ok(output)
+        self.read_str().map(str::to_string)
+    }
+
+    fn decode_str(&mut self) -> Result<&str, DecodeError> {
+        if self.peek_value() != Some(b'"') {
+            return Err(self.invalid_type("string"));
+        }
+        self.read_str()
     }
 
     fn decode_timestamp(&mut self) -> Result<Timestamp, DecodeError> {
         if self.peek_value() != Some(b'"') {
             return Err(self.invalid_type("timestamp"));
         }
-        let mut scratch = std::mem::take(&mut self.scratch);
-        scratch.clear();
-        let result = self.read_string_into(&mut scratch).and_then(|_| {
-            Timestamp::parse(&scratch).map_err(|e| DecodeError::invalid_value(e.to_string()))
-        });
-        self.scratch = scratch;
-        result
+        let text = self.read_str()?;
+        Timestamp::parse(text).map_err(|e| DecodeError::invalid_value(e.to_string()))
     }
 
     fn decode_any(&mut self) -> Result<Value, DecodeError> {
@@ -505,10 +560,10 @@ impl Decoder for JsonDecoder<'_> {
             Some(b'{') => {
                 self.begin_object()?;
                 let mut entries = Vec::new();
-                let mut key = String::new();
-                while self.next_key(&mut key)? {
+                while let Some(key) = self.next_key()? {
+                    let key = key.to_string();
                     let value = self.decode_any().map_err(|e| e.in_field(&key))?;
-                    entries.push((std::mem::take(&mut key), value));
+                    entries.push((key, value));
                 }
                 Ok(Value::Object(entries))
             }
@@ -524,11 +579,11 @@ impl Decoder for JsonDecoder<'_> {
         Ok(None)
     }
 
-    fn next_key(&mut self, key: &mut String) -> Result<bool, DecodeError> {
+    fn next_key(&mut self) -> Result<Option<&str>, DecodeError> {
         match self.peek_value() {
             Some(b'}') => {
                 self.exit();
-                return Ok(false);
+                return Ok(None);
             }
             Some(b',') if !self.first => {
                 self.pos += 1;
@@ -540,14 +595,28 @@ impl Decoder for JsonDecoder<'_> {
         if self.peek() != Some(b'"') {
             return Err(self.unexpected("'\"'"));
         }
-        key.clear();
-        self.read_string_into(key)?;
+        // read the key's position first so that the `:` can be consumed before returning a borrow
+        let key_start = self.pos;
+        self.skip_string()?;
+        let key_end = self.pos;
         if self.peek_value() != Some(b':') {
             return Err(self.unexpected("':'"));
         }
         self.pos += 1;
         self.first = false;
-        Ok(true)
+        let raw = &self.input[key_start + 1..key_end - 1];
+        if !raw.as_bytes().contains(&b'\\') {
+            return Ok(Some(raw));
+        }
+        // the key contains escape sequences so it needs to be unescaped
+        let after_colon = self.pos;
+        self.pos = key_start;
+        let mut scratch = std::mem::take(&mut self.scratch);
+        scratch.clear();
+        let result = self.read_string_into(&mut scratch);
+        self.scratch = scratch;
+        self.pos = after_colon;
+        result.map(|_| Some(self.scratch.as_str()))
     }
 
     fn begin_list(&mut self) -> Result<Option<usize>, DecodeError> {
@@ -663,6 +732,51 @@ mod tests {
             kind::<u64>("\"18446744073709551616\""),
             DecodeErrorKind::InvalidValue
         );
+    }
+
+    #[test]
+    fn integer_fast_path_edges() {
+        assert_eq!(from_str::<i32>("-0").unwrap(), 0);
+        assert_eq!(from_str::<i32>("0").unwrap(), 0);
+        assert_eq!(from_str::<i8>("-128").unwrap(), -128);
+        assert_eq!(from_str::<u32>("1e2").unwrap(), 100);
+        assert_eq!(from_str::<u32>("1E2").unwrap(), 100);
+        assert_eq!(from_str::<i32>("-2.0e1").unwrap(), -20);
+        // too large for the fast path's u64 accumulator
+        assert_eq!(
+            from_str::<u32>("100000000000000000000").unwrap_err().kind(),
+            DecodeErrorKind::InvalidValue
+        );
+        for invalid in ["-", "01", "-01", "1.", "--1", "+1", "1e"] {
+            assert_eq!(
+                from_str::<i32>(invalid).unwrap_err().kind(),
+                DecodeErrorKind::Syntax,
+                "{invalid}"
+            );
+        }
+    }
+
+    #[test]
+    fn escaped_keys_and_borrowed_strings() {
+        // keys and enum values with escape sequences go through the scratch buffer
+        let value: Value = from_str(r#"{"a\u0062":1,"plain":2,"\"quoted\"":3}"#).unwrap();
+        let keys: Vec<&str> = value
+            .as_object()
+            .unwrap()
+            .iter()
+            .map(|(k, _)| k.as_str())
+            .collect();
+        assert_eq!(keys, ["ab", "plain", "\"quoted\""]);
+
+        let mut d = JsonDecoder::new(r#"["plain", "esc\u0061ped", "x"]"#);
+        d.begin_list().unwrap();
+        assert!(d.next_element().unwrap());
+        assert_eq!(d.decode_str().unwrap(), "plain");
+        assert!(d.next_element().unwrap());
+        assert_eq!(d.decode_str().unwrap(), "escaped");
+        assert!(d.next_element().unwrap());
+        assert_eq!(d.decode_str().unwrap(), "x");
+        assert!(!d.next_element().unwrap());
     }
 
     #[test]
