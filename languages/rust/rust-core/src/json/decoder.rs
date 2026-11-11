@@ -521,6 +521,38 @@ impl<'a> JsonDecoder<'a> {
         result.map(|_| self.scratch.as_str())
     }
 
+    /// Moves past the next key of the current object and the `:` that follows it.
+    ///
+    /// Returns the position of the key (including its quotes), or `None` after closing the object
+    /// if it has no more entries. Shared by `next_key` and `skip_value`.
+    #[inline]
+    fn advance_to_key(&mut self) -> Result<Option<(usize, usize)>, DecodeError> {
+        match self.peek_value() {
+            Some(b'}') => {
+                self.exit();
+                return Ok(None);
+            }
+            Some(b',') if !self.first => {
+                self.pos += 1;
+                self.skip_whitespace();
+            }
+            _ if !self.first => return Err(self.unexpected("',' or '}'")),
+            _ => {}
+        }
+        if self.peek() != Some(b'"') {
+            return Err(self.unexpected("'\"'"));
+        }
+        let key_start = self.pos;
+        self.skip_string()?;
+        let key_end = self.pos;
+        if self.peek_value() != Some(b':') {
+            return Err(self.unexpected("':'"));
+        }
+        self.pos += 1;
+        self.first = false;
+        Ok(Some((key_start, key_end)))
+    }
+
     /// Reads an escape sequence. The cursor should be on the character after the backslash.
     fn read_escape(&mut self, out: &mut String) -> Result<(), DecodeError> {
         let c = match self.peek() {
@@ -695,7 +727,17 @@ impl Decoder for JsonDecoder<'_> {
         if self.peek_value() != Some(b'"') {
             return Err(self.invalid_type("string"));
         }
-        self.read_str().map(str::to_string)
+        let bytes = self.bytes();
+        let start = self.pos + 1;
+        let end = find_special(bytes, start);
+        if bytes.get(end) == Some(&b'"') {
+            self.pos = end + 1;
+            return Ok(self.input[start..end].to_string());
+        }
+        // unescape straight into the output rather than into the scratch buffer and copying it
+        let mut out = String::with_capacity(end - start + 16);
+        self.read_string_into(&mut out)?;
+        Ok(out)
     }
 
     #[inline]
@@ -772,30 +814,10 @@ impl Decoder for JsonDecoder<'_> {
 
     #[inline]
     fn next_key(&mut self) -> Result<Option<&str>, DecodeError> {
-        match self.peek_value() {
-            Some(b'}') => {
-                self.exit();
-                return Ok(None);
-            }
-            Some(b',') if !self.first => {
-                self.pos += 1;
-                self.skip_whitespace();
-            }
-            _ if !self.first => return Err(self.unexpected("',' or '}'")),
-            _ => {}
-        }
-        if self.peek() != Some(b'"') {
-            return Err(self.unexpected("'\"'"));
-        }
-        // read the key's position first so that the `:` can be consumed before returning a borrow
-        let key_start = self.pos;
-        self.skip_string()?;
-        let key_end = self.pos;
-        if self.peek_value() != Some(b':') {
-            return Err(self.unexpected("':'"));
-        }
-        self.pos += 1;
-        self.first = false;
+        // the key is skipped first so that the `:` can be consumed before returning a borrow
+        let Some((key_start, key_end)) = self.advance_to_key()? else {
+            return Ok(None);
+        };
         let raw = &self.input[key_start + 1..key_end - 1];
         if !raw.as_bytes().contains(&b'\\') {
             return Ok(Some(raw));
@@ -854,31 +876,11 @@ impl Decoder for JsonDecoder<'_> {
             }
             Some(b'{') => {
                 self.begin_object()?;
-                loop {
-                    // inline version of next_key() that skips the key rather than allocating it
-                    match self.peek_value() {
-                        Some(b'}') => {
-                            self.exit();
-                            return Ok(());
-                        }
-                        Some(b',') if !self.first => {
-                            self.pos += 1;
-                            self.skip_whitespace();
-                        }
-                        _ if !self.first => return Err(self.unexpected("',' or '}'")),
-                        _ => {}
-                    }
-                    if self.peek() != Some(b'"') {
-                        return Err(self.unexpected("'\"'"));
-                    }
-                    self.skip_string()?;
-                    if self.peek_value() != Some(b':') {
-                        return Err(self.unexpected("':'"));
-                    }
-                    self.pos += 1;
-                    self.first = false;
+                // the keys are skipped without being unescaped
+                while self.advance_to_key()?.is_some() {
                     self.skip_value()?;
                 }
+                Ok(())
             }
             _ => Err(self.unexpected("a JSON value")),
         }

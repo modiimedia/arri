@@ -25,7 +25,10 @@ impl<V: Encode, S> Encode for IndexMap<String, V, S> {
 impl<V: Decode, S: BuildHasher + Default> Decode for IndexMap<String, V, S> {
     fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError> {
         let len = d.begin_object()?.unwrap_or(0);
-        let mut output = IndexMap::with_capacity_and_hasher(len.min(4096), S::default());
+        let mut output = IndexMap::with_capacity_and_hasher(
+            len.min(crate::decode::MAX_PREALLOCATE),
+            S::default(),
+        );
         crate::decode::decode_map(d, |k, v| match output.entry(k) {
             indexmap::map::Entry::Occupied(e) => Err(DecodeError::duplicate_key(e.key())),
             indexmap::map::Entry::Vacant(e) => {

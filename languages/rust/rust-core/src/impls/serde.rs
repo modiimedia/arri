@@ -11,7 +11,9 @@ use ::serde::{
     ser::{Error as _, SerializeMap, SerializeSeq},
 };
 
-use crate::{Metadata, Nullable, Number, Timestamp, Type, TypeDef, Value, to_value};
+use crate::{
+    Metadata, Nullable, Number, Timestamp, Type, TypeDef, Value, decode::MAX_PREALLOCATE, to_value,
+};
 
 /// Serialized as an RFC 3339 string (the same representation arri uses for JSON)
 impl Serialize for Timestamp {
@@ -174,7 +176,8 @@ impl<'de> Deserialize<'de> for Value {
             }
 
             fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Value, A::Error> {
-                let mut items = Vec::with_capacity(seq.size_hint().unwrap_or(0).min(4096));
+                let mut items =
+                    Vec::with_capacity(seq.size_hint().unwrap_or(0).min(MAX_PREALLOCATE));
                 while let Some(item) = seq.next_element()? {
                     items.push(item);
                 }
@@ -182,7 +185,8 @@ impl<'de> Deserialize<'de> for Value {
             }
 
             fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Value, A::Error> {
-                let mut entries = Vec::with_capacity(map.size_hint().unwrap_or(0).min(4096));
+                let mut entries =
+                    Vec::with_capacity(map.size_hint().unwrap_or(0).min(MAX_PREALLOCATE));
                 while let Some(entry) = map.next_entry::<String, Value>()? {
                     entries.push(entry);
                 }

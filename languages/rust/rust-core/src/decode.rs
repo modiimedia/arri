@@ -331,7 +331,7 @@ fn decode_list<T: Decode, D: Decoder + ?Sized>(
 }
 
 /// guards against preallocating huge amounts of memory when a format reports a bogus length
-const MAX_PREALLOCATE: usize = 4096;
+pub(crate) const MAX_PREALLOCATE: usize = 4096;
 
 impl<T: Decode> Decode for Vec<T> {
     fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError> {
