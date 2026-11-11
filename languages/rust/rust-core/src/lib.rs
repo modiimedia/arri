@@ -72,8 +72,8 @@ mod value;
 #[doc(hidden)]
 pub mod __private;
 
-pub use decode::{Decode, DecodeError, DecodeErrorKind, DecodeFields, Decoder, PathSegment};
-pub use encode::{Encode, EncodeError, EncodeFields, Encoder};
+pub use decode::{Decode, DecodeError, DecodeErrorKind, Decoder, PathSegment};
+pub use encode::{Encode, EncodeError, Encoder};
 pub use nullable::Nullable;
 /// The variants of [`Nullable`] are exported so they can be used without a prefix (like `Some` and `None`)
 pub use nullable::Nullable::{Null, Present};
@@ -102,8 +102,9 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// - struct variants are anonymous objects
 ///
 /// The variants of internally tagged unions (`#[arri(tag_key = "...")]`) share an object with the
-/// tag, so they must be objects and none of their fields can use the tag's key. Using it is a
-/// compile error. For a generic union whose newtype variant holds a type parameter, the check
+/// tag, so they must be objects: struct variants, or newtype variants holding a struct with named
+/// fields or a type that wraps one (a newtype struct, `Box<T>`, etc.). None of their fields can
+/// use the tag's key. Breaking either rule is a compile error. For a generic union whose newtype variant holds a type parameter, the check
 /// happens when the union is encoded with a specific type, so it shows up in `cargo build`
 /// and `cargo test` but not in `cargo check`:
 ///

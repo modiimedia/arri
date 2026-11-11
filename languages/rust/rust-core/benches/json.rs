@@ -530,11 +530,7 @@ fn bench_payload<A, S>(
 
 fn bench_all<Ts>(c: &mut Criterion, prefix: &str)
 where
-    Ts: BenchTimestamp
-        + arri::Encode
-        + arri::Decode
-        + serde::Serialize
-        + serde::de::DeserializeOwned,
+    Ts: BenchTimestamp + arri::ArriModel + serde::Serialize + serde::de::DeserializeOwned,
 {
     let user = arri_user::<Ts>(3);
     bench_payload(

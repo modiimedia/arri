@@ -85,9 +85,27 @@ pub fn expand(c: &Container) -> TokenStream {
         }
     };
 
+    let properties = match &c.body {
+        Body::Struct(fields) => {
+            let keys = fields.iter().filter(|f| !f.is_skipped()).map(|f| &f.key);
+            quote! {
+                const PROPERTIES: #k::__private::Option<&'static [&'static str]> =
+                    #k::__private::Some(&[#(#keys),*]);
+            }
+        }
+        // newtype structs have the same schema as their inner type
+        Body::Newtype(inner) => quote! {
+            const PROPERTIES: #k::__private::Option<&'static [&'static str]> =
+                <#inner as #k::ArriSchema>::PROPERTIES;
+        },
+        Body::Enum(_) | Body::Union(..) => TokenStream::new(),
+    };
+
     quote! {
         #[automatically_derived]
         impl #impl_generics #k::ArriSchema for #ident #ty_generics #where_clause {
+            #properties
+
             fn generic_name() -> #k::__private::Cow<'static, str> {
                 #generic_name
             }

@@ -7,12 +7,11 @@ use crate::model::{Body, Container, Field, Tagging, VariantKind, binding};
 pub fn expand(c: &Container) -> TokenStream {
     let k = &c.krate;
     let ident = c.ident;
-    let extra: Vec<_> = c
-        .internal_newtype_params()
-        .into_iter()
-        .map(|param| (param, quote!(#k::EncodeFields)))
-        .collect();
-    let generics = c.bounded_generics(quote!(#k::Encode), &extra);
+    let mut generics = c.bounded_generics(quote!(#k::Encode), &[]);
+    generics
+        .make_where_clause()
+        .predicates
+        .extend(c.internal_newtype_bounds());
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let result = quote!(#k::__private::Result<(), #k::EncodeError>);
 
@@ -27,28 +26,13 @@ pub fn expand(c: &Container) -> TokenStream {
                 .collect();
             let count = field_count(fields, &accessors);
             let encode_fields = encode_fields(c, fields, &accessors);
-            let keys = fields.iter().filter(|f| !f.is_skipped()).map(|f| &f.key);
             quote! {
                 #[automatically_derived]
                 impl #impl_generics #k::Encode for #ident #ty_generics #where_clause {
                     fn encode<__E: #k::Encoder + ?Sized>(&self, e: &mut __E) -> #result {
-                        e.begin_object(#k::EncodeFields::field_count(self))?;
-                        #k::EncodeFields::encode_fields(self, e)?;
-                        e.end_object()
-                    }
-                }
-
-                #[automatically_derived]
-                impl #impl_generics #k::EncodeFields for #ident #ty_generics #where_clause {
-                    const KEYS: &'static [&'static str] = &[#(#keys),*];
-
-                    fn field_count(&self) -> usize {
-                        #count
-                    }
-
-                    fn encode_fields<__E: #k::Encoder + ?Sized>(&self, e: &mut __E) -> #result {
+                        e.begin_object(#count)?;
                         #encode_fields
-                        #k::__private::Ok(())
+                        e.end_object()
                     }
                 }
             }
@@ -96,9 +80,10 @@ pub fn expand(c: &Container) -> TokenStream {
                         let f = binding(0);
                         (
                             quote!(Self::#variant_ident(#f)),
-                            quote!(#k::EncodeFields::field_count(#f)),
+                            // not used: internally tagged newtype variants use a `TaggedEncoder`
+                            TokenStream::new(),
                             quote!(#k::Encode::encode(#f, e)?;),
-                            quote!(#k::EncodeFields::encode_fields(#f, e)?;),
+                            TokenStream::new(),
                         )
                     }
                     VariantKind::Struct(fields) => {
@@ -128,6 +113,18 @@ pub fn expand(c: &Container) -> TokenStream {
                     }
                 };
                 let body = match tagging {
+                    // the variant's value writes its own object and the encoder adds the tag to it
+                    Tagging::Internal { tag_key }
+                        if matches!(variant.kind, VariantKind::Newtype(_)) =>
+                    {
+                        let f = binding(0);
+                        quote! {
+                            #k::Encode::encode(
+                                #f,
+                                &mut #k::__private::TaggedEncoder::new(e, #tag_key, #tag),
+                            )
+                        }
+                    }
                     Tagging::External => quote! {
                         e.begin_object(1)?;
                         e.encode_key(#tag)?;
@@ -163,17 +160,25 @@ pub fn expand(c: &Container) -> TokenStream {
                         _ => None,
                     })
                     .map(|(variant, ty)| {
-                        // the message is a format string so braces are escaped
-                        let message = format!(
+                        // the messages are format strings so braces are escaped
+                        let escape = |s: String| s.replace('{', "{{").replace('}', "}}");
+                        let not_an_object = escape(format!(
+                            "the type in variant `{ident}::{}` is not an object. Variants of internally tagged unions must be structs with named fields, or types that wrap one (such as newtype structs or `Box<T>`)",
+                            variant.ident
+                        ));
+                        let conflict = escape(format!(
                             "the type in variant `{ident}::{}` has a field with the key \"{tag_key}\" which conflicts with the union's tag_key",
                             variant.ident
-                        )
-                        .replace('{', "{{")
-                        .replace('}', "}}");
+                        ));
                         // spanned so that the error points at the variant's type
                         quote_spanned! {ty.span()=>
-                            if #k::__private::contains_key(<#ty as #k::EncodeFields>::KEYS, #tag_key) {
-                                ::core::panic!(#message);
+                            match <#ty as #k::ArriSchema>::PROPERTIES {
+                                #k::__private::None => ::core::panic!(#not_an_object),
+                                #k::__private::Some(keys) => {
+                                    if #k::__private::contains_key(keys, #tag_key) {
+                                        ::core::panic!(#conflict);
+                                    }
+                                }
                             }
                         }
                     })

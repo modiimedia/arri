@@ -1,6 +1,8 @@
 //! Runtime helpers used by `#[derive(ArriModel)]`. Not part of the public API.
 
-use crate::{DecodeError, Decoder, TypeDef, Value, ValueDecoder};
+use crate::{
+    DecodeError, Decoder, EncodeError, Encoder, Number, Timestamp, TypeDef, Value, ValueDecoder,
+};
 
 pub use std::borrow::Cow;
 pub use std::option::Option::{self, None, Some};
@@ -247,4 +249,218 @@ pub fn with_metadata(
         def.metadata.deprecated_note = note.map(str::to_string);
     }
     def
+}
+
+/// Encodes a newtype variant of an internally tagged union.
+///
+/// The variant's value must be an object. The tag is written as the first entry of that object
+/// and every other call is passed through.
+pub struct TaggedEncoder<'a, E: ?Sized> {
+    inner: &'a mut E,
+    tag_key: &'a str,
+    tag: &'a str,
+    started: bool,
+}
+
+impl<'a, E: Encoder + ?Sized> TaggedEncoder<'a, E> {
+    #[inline]
+    pub fn new(inner: &'a mut E, tag_key: &'a str, tag: &'a str) -> Self {
+        Self {
+            inner,
+            tag_key,
+            tag,
+            started: false,
+        }
+    }
+
+    #[cold]
+    fn not_an_object(&self) -> EncodeError {
+        EncodeError::custom(format!(
+            "the \"{}\" variant of an internally tagged union must be encoded as an object",
+            self.tag
+        ))
+    }
+}
+
+macro_rules! tagged_encode {
+    ($($method:ident($($arg:ident: $ty:ty),*);)*) => {
+        $(
+            #[inline]
+            fn $method(&mut self, $($arg: $ty),*) -> Result<(), EncodeError> {
+                if !self.started {
+                    return Err(self.not_an_object());
+                }
+                self.inner.$method($($arg),*)
+            }
+        )*
+    };
+}
+
+impl<E: Encoder + ?Sized> Encoder for TaggedEncoder<'_, E> {
+    tagged_encode! {
+        encode_null();
+        encode_bool(v: bool);
+        encode_f32(v: f32);
+        encode_f64(v: f64);
+        encode_i8(v: i8);
+        encode_u8(v: u8);
+        encode_i16(v: i16);
+        encode_u16(v: u16);
+        encode_i32(v: i32);
+        encode_u32(v: u32);
+        encode_i64(v: i64);
+        encode_u64(v: u64);
+        encode_str(v: &str);
+        encode_timestamp(v: &Timestamp);
+        encode_number(v: Number);
+        encode_key(key: &str);
+        end_object();
+        begin_list(len: usize);
+        end_list();
+    }
+
+    #[inline]
+    fn begin_object(&mut self, len: usize) -> Result<(), EncodeError> {
+        if self.started {
+            return self.inner.begin_object(len);
+        }
+        self.started = true;
+        self.inner.begin_object(len + 1)?;
+        self.inner.encode_key(self.tag_key)?;
+        self.inner.encode_str(self.tag)
+    }
+}
+
+/// Decodes a newtype variant of an internally tagged union.
+///
+/// The union has already opened the object and read the tag, so the variant's first
+/// [`Decoder::begin_object`] continues reading that object instead of opening a new one.
+/// Finding the tag key again in that object is a duplicate key error.
+pub struct TaggedDecoder<'a, D: ?Sized> {
+    inner: &'a mut D,
+    tag_key: &'a str,
+    /// how many objects / lists are open. 0 means the variant hasn't started reading its object yet
+    /// and 1 means it's reading the object that contains the tag.
+    depth: usize,
+}
+
+impl<'a, D: Decoder + ?Sized> TaggedDecoder<'a, D> {
+    #[inline]
+    pub fn new(inner: &'a mut D, tag_key: &'a str) -> Self {
+        Self {
+            inner,
+            tag_key,
+            depth: 0,
+        }
+    }
+}
+
+#[cold]
+fn tagged_not_an_object(expected: &str) -> DecodeError {
+    DecodeError::invalid_type(expected, "object")
+}
+
+macro_rules! tagged_decode {
+    ($($method:ident -> $ty:ty, $expected:literal;)*) => {
+        $(
+            #[inline]
+            fn $method(&mut self) -> Result<$ty, DecodeError> {
+                if self.depth == 0 {
+                    return Err(tagged_not_an_object($expected));
+                }
+                self.inner.$method()
+            }
+        )*
+    };
+}
+
+impl<D: Decoder + ?Sized> Decoder for TaggedDecoder<'_, D> {
+    tagged_decode! {
+        decode_bool -> bool, "boolean";
+        decode_f32 -> f32, "float32";
+        decode_f64 -> f64, "float64";
+        decode_i8 -> i8, "int8";
+        decode_u8 -> u8, "uint8";
+        decode_i16 -> i16, "int16";
+        decode_u16 -> u16, "uint16";
+        decode_i32 -> i32, "int32";
+        decode_u32 -> u32, "uint32";
+        decode_i64 -> i64, "int64";
+        decode_u64 -> u64, "uint64";
+        decode_string -> String, "string";
+        decode_str -> &str, "string";
+        decode_timestamp -> Timestamp, "timestamp";
+        decode_any -> Value, "any";
+    }
+
+    #[inline]
+    fn decode_null(&mut self) -> Result<bool, DecodeError> {
+        // the variant's value is an object that has already been opened, so it isn't null
+        if self.depth == 0 {
+            return Ok(false);
+        }
+        self.inner.decode_null()
+    }
+
+    #[inline]
+    fn begin_object(&mut self) -> Result<Option<usize>, DecodeError> {
+        if self.depth == 0 {
+            self.depth = 1;
+            return Ok(None);
+        }
+        let len = self.inner.begin_object()?;
+        self.depth += 1;
+        Ok(len)
+    }
+
+    #[inline]
+    fn next_key(&mut self) -> Result<Option<&str>, DecodeError> {
+        if self.depth == 0 {
+            return Err(DecodeError::custom(
+                "next_key() called outside of an object",
+            ));
+        }
+        let depth = self.depth;
+        let tag_key = self.tag_key;
+        match self.inner.next_key()? {
+            Some(key) if depth == 1 && key == tag_key => Err(duplicate_key(tag_key)),
+            Some(key) => Ok(Some(key)),
+            None => {
+                self.depth -= 1;
+                Ok(None)
+            }
+        }
+    }
+
+    #[inline]
+    fn begin_list(&mut self) -> Result<Option<usize>, DecodeError> {
+        if self.depth == 0 {
+            return Err(tagged_not_an_object("array"));
+        }
+        let len = self.inner.begin_list()?;
+        self.depth += 1;
+        Ok(len)
+    }
+
+    #[inline]
+    fn next_element(&mut self) -> Result<bool, DecodeError> {
+        let has_next = self.inner.next_element()?;
+        if !has_next {
+            self.depth -= 1;
+        }
+        Ok(has_next)
+    }
+
+    #[inline]
+    fn skip_value(&mut self) -> Result<(), DecodeError> {
+        if self.depth == 0 {
+            // skip the rest of the variant's object
+            self.begin_object()?;
+            while self.next_key()?.is_some() {
+                self.inner.skip_value()?;
+            }
+            return Ok(());
+        }
+        self.inner.skip_value()
+    }
 }

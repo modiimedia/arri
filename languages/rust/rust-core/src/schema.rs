@@ -41,6 +41,15 @@ pub trait ArriSchema {
     /// Named types (structs, enums, and unions) should build their definition inside of
     /// [`SchemaContext::named`].
     fn type_def(ctx: &mut SchemaContext) -> TypeDef;
+
+    /// The keys of `properties` and `optionalProperties` when this type uses the "properties"
+    /// schema form (an object with known keys). `None` for every other schema form.
+    ///
+    /// This is checked at compile time to make sure that the variants of internally tagged unions
+    /// are objects, and that none of their keys conflict with the union's tag. Types that wrap
+    /// another type without changing its schema (`Box<T>`, newtype structs, etc.) should forward
+    /// the inner type's value.
+    const PROPERTIES: Option<&'static [&'static str]> = None;
 }
 
 /// Returns the [`TypeDef`] for `T`
@@ -340,6 +349,8 @@ macro_rules! impl_schema_forward {
     ($($ty:ident),*) => {
         $(
             impl<T: ArriSchema + ?Sized> ArriSchema for $ty<T> {
+                const PROPERTIES: Option<&'static [&'static str]> = T::PROPERTIES;
+
                 fn generic_name() -> Cow<'static, str> {
                     T::generic_name()
                 }
@@ -355,6 +366,8 @@ macro_rules! impl_schema_forward {
 impl_schema_forward!(Box, Rc, Arc);
 
 impl<T: ArriSchema + ?Sized> ArriSchema for &T {
+    const PROPERTIES: Option<&'static [&'static str]> = T::PROPERTIES;
+
     fn generic_name() -> Cow<'static, str> {
         T::generic_name()
     }

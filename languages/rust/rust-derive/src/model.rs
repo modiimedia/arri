@@ -428,24 +428,25 @@ impl<'a> Container<'a> {
         !self.generics.params.is_empty()
     }
 
-    /// Type parameters that are used directly as the type of an internally tagged newtype variant.
-    /// These need `EncodeFields` / `DecodeFields` bounds.
-    pub fn internal_newtype_params(&self) -> Vec<Ident> {
+    /// `ArriSchema` bounds for the types of internally tagged newtype variants in generic types.
+    ///
+    /// The encoder checks `<T as ArriSchema>::PROPERTIES` for these types at compile time. Types
+    /// without generic parameters don't need the bounds (their check runs eagerly).
+    pub fn internal_newtype_bounds(&self) -> Vec<WherePredicate> {
         let Body::Union(Tagging::Internal { .. }, variants) = &self.body else {
             return Vec::new();
         };
-        let params: Vec<&Ident> = self.generics.type_params().map(|p| &p.ident).collect();
-        let mut output = Vec::new();
-        for variant in variants {
-            if let VariantKind::Newtype(Type::Path(path)) = &variant.kind
-                && let Some(ident) = path.path.get_ident()
-                && params.contains(&ident)
-                && !output.contains(ident)
-            {
-                output.push(ident.clone());
-            }
+        if !self.has_generic_params() {
+            return Vec::new();
         }
-        output
+        let k = &self.krate;
+        variants
+            .iter()
+            .filter_map(|variant| match &variant.kind {
+                VariantKind::Newtype(ty) => Some(syn::parse_quote!(#ty: #k::ArriSchema)),
+                _ => None,
+            })
+            .collect()
     }
 }
 

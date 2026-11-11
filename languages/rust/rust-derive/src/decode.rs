@@ -6,12 +6,7 @@ use crate::model::{Body, Container, Field, Tagging, VariantKind, binding};
 pub fn expand(c: &Container) -> TokenStream {
     let k = &c.krate;
     let ident = c.ident;
-    let extra: Vec<_> = c
-        .internal_newtype_params()
-        .into_iter()
-        .map(|param| (param, quote!(#k::DecodeFields)))
-        .collect();
-    let mut generics = c.bounded_generics(quote!(#k::Decode), &extra);
+    let mut generics = c.bounded_generics(quote!(#k::Decode), &[]);
     generics
         .make_where_clause()
         .predicates
@@ -28,16 +23,7 @@ pub fn expand(c: &Container) -> TokenStream {
                 impl #impl_generics #k::Decode for #ident #ty_generics #where_clause {
                     fn decode<__D: #k::Decoder + ?Sized>(d: &mut __D) -> #result {
                         d.begin_object()?;
-                        <Self as #k::DecodeFields>::decode_fields(d, #k::__private::None)
-                    }
-                }
-
-                #[automatically_derived]
-                impl #impl_generics #k::DecodeFields for #ident #ty_generics #where_clause {
-                    fn decode_fields<__D: #k::Decoder + ?Sized>(
-                        d: &mut __D,
-                        tag_key: #k::__private::Option<&str>,
-                    ) -> #result {
+                        let tag_key: #k::__private::Option<&str> = #k::__private::None;
                         #decode_fields
                     }
                 }
@@ -100,9 +86,18 @@ pub fn expand(c: &Container) -> TokenStream {
                         #k::__private::decode_no_fields(d, #tag_key_arg, #strict)?;
                         #k::__private::Ok(Self::#variant_ident)
                     },
-                    VariantKind::Newtype(ty) if internal => quote! {
-                        <#ty as #k::DecodeFields>::decode_fields(d, #tag_key_arg).map(Self::#variant_ident)
-                    },
+                    // the variant's value continues reading the object that contains the tag
+                    VariantKind::Newtype(ty) if internal => {
+                        let Tagging::Internal { tag_key } = tagging else {
+                            unreachable!()
+                        };
+                        quote! {
+                            <#ty as #k::Decode>::decode(
+                                &mut #k::__private::TaggedDecoder::new(d, #tag_key),
+                            )
+                            .map(Self::#variant_ident)
+                        }
+                    }
                     VariantKind::Newtype(ty) => quote! {
                         <#ty as #k::Decode>::decode(d).map(Self::#variant_ident)
                     },

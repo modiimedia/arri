@@ -55,28 +55,6 @@ pub trait Encode {
     fn encode<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError>;
 }
 
-/// Implemented by types that encode as an object with known keys (the "properties" schema form).
-///
-/// This allows the fields to be written into an object that was started by someone else,
-/// which is needed for internally tagged unions.
-#[diagnostic::on_unimplemented(
-    message = "`{Self}` is not an object",
-    label = "`{Self}` must be a struct with named fields",
-    note = "variants of internally tagged unions (`#[arri(tag_key = \"...\")]` without `value_key`) must be objects. Use a struct variant, or a newtype variant containing a struct that derives `ArriModel`"
-)]
-pub trait EncodeFields {
-    /// Every key that [`EncodeFields::encode_fields`] may write.
-    ///
-    /// Used to check at compile time that the variants of internally tagged unions don't have a
-    /// field with the same key as the union's tag.
-    const KEYS: &'static [&'static str];
-
-    /// The number of keys that [`EncodeFields::encode_fields`] will write
-    fn field_count(&self) -> usize;
-    /// Write each key / value pair without opening or closing the object
-    fn encode_fields<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError>;
-}
-
 /// An error that occurred while encoding.
 ///
 /// More variants may be added in the future, so matches on this enum outside of arri need a `_` arm.
@@ -162,20 +140,6 @@ macro_rules! impl_encode_pointer {
                     T::encode(self, e)
                 }
             }
-
-            impl<T: EncodeFields + ?Sized> EncodeFields for $ty<T> {
-                const KEYS: &'static [&'static str] = T::KEYS;
-
-                #[inline]
-                fn field_count(&self) -> usize {
-                    T::field_count(self)
-                }
-
-                #[inline]
-                fn encode_fields<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError> {
-                    T::encode_fields(self, e)
-                }
-            }
         )*
     };
 }
@@ -186,20 +150,6 @@ impl<T: Encode + ?Sized> Encode for &T {
     #[inline]
     fn encode<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError> {
         T::encode(self, e)
-    }
-}
-
-impl<T: EncodeFields + ?Sized> EncodeFields for &T {
-    const KEYS: &'static [&'static str] = T::KEYS;
-
-    #[inline]
-    fn field_count(&self) -> usize {
-        T::field_count(self)
-    }
-
-    #[inline]
-    fn encode_fields<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError> {
-        T::encode_fields(self, e)
     }
 }
 

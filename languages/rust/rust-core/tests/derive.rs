@@ -1353,7 +1353,7 @@ mod duplicate_keys {
 }
 
 mod tag_key_conflicts {
-    use arri::{ArriModel, EncodeFields, json};
+    use arri::{ArriModel, ArriSchema, json};
 
     #[derive(ArriModel, Debug, PartialEq)]
     struct Inner {
@@ -1379,10 +1379,24 @@ mod tag_key_conflicts {
     }
 
     #[test]
-    fn keys_list_every_key_that_can_be_written() {
-        assert_eq!(<Inner as EncodeFields>::KEYS, &["a", "renamedB"]);
-        assert_eq!(<Box<Inner> as EncodeFields>::KEYS, &["a", "renamedB"]);
-        assert_eq!(<&Inner as EncodeFields>::KEYS, &["a", "renamedB"]);
+    fn properties_list_every_key_that_can_be_written() {
+        assert_eq!(
+            <Inner as ArriSchema>::PROPERTIES,
+            Some(&["a", "renamedB"][..])
+        );
+        assert_eq!(
+            <Box<Inner> as ArriSchema>::PROPERTIES,
+            Some(&["a", "renamedB"][..])
+        );
+        assert_eq!(
+            <&Inner as ArriSchema>::PROPERTIES,
+            Some(&["a", "renamedB"][..])
+        );
+        // other schema forms
+        assert_eq!(<String as ArriSchema>::PROPERTIES, None);
+        assert_eq!(<Union as ArriSchema>::PROPERTIES, None);
+        assert_eq!(<Vec<Inner> as ArriSchema>::PROPERTIES, None);
+        assert_eq!(<arri::Nullable<Inner> as ArriSchema>::PROPERTIES, None);
     }
 
     #[test]
@@ -1414,5 +1428,183 @@ mod tag_key_conflicts {
             json::to_string(&Generic::A(inner())).unwrap(),
             r#"{"type":"A","a":1}"#
         );
+    }
+}
+
+mod wrapper_variants {
+    use std::borrow::Cow;
+
+    use arri::{
+        ArriModel, ArriSchema, Decode, DecodeError, DecodeErrorKind, Decoder, Encode, EncodeError,
+        Encoder, SchemaContext, TypeDef, json, type_def_of,
+    };
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Inner {
+        a: i32,
+        nested: Nested,
+    }
+
+    /// nested objects may use the tag's key since it's only reserved in the variant's own object
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Nested {
+        r#type: String,
+        list: Vec<Nested>,
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Wrap(Inner);
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct WrapWrap(Wrap);
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    struct Generic<T>(T);
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(strict)]
+    struct StrictInner {
+        a: i32,
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(tag_key = "type")]
+    enum Union {
+        Plain(Inner),
+        Wrapped(Wrap),
+        Twice(WrapWrap),
+        Boxed(Box<Wrap>),
+        Generic(Generic<Inner>),
+        Strict(StrictInner),
+    }
+
+    fn inner() -> Inner {
+        Inner {
+            a: 1,
+            nested: Nested {
+                r#type: "x".into(),
+                list: vec![Nested {
+                    r#type: "y".into(),
+                    list: vec![],
+                }],
+            },
+        }
+    }
+
+    const BODY: &str = r#""a":1,"nested":{"type":"x","list":[{"type":"y","list":[]}]}"#;
+
+    #[test]
+    fn wrapper_types_have_the_schema_of_their_inner_type() {
+        assert_eq!(<Wrap as ArriSchema>::PROPERTIES, Some(&["a", "nested"][..]));
+        assert_eq!(
+            <WrapWrap as ArriSchema>::PROPERTIES,
+            Some(&["a", "nested"][..])
+        );
+        assert_eq!(
+            <Generic<Inner> as ArriSchema>::PROPERTIES,
+            Some(&["a", "nested"][..])
+        );
+        assert_eq!(<Generic<String> as ArriSchema>::PROPERTIES, None);
+        assert_eq!(type_def_of::<WrapWrap>(), type_def_of::<Inner>());
+    }
+
+    #[test]
+    fn round_trip() {
+        let cases = [
+            ("Plain", Union::Plain(inner())),
+            ("Wrapped", Union::Wrapped(Wrap(inner()))),
+            ("Twice", Union::Twice(WrapWrap(Wrap(inner())))),
+            ("Boxed", Union::Boxed(Box::new(Wrap(inner())))),
+            ("Generic", Union::Generic(Generic(inner()))),
+        ];
+        for (tag, value) in cases {
+            let expected = format!(r#"{{"type":"{tag}",{BODY}}}"#);
+            assert_eq!(json::to_string(&value).unwrap(), expected, "{tag}");
+            assert_eq!(json::from_str::<Union>(&expected).unwrap(), value, "{tag}");
+            // the tag doesn't have to come first
+            let tag_last = format!(r#"{{{BODY},"type":"{tag}"}}"#);
+            assert_eq!(json::from_str::<Union>(&tag_last).unwrap(), value, "{tag}");
+        }
+    }
+
+    #[test]
+    fn errors_inside_wrapped_variants() {
+        for input in [
+            r#"{"type":"Twice","a":1,"nested":{"type":"x","list":[]},"type":"Twice"}"#,
+            r#"{"a":1,"type":"Twice","nested":{"type":"x","list":[]},"type":"Twice"}"#,
+            r#"{"type":"Twice","a":1,"a":2,"nested":{"type":"x","list":[]}}"#,
+        ] {
+            let err = json::from_str::<Union>(input).unwrap_err();
+            assert_eq!(err.kind(), DecodeErrorKind::DuplicateKey, "{input}");
+        }
+        let err = json::from_str::<Union>(
+            r#"{"type":"Twice","a":1,"nested":{"type":"x","list":[{"type":1}]}}"#,
+        )
+        .unwrap_err();
+        assert_eq!(err.kind(), DecodeErrorKind::InvalidType);
+        assert_eq!(err.instance_path(), "/nested/list/0/type");
+        let err = json::from_str::<Union>(r#"{"type":"Twice","a":1}"#).unwrap_err();
+        assert_eq!(err.message(), "missing required field \"nested\"");
+    }
+
+    #[test]
+    fn strict_variants_still_reject_unknown_keys() {
+        assert_eq!(
+            json::from_str::<Union>(r#"{"type":"Strict","a":1}"#).unwrap(),
+            Union::Strict(StrictInner { a: 1 })
+        );
+        assert_eq!(
+            json::from_str::<Union>(r#"{"a":1,"type":"Strict"}"#).unwrap(),
+            Union::Strict(StrictInner { a: 1 })
+        );
+        let err = json::from_str::<Union>(r#"{"type":"Strict","a":1,"b":2}"#).unwrap_err();
+        assert_eq!(err.kind(), DecodeErrorKind::UnknownField);
+    }
+
+    /// Claims to be an object but encodes / decodes as a string. Hand written implementations
+    /// aren't checked by the compiler so the tagged encoder / decoder catch this at runtime.
+    #[derive(Debug, PartialEq)]
+    struct NotReallyAnObject;
+
+    impl ArriSchema for NotReallyAnObject {
+        const PROPERTIES: Option<&'static [&'static str]> = Some(&[]);
+
+        fn generic_name() -> Cow<'static, str> {
+            Cow::Borrowed("NotReallyAnObject")
+        }
+
+        fn type_def(_: &mut SchemaContext) -> TypeDef {
+            TypeDef::properties(Default::default())
+        }
+    }
+
+    impl Encode for NotReallyAnObject {
+        fn encode<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError> {
+            e.encode_str("surprise")
+        }
+    }
+
+    impl Decode for NotReallyAnObject {
+        fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError> {
+            d.decode_string().map(|_| Self)
+        }
+    }
+
+    #[derive(ArriModel, Debug, PartialEq)]
+    #[arri(tag_key = "type")]
+    enum Lies {
+        A(NotReallyAnObject),
+    }
+
+    #[test]
+    fn non_objects_are_rejected_at_runtime() {
+        let err = json::to_string(&Lies::A(NotReallyAnObject)).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "the \"A\" variant of an internally tagged union must be encoded as an object"
+        );
+        let err = json::from_str::<Lies>(r#"{"type":"A"}"#).unwrap_err();
+        assert_eq!(err.kind(), DecodeErrorKind::InvalidType);
+        assert_eq!(err.message(), "expected string but found object");
     }
 }

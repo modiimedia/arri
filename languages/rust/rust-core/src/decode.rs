@@ -70,26 +70,6 @@ pub trait Decode: Sized {
     fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError>;
 }
 
-/// Implemented by types that decode from an object with known keys (the "properties" schema form).
-///
-/// This allows the fields to be read from an object that was opened by someone else,
-/// which is needed for internally tagged unions.
-#[diagnostic::on_unimplemented(
-    message = "`{Self}` is not an object",
-    label = "`{Self}` must be a struct with named fields",
-    note = "variants of internally tagged unions (`#[arri(tag_key = \"...\")]` without `value_key`) must be objects. Use a struct variant, or a newtype variant containing a struct that derives `ArriModel`"
-)]
-pub trait DecodeFields: Sized {
-    /// Read the remaining entries of an object that has already been opened with [`Decoder::begin_object`].
-    ///
-    /// `tag_key` is the key of an internally tagged union's tag, which has already been read.
-    /// Finding it again is a [`DecodeErrorKind::DuplicateKey`] error.
-    fn decode_fields<D: Decoder + ?Sized>(
-        d: &mut D,
-        tag_key: Option<&str>,
-    ) -> Result<Self, DecodeError>;
-}
-
 /// The kind of a [`DecodeError`].
 ///
 /// More kinds may be added in the future, so matches on this enum outside of arri need a `_` arm.
@@ -305,16 +285,6 @@ macro_rules! impl_decode_pointer {
                 #[inline]
                 fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError> {
                     T::decode(d).map($ty::new)
-                }
-            }
-
-            impl<T: DecodeFields> DecodeFields for $ty<T> {
-                #[inline]
-                fn decode_fields<D: Decoder + ?Sized>(
-                    d: &mut D,
-                    tag_key: Option<&str>,
-                ) -> Result<Self, DecodeError> {
-                    T::decode_fields(d, tag_key).map($ty::new)
                 }
             }
         )*

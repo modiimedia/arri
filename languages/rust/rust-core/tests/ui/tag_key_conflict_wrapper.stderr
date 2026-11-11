@@ -1,0 +1,5 @@
+error[E0080]: evaluation panicked: the type in variant `Foo::A` has a field with the key "type" which conflicts with the union's tag_key
+  --> tests/ui/tag_key_conflict_wrapper.rs:14:7
+   |
+14 |     A(Wrap),
+   |       ^^^^ evaluation of `_::_` failed here
