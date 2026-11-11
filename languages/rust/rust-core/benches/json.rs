@@ -11,6 +11,9 @@
 //!   while serde uses chrono's serde implementation, so differences here also include the
 //!   timestamp implementations. This reflects what users of chrono will actually see.
 //!
+//! Each payload is also decoded with an invalid value (a string where a number belongs) placed
+//! near the start (`decode_invalid_early`) and near the end (`decode_invalid_late`) of the input.
+//!
 //! Both libraries decode the exact same input (the output of arri's encoder). 64 bit integers are
 //! intentionally left out since arri writes them as JSON strings and serde_json writes numbers.
 
@@ -367,8 +370,32 @@ fn serde_report<Ts: Clone>(report: &arri_types::Report<Ts>) -> serde_types::Repo
     }
 }
 
-fn bench_payload<A, S>(c: &mut Criterion, name: &str, arri_value: &A, serde_value: &S)
-where
+/// Replace the value of the first or last `"key":` in `input` with a string, making it invalid
+/// for a numeric field
+fn make_invalid(input: &str, key: &str, last: bool) -> String {
+    let needle = format!("\"{key}\":");
+    let found = if last {
+        input.rfind(&needle)
+    } else {
+        input.find(&needle)
+    };
+    let start = found.unwrap_or_else(|| panic!("{needle} not found")) + needle.len();
+    let end = start
+        + input[start..]
+            .find([',', '}'])
+            .expect("value must be followed by ',' or '}'");
+    format!("{}\"invalid\"{}", &input[..start], &input[end..])
+}
+
+/// `invalid_key` must be a numeric field. Its first and last occurrences are replaced with a
+/// string to benchmark decoding input that fails early or late.
+fn bench_payload<A, S>(
+    c: &mut Criterion,
+    name: &str,
+    arri_value: &A,
+    serde_value: &S,
+    invalid_key: &str,
+) where
     A: arri::Encode + arri::Decode,
     S: serde::Serialize + serde::de::DeserializeOwned,
 {
@@ -376,6 +403,21 @@ where
     // make sure both libraries accept the input before measuring anything
     arri::json::from_str::<A>(&input).unwrap();
     serde_json::from_str::<S>(&input).unwrap();
+
+    let invalid_early = make_invalid(&input, invalid_key, false);
+    let invalid_late = make_invalid(&input, invalid_key, true);
+    let mut invalid_inputs = vec![("decode_invalid_early", invalid_early)];
+    if invalid_late != invalid_inputs[0].1 {
+        invalid_inputs.push(("decode_invalid_late", invalid_late));
+    } else {
+        // the key only appears once
+        invalid_inputs[0].0 = "decode_invalid";
+    }
+    // and make sure both libraries reject the invalid input
+    for (_, invalid) in &invalid_inputs {
+        assert!(arri::json::from_str::<A>(invalid).is_err());
+        assert!(serde_json::from_str::<S>(invalid).is_err());
+    }
 
     let mut group = c.benchmark_group(name);
     group.throughput(Throughput::Bytes(input.len() as u64));
@@ -391,6 +433,14 @@ where
     group.bench_function(BenchmarkId::new("decode", "serde_json"), |b| {
         b.iter(|| serde_json::from_str::<S>(black_box(&input)).unwrap())
     });
+    for (label, invalid) in &invalid_inputs {
+        group.bench_function(BenchmarkId::new(*label, "arri"), |b| {
+            b.iter(|| arri::json::from_str::<A>(black_box(invalid)).err().unwrap())
+        });
+        group.bench_function(BenchmarkId::new(*label, "serde_json"), |b| {
+            b.iter(|| serde_json::from_str::<S>(black_box(invalid)).err().unwrap())
+        });
+    }
     group.finish();
 }
 
@@ -403,15 +453,33 @@ where
         + serde::de::DeserializeOwned,
 {
     let user = arri_user::<Ts>(3);
-    bench_payload(c, &format!("{prefix}/user"), &user, &serde_user(&user));
+    bench_payload(
+        c,
+        &format!("{prefix}/user"),
+        &user,
+        &serde_user(&user),
+        "age",
+    );
 
     let users: Vec<_> = (0..1000).map(arri_user::<Ts>).collect();
     let serde_users: Vec<_> = users.iter().map(serde_user).collect();
-    bench_payload(c, &format!("{prefix}/users_1000"), &users, &serde_users);
+    bench_payload(
+        c,
+        &format!("{prefix}/users_1000"),
+        &users,
+        &serde_users,
+        "age",
+    );
 
     let events: Vec<_> = (0..1000).map(arri_event::<Ts>).collect();
     let serde_events: Vec<_> = events.iter().map(serde_event).collect();
-    bench_payload(c, &format!("{prefix}/events_1000"), &events, &serde_events);
+    bench_payload(
+        c,
+        &format!("{prefix}/events_1000"),
+        &events,
+        &serde_events,
+        "age",
+    );
 
     let report = arri_report::<Ts>();
     bench_payload(
@@ -419,6 +487,7 @@ where
         &format!("{prefix}/large_object"),
         &report,
         &serde_report(&report),
+        "age",
     );
 }
 
