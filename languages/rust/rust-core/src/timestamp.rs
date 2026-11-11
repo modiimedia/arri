@@ -424,6 +424,13 @@ impl Hash for Timestamp {
     }
 }
 
+/// The unix epoch (`1970-01-01T00:00:00.000Z`), the same default that the other Arri clients use
+impl Default for Timestamp {
+    fn default() -> Self {
+        Self::UNIX_EPOCH
+    }
+}
+
 impl std::fmt::Display for Timestamp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.format().as_str())
@@ -533,6 +540,15 @@ mod tests {
             assert_eq!(ts.offset_minutes(), offset, "{input}");
             assert_eq!(ts.to_rfc3339(), input);
         }
+    }
+
+    #[test]
+    fn default_is_the_unix_epoch() {
+        assert_eq!(Timestamp::default(), Timestamp::UNIX_EPOCH);
+        assert_eq!(
+            Timestamp::default().to_rfc3339(),
+            "1970-01-01T00:00:00.000Z"
+        );
     }
 
     #[test]
