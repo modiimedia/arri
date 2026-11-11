@@ -809,7 +809,7 @@ mod tests {
                 Nullable::Present(false)
             ]
         );
-        assert_eq!(from_str::<Vec<bool>>("[]").unwrap(), vec![]);
+        assert_eq!(from_str::<Vec<bool>>("[]").unwrap(), Vec::<bool>::new());
         let map = from_str::<BTreeMap<String, Vec<i32>>>(r#"{ "a" : [1], "b":[] }"#).unwrap();
         assert_eq!(map.get("a"), Some(&vec![1]));
         assert_eq!(map.get("b"), Some(&vec![]));

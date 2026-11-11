@@ -45,6 +45,16 @@
 //! (int64, timestamp, objects with known lengths, etc.) rather than in terms of JSON tokens.
 //! How a value is represented is decided by the format. For example the JSON format writes
 //! `int64` values as strings while a binary format could write them natively.
+//!
+//! # Features
+//!
+//! | feature    | default | description |
+//! | ---------- | ------- | ----------- |
+//! | `derive`   | yes     | `#[derive(ArriModel)]` |
+//! | `chrono`   | no      | arri traits for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>` |
+//! | `time`     | no      | arri traits for `time::OffsetDateTime` and `time::UtcDateTime` |
+//! | `indexmap` | no      | arri traits for `indexmap::IndexMap<String, V>` |
+//! | `serde`    | no      | serde `Serialize` / `Deserialize` for arri's own types ([`Timestamp`], [`Nullable`], [`Value`], [`Number`], [`Type`]) and `Serialize` for [`TypeDef`] / [`Metadata`] |
 
 // allows the derive macro output (which references `::arri`) to be used inside this crate
 extern crate self as arri;
