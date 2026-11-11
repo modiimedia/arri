@@ -34,6 +34,19 @@ pub fn expand(c: &Container) -> TokenStream {
                         #encode_fields
                         e.end_object()
                     }
+
+                    fn encode_internally_tagged<__E: #k::Encoder + ?Sized>(
+                        &self,
+                        e: &mut __E,
+                        tag_key: &str,
+                        tag: &str,
+                    ) -> #result {
+                        e.begin_object(1 + #count)?;
+                        e.encode_key(tag_key)?;
+                        e.encode_str(tag)?;
+                        #encode_fields
+                        e.end_object()
+                    }
                 }
             }
         }
@@ -42,6 +55,15 @@ pub fn expand(c: &Container) -> TokenStream {
             impl #impl_generics #k::Encode for #ident #ty_generics #where_clause {
                 fn encode<__E: #k::Encoder + ?Sized>(&self, e: &mut __E) -> #result {
                     #k::Encode::encode(&self.0, e)
+                }
+
+                fn encode_internally_tagged<__E: #k::Encoder + ?Sized>(
+                    &self,
+                    e: &mut __E,
+                    tag_key: &str,
+                    tag: &str,
+                ) -> #result {
+                    #k::Encode::encode_internally_tagged(&self.0, e, tag_key, tag)
                 }
             }
         },
@@ -118,12 +140,7 @@ pub fn expand(c: &Container) -> TokenStream {
                         if matches!(variant.kind, VariantKind::Newtype(_)) =>
                     {
                         let f = binding(0);
-                        quote! {
-                            #k::Encode::encode(
-                                #f,
-                                &mut #k::__private::TaggedEncoder::new(e, #tag_key, #tag),
-                            )
-                        }
+                        quote!(#k::Encode::encode_internally_tagged(#f, e, #tag_key, #tag))
                     }
                     Tagging::External => quote! {
                         e.begin_object(1)?;

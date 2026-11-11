@@ -26,6 +26,14 @@ pub fn expand(c: &Container) -> TokenStream {
                         let tag_key: #k::__private::Option<&str> = #k::__private::None;
                         #decode_fields
                     }
+
+                    fn decode_internally_tagged<__D: #k::Decoder + ?Sized>(
+                        d: &mut __D,
+                        tag_key: &str,
+                    ) -> #result {
+                        let tag_key: #k::__private::Option<&str> = #k::__private::Some(tag_key);
+                        #decode_fields
+                    }
                 }
             }
         }
@@ -34,6 +42,13 @@ pub fn expand(c: &Container) -> TokenStream {
             impl #impl_generics #k::Decode for #ident #ty_generics #where_clause {
                 fn decode<__D: #k::Decoder + ?Sized>(d: &mut __D) -> #result {
                     <#inner as #k::Decode>::decode(d).map(Self)
+                }
+
+                fn decode_internally_tagged<__D: #k::Decoder + ?Sized>(
+                    d: &mut __D,
+                    tag_key: &str,
+                ) -> #result {
+                    <#inner as #k::Decode>::decode_internally_tagged(d, tag_key).map(Self)
                 }
             }
         },
@@ -92,10 +107,8 @@ pub fn expand(c: &Container) -> TokenStream {
                             unreachable!()
                         };
                         quote! {
-                            <#ty as #k::Decode>::decode(
-                                &mut #k::__private::TaggedDecoder::new(d, #tag_key),
-                            )
-                            .map(Self::#variant_ident)
+                            <#ty as #k::Decode>::decode_internally_tagged(d, #tag_key)
+                                .map(Self::#variant_ident)
                         }
                     }
                     VariantKind::Newtype(ty) => quote! {

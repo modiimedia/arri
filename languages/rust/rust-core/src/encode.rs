@@ -53,6 +53,22 @@ pub trait Encoder {
 )]
 pub trait Encode {
     fn encode<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError>;
+
+    /// Encode `self` as a variant of an internally tagged union: an object whose first entry is
+    /// `tag_key: tag` followed by the entries of `self` (which must encode as an object).
+    ///
+    /// The default implementation wraps the encoder so that the tag is added when `self` opens its
+    /// object. Derived structs (and types that wrap them) override this to write the tag directly.
+    #[doc(hidden)]
+    #[inline]
+    fn encode_internally_tagged<E: Encoder + ?Sized>(
+        &self,
+        e: &mut E,
+        tag_key: &str,
+        tag: &str,
+    ) -> Result<(), EncodeError> {
+        self.encode(&mut crate::__private::TaggedEncoder::new(e, tag_key, tag))
+    }
 }
 
 /// An error that occurred while encoding.
@@ -139,6 +155,16 @@ macro_rules! impl_encode_pointer {
                 fn encode<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError> {
                     T::encode(self, e)
                 }
+
+                #[inline]
+                fn encode_internally_tagged<E: Encoder + ?Sized>(
+                    &self,
+                    e: &mut E,
+                    tag_key: &str,
+                    tag: &str,
+                ) -> Result<(), EncodeError> {
+                    T::encode_internally_tagged(self, e, tag_key, tag)
+                }
             }
         )*
     };
@@ -150,6 +176,16 @@ impl<T: Encode + ?Sized> Encode for &T {
     #[inline]
     fn encode<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError> {
         T::encode(self, e)
+    }
+
+    #[inline]
+    fn encode_internally_tagged<E: Encoder + ?Sized>(
+        &self,
+        e: &mut E,
+        tag_key: &str,
+        tag: &str,
+    ) -> Result<(), EncodeError> {
+        T::encode_internally_tagged(self, e, tag_key, tag)
     }
 }
 

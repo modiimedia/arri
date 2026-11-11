@@ -68,6 +68,23 @@ pub trait Decoder {
 )]
 pub trait Decode: Sized {
     fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError>;
+
+    /// Decode `self` as a variant of an internally tagged union.
+    ///
+    /// The union has already opened the object and read the tag, so the remaining entries of that
+    /// object belong to the variant. Finding `tag_key` again is a duplicate key error.
+    ///
+    /// The default implementation wraps the decoder so that `Self::decode` continues reading the
+    /// open object. Derived structs (and types that wrap them) override this to read their fields
+    /// directly.
+    #[doc(hidden)]
+    #[inline]
+    fn decode_internally_tagged<D: Decoder + ?Sized>(
+        d: &mut D,
+        tag_key: &str,
+    ) -> Result<Self, DecodeError> {
+        Self::decode(&mut crate::__private::TaggedDecoder::new(d, tag_key))
+    }
 }
 
 /// The kind of a [`DecodeError`].
@@ -285,6 +302,14 @@ macro_rules! impl_decode_pointer {
                 #[inline]
                 fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError> {
                     T::decode(d).map($ty::new)
+                }
+
+                #[inline]
+                fn decode_internally_tagged<D: Decoder + ?Sized>(
+                    d: &mut D,
+                    tag_key: &str,
+                ) -> Result<Self, DecodeError> {
+                    T::decode_internally_tagged(d, tag_key).map($ty::new)
                 }
             }
         )*
