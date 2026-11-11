@@ -4,6 +4,13 @@
   "sourceRoot": "languages/rust/rust-core/src",
   "projectType": "library",
   "targets": {
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo bench -p arri --bench json --features chrono,serde",
+        "cwd": "languages/rust/rust-core"
+      }
+    },
     "cargo": {
       "executor": "nx:run-commands",
       "options": {
