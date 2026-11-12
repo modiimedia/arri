@@ -1,0 +1,5 @@
+error: `value_key` can only be used alongside `tag_key`
+ --> tests/ui/value_key_without_tag_key.rs:4:20
+  |
+4 | #[arri(value_key = "data")]
+  |                    ^^^^^^

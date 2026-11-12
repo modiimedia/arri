@@ -1,0 +1,27 @@
+{
+  "name": "rust-playground",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "arri build",
+        "cwd": "playground/rust"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "arri dev",
+        "cwd": "playground/rust"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo check",
+        "cwd": "playground/rust"
+      }
+    }
+  }
+}

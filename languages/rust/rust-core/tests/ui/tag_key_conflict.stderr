@@ -1,0 +1,5 @@
+error: field "type" conflicts with the union's tag_key
+ --> tests/ui/tag_key_conflict.rs:6:9
+  |
+6 |     A { r#type: String },
+  |         ^^^^^^

@@ -1,0 +1,16 @@
+{
+  "name": "rust-compile-bench",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "languages/rust/rust-compile-bench/src",
+  "projectType": "application",
+  "targets": {
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo run -p arri-compile-bench --release",
+        "cwd": "languages/rust/rust-compile-bench"
+      }
+    }
+  },
+  "tags": []
+}

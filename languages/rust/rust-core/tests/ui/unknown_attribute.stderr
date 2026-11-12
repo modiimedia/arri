@@ -1,0 +1,5 @@
+error: unknown arri attribute `flatten` on a field. Supported attributes: `rename`, `skip`, `default`
+ --> tests/ui/unknown_attribute.rs:5:12
+  |
+5 |     #[arri(flatten)]
+  |            ^^^^^^^

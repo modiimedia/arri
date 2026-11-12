@@ -1,0 +1,21 @@
+[package]
+name = "arri_derive"
+version = "0.85.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Derive macros for the arri crate. Use the `arri` crate instead of depending on this directly."
+license = "MIT"
+homepage = "https://github.com/modiimedia/arri"
+repository = "https://github.com/modiimedia/arri"
+keywords = ["arrirpc", "arri", "rpc", "derive"]
+readme = "README.md"
+include = ["/src", "/README.md"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+heck = "0.5"
+proc-macro2 = "1"
+quote = "1"
+syn = "2"

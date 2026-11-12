@@ -1,0 +1,8 @@
+[package]
+name = "arri-compile-bench"
+version = "0.0.0"
+edition = "2024"
+description = "Compares how long types using #[derive(ArriModel)] take to compile vs #[derive(Serialize, Deserialize)]"
+publish = false
+
+[dependencies]

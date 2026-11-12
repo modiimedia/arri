@@ -1,0 +1,5 @@
+error[E0080]: evaluation panicked: the type in variant `Foo::A` is not an object. Variants of internally tagged unions must be structs with named fields, or types that wrap one (such as newtype structs or `Box<T>`)
+ --> tests/ui/internal_newtype_not_an_object.rs:6:7
+  |
+6 |     A(String),
+  |       ^^^^^^ evaluation of `_::_` failed here
