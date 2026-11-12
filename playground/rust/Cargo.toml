@@ -1,0 +1,6 @@
+[package]
+name = "arri_rust_playground"
+edition = "2024"
+
+[dependencies]
+arri = { path = "../../languages/rust/rust-core" }
