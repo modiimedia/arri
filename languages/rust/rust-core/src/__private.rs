@@ -1,4 +1,4 @@
-//! Runtime helpers used by `#[derive(ArriModel)]`. Not part of the public API.
+//! Runtime helpers used by `#[derive(Arri)]`. Not part of the public API.
 
 use crate::{
     DecodeError, Decoder, EncodeError, Encoder, Number, Timestamp, TypeDef, Value, ValueDecoder,

@@ -1,4 +1,4 @@
-//! Compares how long types using `#[derive(ArriModel)]` take to compile vs `#[derive(Serialize, Deserialize)]`.
+//! Compares how long types using `#[derive(Arri)]` take to compile vs `#[derive(Serialize, Deserialize)]`.
 //!
 //! ```bash
 //! cargo run -p arri-compile-bench --release -- [--copies 50] [--iterations 5] [--clean-iterations 2]
@@ -7,7 +7,7 @@
 //! Three otherwise identical crates are generated under `target/compile-bench`:
 //!
 //! - `baseline`: the types with no derives (measures the cost of the compiler / cargo themselves)
-//! - `arri`: the types with `#[derive(ArriModel)]`, round tripped through `arri::json`
+//! - `arri`: the types with `#[derive(Arri)]`, round tripped through `arri::json`
 //! - `serde`: the types with `#[derive(Serialize, Deserialize)]`, round tripped through `serde_json`
 //!
 //! Each crate contains `--copies` copies of a set of 6 types (structs, a plain enum, an internally
@@ -71,7 +71,7 @@ impl Variant {
         let (derive, nullable, bio_attr, union_attr) = match self {
             Variant::Baseline => ("", "Option", "", ""),
             Variant::Arri => (
-                "#[derive(arri::ArriModel)]",
+                "#[derive(arri::Arri)]",
                 "arri::Nullable",
                 "",
                 "#[arri(tag_key = \"type\")]",

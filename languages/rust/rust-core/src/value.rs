@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
 use crate::{
-    ArriSchema, Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext,
-    Timestamp, TypeDef,
+    Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, Timestamp, Type,
+    TypeDef,
 };
 
 /// A dynamically typed value. Corresponds to the "empty" schema form which accepts anything.
@@ -193,7 +193,7 @@ impl_value_from! {
     Vec<(String, Value)> => Object(|v| v),
 }
 
-impl ArriSchema for Value {
+impl Type for Value {
     fn generic_name() -> Cow<'static, str> {
         Cow::Borrowed("Any")
     }

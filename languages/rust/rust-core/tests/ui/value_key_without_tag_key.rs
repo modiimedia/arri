@@ -1,6 +1,6 @@
-use arri::ArriModel;
+use arri::Arri;
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 #[arri(value_key = "data")]
 enum Foo {
     A(String),

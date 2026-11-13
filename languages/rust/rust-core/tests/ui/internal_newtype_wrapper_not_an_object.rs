@@ -1,9 +1,9 @@
-use arri::ArriModel;
+use arri::Arri;
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct UserId(String);
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 #[arri(tag_key = "type")]
 enum Foo {
     A(UserId),

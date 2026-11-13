@@ -1,9 +1,9 @@
-//! Behavior tests for `#[derive(ArriModel)]`
+//! Behavior tests for `#[derive(Arri)]`
 #![deny(warnings)]
 
-use arri::{ArriModel, ArriSchema, DecodeErrorKind, Nullable, Timestamp, Value, json, type_def_of};
+use arri::{Arri, DecodeErrorKind, Nullable, Timestamp, Type, Value, json, type_def_of};
 
-fn decode_err<T: ArriModel + std::fmt::Debug>(input: &str) -> arri::DecodeError {
+fn decode_err<T: Arri + std::fmt::Debug>(input: &str) -> arri::DecodeError {
     json::from_str::<T>(input).expect_err("expected decoding to fail")
 }
 
@@ -14,7 +14,7 @@ mod metadata {
     ///
     /// Second paragraph
     ///     with indentation.
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     #[arri(id = "CustomId")]
     #[deprecated(since = "1.0.0", note = "use something else")]
     #[allow(dead_code)]
@@ -46,7 +46,7 @@ mod metadata {
 mod structs {
     use super::*;
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct User {
         id: String,
         r#type: String,
@@ -121,7 +121,7 @@ mod structs {
         assert_eq!(user.email, Nullable::Present("a@b.c".to_string()));
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(strict, rename_all = "camelCase")]
     struct StrictParams {
         user_id: String,
@@ -138,12 +138,12 @@ mod structs {
         );
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Outer {
         items: Vec<Inner>,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Inner {
         name: String,
         count: u8,
@@ -193,7 +193,7 @@ mod structs {
     }
 
     /// A user id
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct UserId(String);
 
     #[test]
@@ -210,7 +210,7 @@ mod structs {
         assert_eq!(UserId::generic_name(), "String");
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Empty {}
 
     #[test]
@@ -224,7 +224,7 @@ mod structs {
 mod enums {
     use super::*;
 
-    #[derive(ArriModel, Debug, PartialEq, Clone, Copy)]
+    #[derive(Arri, Debug, PartialEq, Clone, Copy)]
     enum Role {
         Standard,
         #[arri(rename = "ADMIN")]
@@ -263,7 +263,7 @@ mod enums {
         );
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(rename_all = "camelCase")]
     enum Status {
         InProgress,
@@ -283,13 +283,13 @@ mod enums {
 mod unions {
     use super::*;
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Message {
         text: String,
     }
 
     /// An event
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     enum External {
         Connected,
         Message(Message),
@@ -358,7 +358,7 @@ mod unions {
         assert_eq!(err.instance_path(), "/Message/text");
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type", rename_all = "snake_case")]
     enum Internal {
         Ping,
@@ -429,7 +429,7 @@ mod unions {
         assert_eq!(err.message(), "missing required field \"sent_at\"");
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "kind", value_key = "data")]
     enum Adjacent {
         Empty,
@@ -490,7 +490,7 @@ mod unions {
         assert_eq!(err.instance_path(), "/data/y");
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "op", strict)]
     enum StrictInternal {
         Add { a: i32, b: i32 },
@@ -516,7 +516,7 @@ mod unions {
         );
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     enum Expr {
         Number(f64),
         Add { left: Box<Expr>, right: Box<Expr> },
@@ -547,25 +547,25 @@ mod unions {
 mod generics {
     use super::*;
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct User {
         id: String,
     }
 
     /// A page of results
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Page<T> {
         items: Vec<T>,
         next: Nullable<String>,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Pair<A, B> {
         a: A,
         b: B,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type")]
     enum Event<T> {
         Created(T),
@@ -632,7 +632,7 @@ mod generics {
         assert_eq!(nullable.metadata.id.as_deref(), Some("User"));
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Maybe<T> {
         nullable: Nullable<T>,
         optional: Option<T>,
@@ -682,7 +682,7 @@ mod crate_path {
         pub use arri as renamed;
     }
 
-    #[derive(reexport::renamed::ArriModel, Debug, PartialEq)]
+    #[derive(reexport::renamed::Arri, Debug, PartialEq)]
     #[arri(crate = "reexport::renamed")]
     struct Foo {
         a: bool,
@@ -700,7 +700,7 @@ mod crate_path {
 mod any {
     use super::*;
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Event {
         payload: Value,
     }
@@ -721,7 +721,7 @@ mod any {
 mod prelude {
     use arri::prelude::*;
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Profile {
         name: Nullable<String>,
         age: Nullable<u8>,
@@ -742,25 +742,25 @@ mod prelude {
 }
 
 mod definitions {
-    use arri::{ArriModel, ArriSchema, Nullable, SchemaContext, definitions_of, type_def_of};
+    use arri::{Arri, Nullable, SchemaContext, Type, definitions_of, type_def_of};
 
     fn ids(definitions: &[(String, arri::TypeDef)]) -> Vec<&str> {
         definitions.iter().map(|(id, _)| id.as_str()).collect()
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct User {
         id: String,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     #[allow(dead_code)]
     enum Role {
         Admin,
         Standard,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct Root {
         owner: User,
         members: Vec<User>,
@@ -799,22 +799,22 @@ mod definitions {
         );
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct Tree {
         children: Vec<Tree>,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct A {
         b: Nullable<Box<B>>,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct B {
         a: Nullable<Box<A>>,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct MutualRoot {
         a: A,
         b: B,
@@ -835,14 +835,14 @@ mod definitions {
     }
 
     mod same {
-        #[derive(arri::ArriModel)]
+        #[derive(arri::Arri)]
         pub struct User {
             pub id: String,
         }
     }
 
     mod different {
-        #[derive(arri::ArriModel)]
+        #[derive(arri::Arri)]
         pub struct User {
             pub id: u32,
         }
@@ -850,18 +850,18 @@ mod definitions {
 
     mod documented {
         /// A user
-        #[derive(arri::ArriModel)]
+        #[derive(arri::Arri)]
         pub struct User {
             pub id: String,
         }
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct Page<T> {
         items: Vec<T>,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct SameSchemas {
         a: User,
         b: same::User,
@@ -875,7 +875,7 @@ mod definitions {
         assert_eq!(ids(&definitions), ["SameSchemas", "User", "UserPage"]);
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct DifferentSchemas {
         a: User,
         b: different::User,
@@ -902,7 +902,7 @@ mod definitions {
 
     #[test]
     fn metadata_is_part_of_the_schema() {
-        #[derive(ArriModel)]
+        #[derive(Arri)]
         struct Docs {
             a: User,
             b: documented::User,
@@ -911,36 +911,36 @@ mod definitions {
         assert_eq!(err.collisions()[0].id, "User");
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     #[allow(clippy::upper_case_acronyms)]
     struct AB {
         x: bool,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct BC {
         y: bool,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct C {
         z: bool,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct Pair<L, R> {
         left: L,
         right: R,
     }
 
-    #[derive(ArriModel)]
+    #[derive(Arri)]
     struct UserArray {
         users: Vec<User>,
     }
 
     #[test]
     fn generic_ids_that_collide_are_an_error() {
-        #[derive(ArriModel)]
+        #[derive(Arri)]
         struct Pairs {
             // both are "ABCPair"
             a: Pair<AB, C>,
@@ -949,7 +949,7 @@ mod definitions {
         let err = definitions_of::<Pairs>().unwrap_err();
         assert_eq!(err.collisions()[0].id, "ABCPair");
 
-        #[derive(ArriModel)]
+        #[derive(Arri)]
         struct Pages {
             // both are "UserArrayPage"
             a: Page<Vec<User>>,
@@ -960,7 +960,7 @@ mod definitions {
     }
 
     mod nested {
-        #[derive(arri::ArriModel)]
+        #[derive(arri::Arri)]
         pub struct User {
             pub inner: super::User,
         }
@@ -987,13 +987,13 @@ mod definitions {
 mod skip {
     use std::marker::PhantomData;
 
-    use arri::{ArriModel, ArriSchema, DecodeErrorKind, json, type_def_of};
+    use arri::{Arri, DecodeErrorKind, Type, json, type_def_of};
 
     /// Doesn't implement any arri traits
     #[derive(Debug, Default, PartialEq)]
     struct Cache(Vec<u8>);
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct User {
         id: String,
         #[arri(skip)]
@@ -1044,7 +1044,7 @@ mod skip {
         assert_eq!(user.role, "standard");
     }
 
-    #[derive(ArriModel, Debug)]
+    #[derive(Arri, Debug)]
     #[arri(strict)]
     struct StrictUser {
         id: String,
@@ -1059,7 +1059,7 @@ mod skip {
         assert_eq!(err.kind(), DecodeErrorKind::UnknownField);
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct KeyReuse {
         #[arri(skip)]
         name: String,
@@ -1075,7 +1075,7 @@ mod skip {
         assert_eq!(value.name, "");
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type")]
     enum Event {
         Created {
@@ -1118,7 +1118,7 @@ mod skip {
     }
 
     /// `T` is only used by a skipped field so it doesn't need to implement the arri traits
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Tagged<T> {
         name: String,
         #[arri(skip)]
@@ -1127,7 +1127,7 @@ mod skip {
 
     #[test]
     fn type_params_only_used_by_skipped_fields_are_ignored() {
-        // Cache doesn't implement ArriSchema / Encode / Decode
+        // Cache doesn't implement Type / Encode / Decode
         assert_eq!(<Tagged<Cache>>::generic_name(), "Tagged");
         let value = Tagged::<Cache> {
             name: "a".into(),
@@ -1137,7 +1137,7 @@ mod skip {
         assert_eq!(json::from_str::<Tagged<Cache>>(&encoded).unwrap(), value);
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Holder<T, U> {
         value: T,
         #[arri(skip)]
@@ -1162,15 +1162,15 @@ mod skip {
 mod duplicate_keys {
     use std::collections::{BTreeMap, HashMap};
 
-    use arri::{ArriModel, DecodeErrorKind, Value, json};
+    use arri::{Arri, DecodeErrorKind, Value, json};
 
-    fn kind<T: ArriModel + std::fmt::Debug>(input: &str) -> DecodeErrorKind {
+    fn kind<T: Arri + std::fmt::Debug>(input: &str) -> DecodeErrorKind {
         json::from_str::<T>(input)
             .expect_err("expected decoding to fail")
             .kind()
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Fields {
         a: i32,
         b: Option<i32>,
@@ -1178,7 +1178,7 @@ mod duplicate_keys {
         skipped: i32,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(strict)]
     struct StrictFields {
         a: i32,
@@ -1186,7 +1186,7 @@ mod duplicate_keys {
         skipped: i32,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Outer {
         inner: Fields,
         list: Vec<Fields>,
@@ -1261,7 +1261,7 @@ mod duplicate_keys {
         assert_eq!(json::to_string(&value).unwrap(), r#"{"a":1,"a":2}"#);
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     enum External {
         A(i32),
         B(i32),
@@ -1280,7 +1280,7 @@ mod duplicate_keys {
         );
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type")]
     enum Internal {
         Unit,
@@ -1318,7 +1318,7 @@ mod duplicate_keys {
         );
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "t", value_key = "v")]
     enum Adjacent {
         Unit,
@@ -1353,9 +1353,9 @@ mod duplicate_keys {
 }
 
 mod tag_key_conflicts {
-    use arri::{ArriModel, ArriSchema, json};
+    use arri::{Arri, Type, json};
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Inner {
         a: i32,
         #[arri(rename = "renamedB")]
@@ -1365,14 +1365,14 @@ mod tag_key_conflicts {
         r#type: String,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type")]
     enum Union {
         A(Inner),
         B(Box<Inner>),
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type")]
     enum Generic<T> {
         A(T),
@@ -1380,23 +1380,17 @@ mod tag_key_conflicts {
 
     #[test]
     fn properties_list_every_key_that_can_be_written() {
+        assert_eq!(<Inner as Type>::PROPERTIES, Some(&["a", "renamedB"][..]));
         assert_eq!(
-            <Inner as ArriSchema>::PROPERTIES,
+            <Box<Inner> as Type>::PROPERTIES,
             Some(&["a", "renamedB"][..])
         );
-        assert_eq!(
-            <Box<Inner> as ArriSchema>::PROPERTIES,
-            Some(&["a", "renamedB"][..])
-        );
-        assert_eq!(
-            <&Inner as ArriSchema>::PROPERTIES,
-            Some(&["a", "renamedB"][..])
-        );
+        assert_eq!(<&Inner as Type>::PROPERTIES, Some(&["a", "renamedB"][..]));
         // other schema forms
-        assert_eq!(<String as ArriSchema>::PROPERTIES, None);
-        assert_eq!(<Union as ArriSchema>::PROPERTIES, None);
-        assert_eq!(<Vec<Inner> as ArriSchema>::PROPERTIES, None);
-        assert_eq!(<arri::Nullable<Inner> as ArriSchema>::PROPERTIES, None);
+        assert_eq!(<String as Type>::PROPERTIES, None);
+        assert_eq!(<Union as Type>::PROPERTIES, None);
+        assert_eq!(<Vec<Inner> as Type>::PROPERTIES, None);
+        assert_eq!(<arri::Nullable<Inner> as Type>::PROPERTIES, None);
     }
 
     #[test]
@@ -1435,39 +1429,39 @@ mod wrapper_variants {
     use std::borrow::Cow;
 
     use arri::{
-        ArriModel, ArriSchema, Decode, DecodeError, DecodeErrorKind, Decoder, Encode, EncodeError,
-        Encoder, SchemaContext, TypeDef, json, type_def_of,
+        Arri, Decode, DecodeError, DecodeErrorKind, Decoder, Encode, EncodeError, Encoder,
+        SchemaContext, Type, TypeDef, json, type_def_of,
     };
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Inner {
         a: i32,
         nested: Nested,
     }
 
     /// nested objects may use the tag's key since it's only reserved in the variant's own object
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Nested {
         r#type: String,
         list: Vec<Nested>,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Wrap(Inner);
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct WrapWrap(Wrap);
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     struct Generic<T>(T);
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(strict)]
     struct StrictInner {
         a: i32,
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type")]
     enum Union {
         Plain(Inner),
@@ -1495,16 +1489,13 @@ mod wrapper_variants {
 
     #[test]
     fn wrapper_types_have_the_schema_of_their_inner_type() {
-        assert_eq!(<Wrap as ArriSchema>::PROPERTIES, Some(&["a", "nested"][..]));
+        assert_eq!(<Wrap as Type>::PROPERTIES, Some(&["a", "nested"][..]));
+        assert_eq!(<WrapWrap as Type>::PROPERTIES, Some(&["a", "nested"][..]));
         assert_eq!(
-            <WrapWrap as ArriSchema>::PROPERTIES,
+            <Generic<Inner> as Type>::PROPERTIES,
             Some(&["a", "nested"][..])
         );
-        assert_eq!(
-            <Generic<Inner> as ArriSchema>::PROPERTIES,
-            Some(&["a", "nested"][..])
-        );
-        assert_eq!(<Generic<String> as ArriSchema>::PROPERTIES, None);
+        assert_eq!(<Generic<String> as Type>::PROPERTIES, None);
         assert_eq!(type_def_of::<WrapWrap>(), type_def_of::<Inner>());
     }
 
@@ -1566,7 +1557,7 @@ mod wrapper_variants {
     #[derive(Debug, PartialEq)]
     struct NotReallyAnObject;
 
-    impl ArriSchema for NotReallyAnObject {
+    impl Type for NotReallyAnObject {
         const PROPERTIES: Option<&'static [&'static str]> = Some(&[]);
 
         fn generic_name() -> Cow<'static, str> {
@@ -1590,7 +1581,7 @@ mod wrapper_variants {
         }
     }
 
-    #[derive(ArriModel, Debug, PartialEq)]
+    #[derive(Arri, Debug, PartialEq)]
     #[arri(tag_key = "type")]
     enum Lies {
         A(NotReallyAnObject),

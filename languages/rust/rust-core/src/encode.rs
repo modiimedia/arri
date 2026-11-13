@@ -48,8 +48,8 @@ pub trait Encoder {
 /// A type that can be written to any [`Encoder`]
 #[diagnostic::on_unimplemented(
     message = "`{Self}` cannot be encoded by arri",
-    label = "`{Self}` does not implement `Encode`",
-    note = "use `#[derive(ArriModel)]` on your own types"
+    label = "`{Self}` does not implement `arri::Encode`",
+    note = "use `#[derive(Arri)]` on your own types"
 )]
 pub trait Encode {
     fn encode<E: Encoder + ?Sized>(&self, e: &mut E) -> Result<(), EncodeError>;

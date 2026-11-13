@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::{
-    ArriSchema, Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, Type,
+    Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, Primitive, SchemaContext, Type,
     TypeDef,
 };
 
@@ -487,13 +487,13 @@ impl From<Timestamp> for SystemTime {
     }
 }
 
-impl ArriSchema for Timestamp {
+impl Type for Timestamp {
     fn generic_name() -> Cow<'static, str> {
         Cow::Borrowed("Timestamp")
     }
 
     fn type_def(_: &mut SchemaContext) -> TypeDef {
-        TypeDef::scalar(Type::Timestamp)
+        TypeDef::scalar(Primitive::Timestamp)
     }
 }
 

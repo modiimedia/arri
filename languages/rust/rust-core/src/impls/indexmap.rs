@@ -3,10 +3,10 @@ use std::{borrow::Cow, hash::BuildHasher};
 use indexmap::IndexMap;
 
 use crate::{
-    ArriSchema, Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, TypeDef,
+    Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, Type, TypeDef,
 };
 
-impl<V: ArriSchema, S> ArriSchema for IndexMap<String, V, S> {
+impl<V: Type, S> Type for IndexMap<String, V, S> {
     fn generic_name() -> Cow<'static, str> {
         Cow::Owned(format!("{}Record", V::generic_name()))
     }

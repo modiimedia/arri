@@ -1,7 +1,7 @@
 //! Optional [serde](https://serde.rs) support for arri's own types (`serde` feature).
 //!
 //! This lets arri's types be used inside of serde based types and formats. It does not make
-//! `#[derive(ArriModel)]` types serde compatible (that's what `#[derive(Serialize, Deserialize)]` is for).
+//! `#[derive(Arri)]` types serde compatible (that's what `#[derive(Serialize, Deserialize)]` is for).
 
 use std::fmt;
 
@@ -12,7 +12,8 @@ use ::serde::{
 };
 
 use crate::{
-    Metadata, Nullable, Number, Timestamp, Type, TypeDef, Value, decode::MAX_PREALLOCATE, to_value,
+    Metadata, Nullable, Number, Primitive, Timestamp, TypeDef, Value, decode::MAX_PREALLOCATE,
+    to_value,
 };
 
 /// Serialized as an RFC 3339 string (the same representation arri uses for JSON)
@@ -57,7 +58,7 @@ impl<T: Serialize> Serialize for Nullable<T> {
 ///
 /// Note: serde's derive treats any field that deserializes like an `Option` as allowed to be
 /// missing, so a missing `Nullable<T>` field in a `#[derive(Deserialize)]` struct becomes `Null`
-/// rather than an error. `#[derive(ArriModel)]` types still require `Nullable<T>` fields to be present.
+/// rather than an error. `#[derive(Arri)]` types still require `Nullable<T>` fields to be present.
 impl<'de, T: Deserialize<'de>> Deserialize<'de> for Nullable<T> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         Option::<T>::deserialize(deserializer).map(Nullable::from)
@@ -217,24 +218,24 @@ impl Serialize for Metadata {
 }
 
 /// Serialized as its schema name (e.g. `"float64"`)
-impl Serialize for Type {
+impl Serialize for Primitive {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(self.as_str())
     }
 }
 
-impl<'de> Deserialize<'de> for Type {
+impl<'de> Deserialize<'de> for Primitive {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct TypeVisitor;
 
         impl Visitor<'_> for TypeVisitor {
-            type Value = Type;
+            type Value = Primitive;
 
             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 f.write_str("an arri scalar type name (e.g. \"float64\")")
             }
 
-            fn visit_str<E: de::Error>(self, value: &str) -> Result<Type, E> {
+            fn visit_str<E: de::Error>(self, value: &str) -> Result<Primitive, E> {
                 value.parse().map_err(E::custom)
             }
         }
@@ -247,7 +248,7 @@ impl<'de> Deserialize<'de> for Type {
 mod tests {
     use ::serde::{Deserialize, Serialize};
 
-    use crate::{Nullable, Number, Timestamp, Type, Value};
+    use crate::{Nullable, Number, Primitive, Timestamp, Value};
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
     struct Example {
@@ -320,21 +321,21 @@ mod tests {
     #[test]
     fn scalar_types() {
         assert_eq!(
-            serde_json::to_string(&Type::Float64).unwrap(),
+            serde_json::to_string(&Primitive::Float64).unwrap(),
             r#""float64""#
         );
         assert_eq!(
-            serde_json::from_str::<Type>(r#""uint8""#).unwrap(),
-            Type::Uint8
+            serde_json::from_str::<Primitive>(r#""uint8""#).unwrap(),
+            Primitive::Uint8
         );
-        assert!(serde_json::from_str::<Type>(r#""uint7""#).is_err());
+        assert!(serde_json::from_str::<Primitive>(r#""uint7""#).is_err());
     }
 
     #[cfg(feature = "derive")]
     #[test]
     fn type_defs_match_to_json() {
         /// Documented
-        #[derive(crate::ArriModel)]
+        #[derive(crate::Arri)]
         #[allow(dead_code)]
         struct Node {
             id: String,
@@ -345,7 +346,7 @@ mod tests {
             kind: Kind,
         }
 
-        #[derive(crate::ArriModel)]
+        #[derive(crate::Arri)]
         #[arri(tag_key = "type")]
         #[allow(dead_code)]
         enum Kind {

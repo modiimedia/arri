@@ -17,7 +17,7 @@ pub enum Form {
     /// Accepts any value
     Empty,
     /// A scalar value
-    Type(Type),
+    Type(Primitive),
     /// One of a list of strings
     Enum(Vec<String>),
     /// A list
@@ -67,7 +67,7 @@ impl Metadata {
 
 /// Scalar types used by the "type" schema form
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Type {
+pub enum Primitive {
     Boolean,
     String,
     Timestamp,
@@ -83,50 +83,50 @@ pub enum Type {
     Uint64,
 }
 
-impl Type {
+impl Primitive {
     pub const fn as_str(&self) -> &'static str {
         match self {
-            Type::Boolean => "boolean",
-            Type::String => "string",
-            Type::Timestamp => "timestamp",
-            Type::Float32 => "float32",
-            Type::Float64 => "float64",
-            Type::Int8 => "int8",
-            Type::Uint8 => "uint8",
-            Type::Int16 => "int16",
-            Type::Uint16 => "uint16",
-            Type::Int32 => "int32",
-            Type::Uint32 => "uint32",
-            Type::Int64 => "int64",
-            Type::Uint64 => "uint64",
+            Primitive::Boolean => "boolean",
+            Primitive::String => "string",
+            Primitive::Timestamp => "timestamp",
+            Primitive::Float32 => "float32",
+            Primitive::Float64 => "float64",
+            Primitive::Int8 => "int8",
+            Primitive::Uint8 => "uint8",
+            Primitive::Int16 => "int16",
+            Primitive::Uint16 => "uint16",
+            Primitive::Int32 => "int32",
+            Primitive::Uint32 => "uint32",
+            Primitive::Int64 => "int64",
+            Primitive::Uint64 => "uint64",
         }
     }
 }
 
-impl std::fmt::Display for Type {
+impl std::fmt::Display for Primitive {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.as_str())
     }
 }
 
-impl std::str::FromStr for Type {
+impl std::str::FromStr for Primitive {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "boolean" => Ok(Type::Boolean),
-            "string" => Ok(Type::String),
-            "timestamp" => Ok(Type::Timestamp),
-            "float32" => Ok(Type::Float32),
-            "float64" => Ok(Type::Float64),
-            "int8" => Ok(Type::Int8),
-            "uint8" => Ok(Type::Uint8),
-            "int16" => Ok(Type::Int16),
-            "uint16" => Ok(Type::Uint16),
-            "int32" => Ok(Type::Int32),
-            "uint32" => Ok(Type::Uint32),
-            "int64" => Ok(Type::Int64),
-            "uint64" => Ok(Type::Uint64),
+            "boolean" => Ok(Primitive::Boolean),
+            "string" => Ok(Primitive::String),
+            "timestamp" => Ok(Primitive::Timestamp),
+            "float32" => Ok(Primitive::Float32),
+            "float64" => Ok(Primitive::Float64),
+            "int8" => Ok(Primitive::Int8),
+            "uint8" => Ok(Primitive::Uint8),
+            "int16" => Ok(Primitive::Int16),
+            "uint16" => Ok(Primitive::Uint16),
+            "int32" => Ok(Primitive::Int32),
+            "uint32" => Ok(Primitive::Uint32),
+            "int64" => Ok(Primitive::Int64),
+            "uint64" => Ok(Primitive::Uint64),
             _ => Err(format!("invalid type \"{s}\"")),
         }
     }
@@ -145,7 +145,7 @@ impl TypeDef {
         Self::new(Form::Empty)
     }
 
-    pub fn scalar(t: Type) -> Self {
+    pub fn scalar(t: Primitive) -> Self {
         Self::new(Form::Type(t))
     }
 

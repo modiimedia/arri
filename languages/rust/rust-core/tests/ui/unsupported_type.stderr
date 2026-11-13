@@ -2,12 +2,12 @@ error[E0277]: `usize` is not supported by arri
  --> tests/ui/unsupported_type.rs:5:12
   |
 5 |     count: usize,
-  |            ^^^^^ `usize` does not implement `ArriSchema`
+  |            ^^^^^ `usize` does not implement `arri::Type`
   |
-  = help: the trait `ArriSchema` is not implemented for `usize`
-  = note: use `#[derive(ArriModel)]` on your own types
+  = help: the trait `arri::Type` is not implemented for `usize`
+  = note: use `#[derive(Arri)]` on your own types
   = note: `Option<T>` is only supported as the type of a struct field. Use `arri::Nullable<T>` for values that can be `null`
-  = help: the following other types implement trait `ArriSchema`:
+  = help: the following other types implement trait `arri::Type`:
             f32
             f64
             i16
@@ -21,11 +21,11 @@ error[E0277]: `usize` is not supported by arri
 error[E0277]: `usize` cannot be encoded by arri
  --> tests/ui/unsupported_type.rs:3:10
   |
-3 | #[derive(ArriModel)]
-  |          ^^^^^^^^^ `usize` does not implement `Encode`
+3 | #[derive(Arri)]
+  |          ^^^^ `usize` does not implement `arri::Encode`
   |
   = help: the trait `Encode` is not implemented for `usize`
-  = note: use `#[derive(ArriModel)]` on your own types
+  = note: use `#[derive(Arri)]` on your own types
   = help: the following other types implement trait `Encode`:
             f32
             f64
@@ -36,16 +36,16 @@ error[E0277]: `usize` cannot be encoded by arri
             u16
             u32
           and $N others
-  = note: this error originates in the derive macro `ArriModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the derive macro `Arri` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `usize` cannot be decoded by arri
  --> tests/ui/unsupported_type.rs:5:12
   |
 5 |     count: usize,
-  |            ^^^^^ `usize` does not implement `Decode`
+  |            ^^^^^ `usize` does not implement `arri::Decode`
   |
   = help: the trait `Decode` is not implemented for `usize`
-  = note: use `#[derive(ArriModel)]` on your own types
+  = note: use `#[derive(Arri)]` on your own types
   = help: the following other types implement trait `Decode`:
             f32
             f64

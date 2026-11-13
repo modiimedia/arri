@@ -5,15 +5,15 @@
 
 use std::collections::BTreeMap;
 
-use arri::{ArriModel, DecodeError, DecodeErrorKind, Nullable, Timestamp, Value, json};
+use arri::{Arri, DecodeError, DecodeErrorKind, Nullable, Timestamp, Value, json};
 
-#[derive(ArriModel, Debug, PartialEq)]
+#[derive(Arri, Debug, PartialEq)]
 struct Inner {
     id: i64,
     tags: Vec<String>,
 }
 
-#[derive(ArriModel, Debug, PartialEq)]
+#[derive(Arri, Debug, PartialEq)]
 #[arri(rename_all = "camelCase")]
 struct Fields {
     int64: i64,
@@ -29,13 +29,13 @@ struct Fields {
     any: Value,
 }
 
-#[derive(ArriModel, Debug, PartialEq)]
+#[derive(Arri, Debug, PartialEq)]
 #[arri(tag_key = "type")]
 enum Internal {
     A(Fields),
 }
 
-#[derive(ArriModel, Debug, PartialEq)]
+#[derive(Arri, Debug, PartialEq)]
 #[arri(tag_key = "t", value_key = "v")]
 enum Adjacent {
     A(Fields),

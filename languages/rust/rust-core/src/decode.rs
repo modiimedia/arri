@@ -63,8 +63,8 @@ pub trait Decoder {
 /// A type that can be read from any [`Decoder`]
 #[diagnostic::on_unimplemented(
     message = "`{Self}` cannot be decoded by arri",
-    label = "`{Self}` does not implement `Decode`",
-    note = "use `#[derive(ArriModel)]` on your own types"
+    label = "`{Self}` does not implement `arri::Decode`",
+    note = "use `#[derive(Arri)]` on your own types"
 )]
 pub trait Decode: Sized {
     fn decode<D: Decoder + ?Sized>(d: &mut D) -> Result<Self, DecodeError>;

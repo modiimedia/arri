@@ -1,6 +1,6 @@
-use arri::ArriModel;
+use arri::Arri;
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 #[arri(rename_all = "camel")]
 struct Foo {
     a: String,
