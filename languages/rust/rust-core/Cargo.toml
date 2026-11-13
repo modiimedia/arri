@@ -14,7 +14,7 @@ include = ["/src", "/README.md"]
 
 [features]
 default = ["derive"]
-# Enables `#[derive(ArriModel)]`
+# Enables `#[derive(Arri)]`
 derive = ["dep:arri_derive"]
 # Implements the arri traits for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>`
 chrono = ["dep:chrono"]

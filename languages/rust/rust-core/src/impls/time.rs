@@ -3,8 +3,8 @@ use std::borrow::Cow;
 use time::{OffsetDateTime, UtcDateTime, UtcOffset};
 
 use crate::{
-    ArriSchema, Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext,
-    Timestamp, TimestampError, TypeDef,
+    Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, Timestamp,
+    TimestampError, Type, TypeDef,
 };
 
 fn from_unix_nanos(nanos: i128) -> Result<Timestamp, TimestampError> {
@@ -56,7 +56,7 @@ impl From<Timestamp> for UtcDateTime {
 macro_rules! impl_time {
     ($($ty:ty),*) => {
         $(
-            impl ArriSchema for $ty {
+            impl Type for $ty {
                 fn generic_name() -> Cow<'static, str> {
                     Timestamp::generic_name()
                 }

@@ -1,6 +1,6 @@
-use arri::ArriModel;
+use arri::Arri;
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct Foo {
     items: Vec<Option<String>>,
 }

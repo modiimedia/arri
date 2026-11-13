@@ -1,4 +1,4 @@
-error: ArriModel cannot be derived for unit structs. Use a struct with no fields (`struct Foo {}`) instead
+error: `Arri` cannot be derived for unit structs. Use a struct with no fields (`struct Foo {}`) instead
  --> tests/ui/unit_struct.rs:4:8
   |
 4 | struct Foo;

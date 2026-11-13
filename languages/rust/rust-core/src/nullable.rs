@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    ArriSchema, Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, TypeDef,
+    Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, Type, TypeDef,
 };
 
 /// A value that must be present but may be `null`.
@@ -190,7 +190,7 @@ impl<T> From<Nullable<T>> for Option<T> {
 /// Its generic name has a `Nullable` suffix so that generic types instantiated with `T` and
 /// `Nullable<T>` (which have different schemas) get different ids. (`Page<User>` is `UserPage`
 /// while `Page<Nullable<User>>` is `UserNullablePage`.)
-impl<T: ArriSchema> ArriSchema for Nullable<T> {
+impl<T: Type> Type for Nullable<T> {
     fn generic_name() -> Cow<'static, str> {
         Cow::Owned(format!("{}Nullable", T::generic_name()))
     }

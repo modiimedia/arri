@@ -1,9 +1,9 @@
 //! The JSON format.
 //!
 //! ```
-//! use arri::{ArriModel, json};
+//! use arri::{Arri, json};
 //!
-//! #[derive(ArriModel, Debug, PartialEq)]
+//! #[derive(Arri, Debug, PartialEq)]
 //! struct Point {
 //!     x: f64,
 //!     y: f64,

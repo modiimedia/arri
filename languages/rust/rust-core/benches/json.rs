@@ -41,9 +41,9 @@ impl BenchTimestamp for chrono::DateTime<chrono::Utc> {
 mod arri_types {
     use std::collections::BTreeMap;
 
-    use arri::{ArriModel, Nullable};
+    use arri::{Arri, Nullable};
 
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     pub struct User<Ts> {
         pub id: String,
         pub name: String,
@@ -58,21 +58,21 @@ mod arri_types {
         pub settings: Settings,
     }
 
-    #[derive(ArriModel, Clone, Copy)]
+    #[derive(Arri, Clone, Copy)]
     pub enum Role {
         Standard,
         Admin,
         Moderator,
     }
 
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     pub struct Settings {
         pub theme: String,
         pub notifications: bool,
         pub limits: BTreeMap<String, u32>,
     }
 
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     #[arri(tag_key = "type")]
     pub enum Event<Ts> {
         Created {
@@ -90,7 +90,7 @@ mod arri_types {
     }
 
     /// Internally tagged union whose variants wrap other types (newtype variants)
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     #[arri(tag_key = "type")]
     pub enum WrappedEvent<Ts> {
         Created(User<Ts>),
@@ -98,21 +98,21 @@ mod arri_types {
         Deleted(Box<Deletion<Ts>>),
     }
 
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     pub struct Rename {
         pub id: String,
         pub old_name: String,
         pub new_name: String,
     }
 
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     pub struct Deletion<Ts> {
         pub id: String,
         pub deleted_at: Ts,
     }
 
     /// A single large object
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     pub struct Report<Ts> {
         pub id: String,
         pub title: String,
@@ -133,7 +133,7 @@ mod arri_types {
         pub authors: Vec<User<Ts>>,
     }
 
-    #[derive(ArriModel, Clone)]
+    #[derive(Arri, Clone)]
     pub struct Section {
         pub heading: String,
         pub body: String,
@@ -530,7 +530,7 @@ fn bench_payload<A, S>(
 
 fn bench_all<Ts>(c: &mut Criterion, prefix: &str)
 where
-    Ts: BenchTimestamp + arri::ArriModel + serde::Serialize + serde::de::DeserializeOwned,
+    Ts: BenchTimestamp + arri::Arri + serde::Serialize + serde::de::DeserializeOwned,
 {
     let user = arri_user::<Ts>(3);
     bench_payload(

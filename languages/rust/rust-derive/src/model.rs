@@ -264,13 +264,13 @@ impl<'a> Container<'a> {
                     Fields::Unnamed(_) => {
                         return error(
                             input.ident.span(),
-                            "ArriModel can only be derived for tuple structs with exactly one field",
+                            "`Arri` can only be derived for tuple structs with exactly one field",
                         );
                     }
                     Fields::Unit => {
                         return error(
                             input.ident.span(),
-                            "ArriModel cannot be derived for unit structs. Use a struct with no fields (`struct Foo {}`) instead",
+                            "`Arri` cannot be derived for unit structs. Use a struct with no fields (`struct Foo {}`) instead",
                         );
                     }
                 }
@@ -279,7 +279,7 @@ impl<'a> Container<'a> {
                 if data.variants.is_empty() {
                     return error(
                         input.ident.span(),
-                        "ArriModel cannot be derived for enums with no variants",
+                        "`Arri` cannot be derived for enums with no variants",
                     );
                 }
                 let tagging = match (&attrs.tag_key, &attrs.value_key) {
@@ -325,7 +325,7 @@ impl<'a> Container<'a> {
             Data::Union(data) => {
                 return error(
                     data.union_token.span,
-                    "ArriModel cannot be derived for unions. Use an enum instead",
+                    "`Arri` cannot be derived for unions. Use an enum instead",
                 );
             }
         };
@@ -428,9 +428,9 @@ impl<'a> Container<'a> {
         !self.generics.params.is_empty()
     }
 
-    /// `ArriSchema` bounds for the types of internally tagged newtype variants in generic types.
+    /// `Type` bounds for the types of internally tagged newtype variants in generic types.
     ///
-    /// The encoder checks `<T as ArriSchema>::PROPERTIES` for these types at compile time. Types
+    /// The encoder checks `<T as Type>::PROPERTIES` for these types at compile time. Types
     /// without generic parameters don't need the bounds (their check runs eagerly).
     pub fn internal_newtype_bounds(&self) -> Vec<WherePredicate> {
         let Body::Union(Tagging::Internal { .. }, variants) = &self.body else {
@@ -443,7 +443,7 @@ impl<'a> Container<'a> {
         variants
             .iter()
             .filter_map(|variant| match &variant.kind {
-                VariantKind::Newtype(ty) => Some(syn::parse_quote!(#ty: #k::ArriSchema)),
+                VariantKind::Newtype(ty) => Some(syn::parse_quote!(#ty: #k::Type)),
                 _ => None,
             })
             .collect()

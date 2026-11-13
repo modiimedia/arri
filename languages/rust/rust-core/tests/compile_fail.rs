@@ -1,4 +1,4 @@
-//! Make sure that invalid usages of `#[derive(ArriModel)]` produce helpful compile errors.
+//! Make sure that invalid usages of `#[derive(Arri)]` produce helpful compile errors.
 //!
 //! Run with `TRYBUILD=overwrite cargo test --test compile_fail` to regenerate the expected output.
 

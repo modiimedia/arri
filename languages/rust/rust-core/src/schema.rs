@@ -5,16 +5,16 @@ use std::{
     sync::Arc,
 };
 
-use crate::{Form, Type, TypeDef};
+use crate::{Form, Primitive, TypeDef};
 
 /// A type that can describe itself with an Arri Type Definition
 #[diagnostic::on_unimplemented(
     message = "`{Self}` is not supported by arri",
-    label = "`{Self}` does not implement `ArriSchema`",
-    note = "use `#[derive(ArriModel)]` on your own types",
+    label = "`{Self}` does not implement `arri::Type`",
+    note = "use `#[derive(Arri)]` on your own types",
     note = "`Option<T>` is only supported as the type of a struct field. Use `arri::Nullable<T>` for values that can be `null`"
 )]
-pub trait ArriSchema {
+pub trait Type {
     /// The name used for this type when it's a type argument of a generic type.
     ///
     /// Generic types build their `metadata.id` from the generic names of their type arguments
@@ -36,7 +36,7 @@ pub trait ArriSchema {
 
     /// Build the type definition for this type.
     ///
-    /// Use [`type_def_of`] to get the type definition of a type outside of an `ArriSchema` implementation.
+    /// Use [`type_def_of`] to get the type definition of a type outside of a `Type` implementation.
     ///
     /// Named types (structs, enums, and unions) should build their definition inside of
     /// [`SchemaContext::named`].
@@ -53,14 +53,14 @@ pub trait ArriSchema {
 }
 
 /// Returns the [`TypeDef`] for `T`
-pub fn type_def_of<T: ArriSchema + ?Sized>() -> TypeDef {
+pub fn type_def_of<T: Type + ?Sized>() -> TypeDef {
     T::type_def(&mut SchemaContext::new())
 }
 
 /// Returns every named type (struct, enum, or union) used by `T`, including `T` itself if it's named.
 ///
 /// See [`SchemaContext::into_definitions`].
-pub fn definitions_of<T: ArriSchema + ?Sized>() -> Result<Vec<(String, TypeDef)>, SchemaError> {
+pub fn definitions_of<T: Type + ?Sized>() -> Result<Vec<(String, TypeDef)>, SchemaError> {
     let mut ctx = SchemaContext::new();
     T::type_def(&mut ctx);
     ctx.into_definitions()
@@ -74,18 +74,18 @@ pub fn definitions_of<T: ArriSchema + ?Sized>() -> Result<Vec<(String, TypeDef)>
 ///   section of an app definition (see [`SchemaContext::into_definitions`]).
 /// - It detects when two Rust types with different schemas produce the same id.
 ///
-/// The same context can be passed to multiple [`ArriSchema::type_def`] calls to collect the
+/// The same context can be passed to multiple [`Type::type_def`] calls to collect the
 /// definitions of many types at once:
 ///
 /// ```
-/// use arri::{ArriModel, ArriSchema, SchemaContext};
+/// use arri::{Arri, Type, SchemaContext};
 ///
-/// #[derive(ArriModel)]
+/// #[derive(Arri)]
 /// struct User {
 ///     id: String,
 /// }
 ///
-/// #[derive(ArriModel)]
+/// #[derive(Arri)]
 /// struct GetUserParams {
 ///     id: String,
 /// }
@@ -315,13 +315,13 @@ fn same_form(a: &Form, b: &Form) -> bool {
 macro_rules! impl_schema_scalar {
     ($($ty:ty => $variant:ident, $name:literal);* $(;)?) => {
         $(
-            impl ArriSchema for $ty {
+            impl Type for $ty {
                 fn generic_name() -> Cow<'static, str> {
                     Cow::Borrowed($name)
                 }
 
                 fn type_def(_: &mut SchemaContext) -> TypeDef {
-                    TypeDef::scalar(Type::$variant)
+                    TypeDef::scalar(Primitive::$variant)
                 }
             }
         )*
@@ -348,7 +348,7 @@ impl_schema_scalar! {
 macro_rules! impl_schema_forward {
     ($($ty:ident),*) => {
         $(
-            impl<T: ArriSchema + ?Sized> ArriSchema for $ty<T> {
+            impl<T: Type + ?Sized> Type for $ty<T> {
                 const PROPERTIES: Option<&'static [&'static str]> = T::PROPERTIES;
 
                 fn generic_name() -> Cow<'static, str> {
@@ -365,7 +365,7 @@ macro_rules! impl_schema_forward {
 
 impl_schema_forward!(Box, Rc, Arc);
 
-impl<T: ArriSchema + ?Sized> ArriSchema for &T {
+impl<T: Type + ?Sized> Type for &T {
     const PROPERTIES: Option<&'static [&'static str]> = T::PROPERTIES;
 
     fn generic_name() -> Cow<'static, str> {
@@ -377,18 +377,18 @@ impl<T: ArriSchema + ?Sized> ArriSchema for &T {
     }
 }
 
-fn list_name<T: ArriSchema + ?Sized>() -> Cow<'static, str> {
+fn list_name<T: Type + ?Sized>() -> Cow<'static, str> {
     Cow::Owned(format!("{}Array", T::generic_name()))
 }
 
-fn record_name<T: ArriSchema + ?Sized>() -> Cow<'static, str> {
+fn record_name<T: Type + ?Sized>() -> Cow<'static, str> {
     Cow::Owned(format!("{}Record", T::generic_name()))
 }
 
 macro_rules! impl_schema_list {
     ($($ty:ty),*) => {
         $(
-            impl<T: ArriSchema> ArriSchema for $ty {
+            impl<T: Type> Type for $ty {
                 fn generic_name() -> Cow<'static, str> {
                     list_name::<T>()
                 }
@@ -403,7 +403,7 @@ macro_rules! impl_schema_list {
 
 impl_schema_list!([T], Vec<T>, VecDeque<T>);
 
-impl<T: ArriSchema, const N: usize> ArriSchema for [T; N] {
+impl<T: Type, const N: usize> Type for [T; N] {
     fn generic_name() -> Cow<'static, str> {
         list_name::<T>()
     }
@@ -413,7 +413,7 @@ impl<T: ArriSchema, const N: usize> ArriSchema for [T; N] {
     }
 }
 
-impl<V: ArriSchema, S> ArriSchema for HashMap<String, V, S> {
+impl<V: Type, S> Type for HashMap<String, V, S> {
     fn generic_name() -> Cow<'static, str> {
         record_name::<V>()
     }
@@ -423,7 +423,7 @@ impl<V: ArriSchema, S> ArriSchema for HashMap<String, V, S> {
     }
 }
 
-impl<V: ArriSchema> ArriSchema for BTreeMap<String, V> {
+impl<V: Type> Type for BTreeMap<String, V> {
     fn generic_name() -> Cow<'static, str> {
         record_name::<V>()
     }

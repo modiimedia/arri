@@ -3,8 +3,8 @@ use std::borrow::Cow;
 use chrono::{DateTime, FixedOffset, Utc};
 
 use crate::{
-    ArriSchema, Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext,
-    Timestamp, TimestampError, TypeDef,
+    Decode, DecodeError, Decoder, Encode, EncodeError, Encoder, SchemaContext, Timestamp,
+    TimestampError, Type, TypeDef,
 };
 
 impl TryFrom<DateTime<Utc>> for Timestamp {
@@ -44,7 +44,7 @@ impl From<Timestamp> for DateTime<FixedOffset> {
 macro_rules! impl_chrono {
     ($($ty:ty),*) => {
         $(
-            impl ArriSchema for $ty {
+            impl Type for $ty {
                 fn generic_name() -> Cow<'static, str> {
                     Timestamp::generic_name()
                 }

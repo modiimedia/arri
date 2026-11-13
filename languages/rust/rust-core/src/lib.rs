@@ -2,17 +2,17 @@
 //!
 //! This crate provides three capabilities for your types:
 //!
-//! - [`ArriSchema`]: produce an [Arri Type Definition](https://github.com/modiimedia/arri/blob/master/specifications/arri_type_definition.md)
+//! - [`Type`]: produce an [Arri Type Definition](https://github.com/modiimedia/arri/blob/master/specifications/arri_type_definition.md)
 //! - [`Encode`]: write the type using any [`Encoder`] (currently [JSON](json))
 //! - [`Decode`]: read the type using any [`Decoder`] (currently [JSON](json))
 //!
-//! All three are normally implemented with `#[derive(ArriModel)]`:
+//! All three are normally implemented with `#[derive(Arri)]`:
 //!
 //! ```
-//! use arri::{ArriModel, Nullable, Timestamp};
+//! use arri::{Arri, Nullable, Timestamp};
 //!
 //! /// A user of the application
-//! #[derive(ArriModel)]
+//! #[derive(Arri)]
 //! struct User {
 //!     id: String,
 //!     name: Nullable<String>,
@@ -50,11 +50,11 @@
 //!
 //! | feature    | default | description |
 //! | ---------- | ------- | ----------- |
-//! | `derive`   | yes     | `#[derive(ArriModel)]` |
+//! | `derive`   | yes     | `#[derive(Arri)]` |
 //! | `chrono`   | no      | arri traits for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>` |
 //! | `time`     | no      | arri traits for `time::OffsetDateTime` and `time::UtcDateTime` |
 //! | `indexmap` | no      | arri traits for `indexmap::IndexMap<String, V>` |
-//! | `serde`    | no      | serde `Serialize` / `Deserialize` for arri's own types ([`Timestamp`], [`Nullable`], [`Value`], [`Number`], [`Type`]) and `Serialize` for [`TypeDef`] / [`Metadata`] |
+//! | `serde`    | no      | serde `Serialize` / `Deserialize` for arri's own types ([`Timestamp`], [`Nullable`], [`Value`], [`Number`], [`Primitive`]) and `Serialize` for [`TypeDef`] / [`Metadata`] |
 
 // allows the derive macro output (which references `::arri`) to be used inside this crate
 extern crate self as arri;
@@ -82,14 +82,12 @@ pub use encode::{Encode, EncodeError, Encoder};
 pub use nullable::Nullable;
 /// The variants of [`Nullable`] are exported so they can be used without a prefix (like `Some` and `None`)
 pub use nullable::Nullable::{Null, Present};
-pub use schema::{
-    ArriSchema, SchemaCollision, SchemaContext, SchemaError, definitions_of, type_def_of,
-};
+pub use schema::{SchemaCollision, SchemaContext, SchemaError, Type, definitions_of, type_def_of};
 pub use timestamp::{Timestamp, TimestampError};
-pub use type_def::{Form, Metadata, Properties, Type, TypeDef, Union};
+pub use type_def::{Form, Metadata, Primitive, Properties, TypeDef, Union};
 pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value};
 
-/// Derives [`ArriSchema`], [`Encode`], and [`Decode`] for a struct or enum.
+/// Derives [`Type`], [`Encode`], and [`Decode`] for a struct or enum.
 ///
 /// # Mapping
 ///
@@ -114,14 +112,14 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// and `cargo test` but not in `cargo check`:
 ///
 /// ```compile_fail,E0080
-/// use arri::ArriModel;
+/// use arri::Arri;
 ///
-/// #[derive(ArriModel)]
+/// #[derive(Arri)]
 /// struct Shape {
 ///     kind: String,
 /// }
 ///
-/// #[derive(ArriModel)]
+/// #[derive(Arri)]
 /// #[arri(tag_key = "kind")]
 /// enum Message<T> {
 ///     Data(T),
@@ -133,7 +131,7 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 ///
 /// # Metadata
 ///
-/// - The type name becomes `metadata.id`. For generic types the [generic name](ArriSchema::generic_name)
+/// - The type name becomes `metadata.id`. For generic types the [generic name](Type::generic_name)
 ///   of each type argument comes first (`Page<User>` becomes `UserPage` and `Page<Vec<User>>`
 ///   becomes `UserArrayPage`).
 /// - Doc comments become `metadata.description` (on types, fields, and union variants)
@@ -167,12 +165,12 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// - `#[arri(skip, default = "path::to::fn")]`: same as `skip` but the value comes from calling `fn()`
 ///
 /// ```
-/// use arri::ArriModel;
+/// use arri::Arri;
 ///
 /// #[derive(Default)]
 /// struct Connection;
 ///
-/// #[derive(ArriModel)]
+/// #[derive(Arri)]
 /// struct Session {
 ///     id: String,
 ///     #[arri(skip)]
@@ -190,21 +188,21 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// assert_eq!(arri::json::to_string(&session).unwrap(), r#"{"id":"1"}"#);
 /// ```
 #[cfg(feature = "derive")]
-pub use arri_derive::ArriModel;
+pub use arri_derive::Arri;
 
 /// Marker trait for types that can describe, encode, and decode themselves.
 ///
-/// Implemented automatically for every type that implements [`ArriSchema`], [`Encode`], and [`Decode`].
-pub trait ArriModel: ArriSchema + Encode + Decode {}
+/// Implemented automatically for every type that implements [`Type`], [`Encode`], and [`Decode`].
+pub trait Arri: Type + Encode + Decode {}
 
-impl<T: ArriSchema + Encode + Decode> ArriModel for T {}
+impl<T: Type + Encode + Decode> Arri for T {}
 
 /// Commonly used items.
 ///
 /// ```
 /// use arri::prelude::*;
 ///
-/// #[derive(ArriModel)]
+/// #[derive(Arri)]
 /// struct User {
 ///     id: String,
 ///     name: Nullable<String>,
@@ -219,5 +217,5 @@ impl<T: ArriSchema + Encode + Decode> ArriModel for T {}
 /// assert!(matches!(user.name, Null));
 /// ```
 pub mod prelude {
-    pub use crate::{ArriModel, Null, Nullable, Present, Timestamp, Value};
+    pub use crate::{Arri, Null, Nullable, Present, Timestamp, Value};
 }

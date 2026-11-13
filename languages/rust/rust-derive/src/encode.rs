@@ -208,7 +208,7 @@ pub fn expand(c: &Container) -> TokenStream {
                         ));
                         // spanned so that the error points at the variant's type
                         quote_spanned! {ty.span()=>
-                            match <#ty as #k::ArriSchema>::PROPERTIES {
+                            match <#ty as #k::Type>::PROPERTIES {
                                 #k::__private::None => ::core::panic!(#not_an_object),
                                 #k::__private::Some(keys) => {
                                     if #k::__private::contains_key(keys, #tag_key) {

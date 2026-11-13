@@ -1,6 +1,6 @@
 //! Derive macros for the [`arri`](https://docs.rs/arri) crate.
 //!
-//! Use the `ArriModel` re-export from the `arri` crate rather than depending on this crate directly.
+//! Use the `Arri` re-export from the `arri` crate rather than depending on this crate directly.
 
 mod attr;
 mod case;
@@ -13,9 +13,9 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{DeriveInput, parse_macro_input};
 
-/// See the documentation of `arri::ArriModel`
-#[proc_macro_derive(ArriModel, attributes(arri))]
-pub fn derive_arri_model(input: TokenStream) -> TokenStream {
+/// See the documentation of `arri::Arri`
+#[proc_macro_derive(Arri, attributes(arri))]
+pub fn derive_arri(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match expand(&input) {
         Ok(tokens) => tokens.into(),

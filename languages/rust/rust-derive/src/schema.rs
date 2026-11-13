@@ -6,11 +6,11 @@ use crate::model::{Body, Container, Field, Tagging, VariantKind, with_docs};
 pub fn expand(c: &Container) -> TokenStream {
     let k = &c.krate;
     let ident = c.ident;
-    let generics = c.bounded_generics(quote!(#k::ArriSchema), &[]);
+    let generics = c.bounded_generics(quote!(#k::Type), &[]);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let generic_name = match &c.body {
-        Body::Newtype(inner) => quote!(<#inner as #k::ArriSchema>::generic_name()),
+        Body::Newtype(inner) => quote!(<#inner as #k::Type>::generic_name()),
         _ => {
             let id = &c.id;
             let params = c.schema_params();
@@ -22,7 +22,7 @@ pub fn expand(c: &Container) -> TokenStream {
                 // so that nested types are unambiguous.
                 quote! {
                     let mut name = #k::__private::String::new();
-                    #( name.push_str(&<#params as #k::ArriSchema>::generic_name()); )*
+                    #( name.push_str(&<#params as #k::Type>::generic_name()); )*
                     name.push_str(#id);
                     #k::__private::Cow::Owned(name)
                 }
@@ -31,11 +31,7 @@ pub fn expand(c: &Container) -> TokenStream {
     };
 
     let type_def = match &c.body {
-        Body::Newtype(inner) => with_docs(
-            k,
-            &c.docs,
-            quote!(<#inner as #k::ArriSchema>::type_def(ctx)),
-        ),
+        Body::Newtype(inner) => with_docs(k, &c.docs, quote!(<#inner as #k::Type>::type_def(ctx))),
         Body::Struct(fields) => {
             let def = with_docs(k, &c.docs, properties_def(c, fields));
             named(c, def)
@@ -61,7 +57,7 @@ pub fn expand(c: &Container) -> TokenStream {
                 let tag = &variant.tag;
                 let def = match &variant.kind {
                     VariantKind::Unit => properties_def(c, &[]),
-                    VariantKind::Newtype(ty) => quote!(<#ty as #k::ArriSchema>::type_def(ctx)),
+                    VariantKind::Newtype(ty) => quote!(<#ty as #k::Type>::type_def(ctx)),
                     VariantKind::Struct(fields) => properties_def(c, fields),
                 };
                 let def = with_docs(k, &variant.docs, def);
@@ -96,14 +92,14 @@ pub fn expand(c: &Container) -> TokenStream {
         // newtype structs have the same schema as their inner type
         Body::Newtype(inner) => quote! {
             const PROPERTIES: #k::__private::Option<&'static [&'static str]> =
-                <#inner as #k::ArriSchema>::PROPERTIES;
+                <#inner as #k::Type>::PROPERTIES;
         },
         Body::Enum(_) | Body::Union(..) => TokenStream::new(),
     };
 
     quote! {
         #[automatically_derived]
-        impl #impl_generics #k::ArriSchema for #ident #ty_generics #where_clause {
+        impl #impl_generics #k::Type for #ident #ty_generics #where_clause {
             #properties
 
             fn generic_name() -> #k::__private::Cow<'static, str> {
@@ -121,7 +117,7 @@ pub fn expand(c: &Container) -> TokenStream {
 fn named(c: &Container, def: TokenStream) -> TokenStream {
     let k = &c.krate;
     quote! {
-        ctx.named::<Self>(<Self as #k::ArriSchema>::generic_name(), |ctx| {
+        ctx.named::<Self>(<Self as #k::Type>::generic_name(), |ctx| {
             let _ = &ctx;
             #def
         })
@@ -135,11 +131,7 @@ fn properties_def(c: &Container, fields: &[Field]) -> TokenStream {
     let pushes = fields.iter().filter(|f| !f.is_skipped()).map(|field| {
         let key = &field.key;
         let ty = field.ty;
-        let def = with_docs(
-            k,
-            &field.docs,
-            quote!(<#ty as #k::ArriSchema>::type_def(ctx)),
-        );
+        let def = with_docs(k, &field.docs, quote!(<#ty as #k::Type>::type_def(ctx)));
         let target = if field.optional {
             quote!(optional_properties)
         } else {

@@ -1,6 +1,6 @@
 # arri
 
-Rust models for [Arri RPC](https://github.com/modiimedia/arri). Derive `ArriModel` on your types to:
+Rust models for [Arri RPC](https://github.com/modiimedia/arri). Derive `Arri` on your types to:
 
 - generate their [Arri Type Definition](https://github.com/modiimedia/arri/blob/master/specifications/arri_type_definition.md) (the schema Arri uses to generate clients)
 - encode them to and decode them from JSON in the same format as every other Arri implementation
@@ -15,10 +15,10 @@ arri = "0.85"
 ## Example
 
 ```rust
-use arri::{ArriModel, Nullable, Timestamp};
+use arri::{Arri, Nullable, Timestamp};
 
 /// A user of the application
-#[derive(ArriModel)]
+#[derive(Arri)]
 #[arri(rename_all = "camelCase")]
 struct User {
     id: String,
@@ -29,7 +29,7 @@ struct User {
     role: Role,
 }
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 #[arri(rename_all = "SCREAMING_SNAKE_CASE")]
 enum Role {
     Admin,
@@ -62,16 +62,16 @@ Enums with data become unions. They're externally tagged by default, and can be 
 with `tag_key` or adjacently tagged with `tag_key` and `value_key`.
 
 ```rust
-use arri::ArriModel;
+use arri::Arri;
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 #[arri(tag_key = "type", rename_all = "camelCase")]
 enum Shape {
     Circle { radius: f64 },
     Rectangle(Rectangle),
 }
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct Rectangle {
     width: f64,
     height: f64,
@@ -86,14 +86,14 @@ assert_eq!(
 );
 ```
 
-See the [`ArriModel` documentation](https://docs.rs/arri/latest/arri/derive.ArriModel.html) for
+See the [`Arri` documentation](https://docs.rs/arri/latest/arri/derive.Arri.html) for
 every attribute.
 
 ## Features
 
 | feature    | default | description                                                                  |
 | ---------- | ------- | ---------------------------------------------------------------------------- |
-| `derive`   | yes     | `#[derive(ArriModel)]`                                                       |
+| `derive`   | yes     | `#[derive(Arri)]`                                                       |
 | `chrono`   | no      | support for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>`      |
 | `time`     | no      | support for `time::OffsetDateTime` and `time::UtcDateTime`                   |
 | `indexmap` | no      | support for `indexmap::IndexMap<String, V>`                                  |

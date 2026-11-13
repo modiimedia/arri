@@ -1,8 +1,8 @@
-use arri::ArriModel;
+use arri::Arri;
 
 struct NoDefault;
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct Foo {
     name: String,
     #[arri(skip)]

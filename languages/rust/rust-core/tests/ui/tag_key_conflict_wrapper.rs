@@ -1,14 +1,14 @@
-use arri::ArriModel;
+use arri::Arri;
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct Inner {
     r#type: String,
 }
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct Wrap(Inner);
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 #[arri(tag_key = "type")]
 enum Foo {
     A(Wrap),
