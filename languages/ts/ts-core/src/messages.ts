@@ -527,7 +527,9 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
 
     // headers
     // (parsed before the first line so that req-id is available for error reporting)
-    const reserved: Partial<Record<ReservedHeader, string>> = {};
+    // null prototype so that `key in reserved` doesn't match inherited keys like "constructor" or "__proto__"
+    const reserved: Partial<Record<ReservedHeader, string>> =
+        Object.create(null);
     const custom = new ArriHeaders();
     let headerError: string | undefined;
     for (let i = 1; i < lines.length; i++) {

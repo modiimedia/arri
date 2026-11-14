@@ -325,6 +325,22 @@ describe('parsing', () => {
             false,
         );
     });
+    test('allows header keys that collide with Object.prototype properties', () => {
+        const result = parse('ARRIRPC/0 OK\nconstructor: 1\n__proto__: 2\n\n');
+        expect(result).toStrictEqual({
+            success: true,
+            value: {
+                type: 'OK',
+                reqId: undefined,
+                contentType: undefined,
+                headers: new ArriHeaders([
+                    ['constructor', '1'],
+                    ['__proto__', '2'],
+                ]),
+                body: undefined,
+            },
+        });
+    });
     test('trims spaces and tabs from header values', () => {
         const result = parse(
             'ARRIRPC/0 STREAM_END\nreq-id:\t 1 \t\nreason:   done  \n\n',
