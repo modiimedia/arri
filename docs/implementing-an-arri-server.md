@@ -166,12 +166,12 @@ app.rpc("getUser", getUser);
 In a language like Rust, the server implementation will likely make use of proc macros.
 
 ```rust
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct UserParams {
     user_id: String,
 }
 
-#[derive(ArriModel)]
+#[derive(Arri)]
 struct User {
     id: String,
     name: String,

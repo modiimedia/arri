@@ -66,6 +66,14 @@ The following is the list of all values that you can put for type:
 | int64     | JSON string containing a whole number that fits in a signed 64-bit integer    | "9223372036854775807"     |
 | uint64    | JSON string containing a whole number that fits in an unsigned 64-bit integer | "18446744073709551615"    |
 
+#### 64-bit integers
+
+Many JSON parsers (including JavaScript's) store every number as a 64-bit float, which can only represent whole numbers up to 2^53 exactly. To avoid losing precision, `int64` and `uint64` values **must be encoded as JSON strings**.
+
+When decoding, implementations **should also accept whole JSON numbers** (for example `9007199254740993` as well as `"9007199254740993"`). Rejecting them wouldn't prevent precision loss, because any loss already happened when the sender encoded the value, and accepting them makes it easier for third parties to interoperate with Arri.
+
+In both cases the value must be a whole number within the type's range. When the value is a string it must contain only an optional leading `-` followed by one or more ASCII digits (no whitespace, `+` sign, decimal point, exponent, or hex prefix).
+
 ### "Enum" Schema Form
 
 The enum schema is used to say that something needs to be a string in a given list of strings. For example,
@@ -182,6 +190,18 @@ While:
 
 Would accept that same input
 
+#### Duplicate Keys
+
+JSON parsers disagree on what to do when an object contains the same key more than once (some keep the first value, some keep the last, and some keep both), so an input with duplicate keys can mean different things to different services. To avoid this, implementations **should reject** inputs where a key that is defined in **properties** / **optionalProperties** appears more than once. For example:
+
+```json
+{ "name": "Abraham Lincoln", "isAdmin": false, "isAdmin": true }
+```
+
+Is rejected even if both values are the same. Keys that are not part of the schema are ignored (unless `isStrict` is set), so repeating them has no effect.
+
+Some implementations use JSON parsers that don't report duplicate keys (for example JavaScript's `JSON.parse`, which keeps the last value). Those implementations may accept duplicate keys, but they must never produce them when encoding.
+
 ### "Values" Schema Form
 
 To describe a record/dictionary, where you don't know the keys but you do know what type the values should have, use a "values" schema. The value of the **values** keyword is another ATD schema. For example,
@@ -192,7 +212,7 @@ To describe a record/dictionary, where you don't know the keys but you do know w
 
 Accepts objects where all the values are booleans. So it would acccept `{}` or `{"a": true, "b": false}`.
 
-Be aware that only string keys are supported.
+Be aware that only string keys are supported. Like the properties form, inputs that contain the same key more than once should be rejected (see [duplicate keys](#duplicate-keys)).
 
 ### "Union" Schema Form
 
@@ -285,6 +305,7 @@ When both `tagKey` and `valueKey` are set the tag and the variant's value are pl
 
 - If the input doesn't match one of the variants specified in `union` then it is rejected. (Although clients should fallback to the first variant rather than rejecting the input. See [creating tolerant clients](../docs/creating-a-custom-generator.md#creating-tolerant-clients).)
 - Externally tagged and adjacently tagged unions can use any schema form for their variants. This includes `isNullable` variants.
+- The tag (the key for externally tagged unions, or `tagKey` for internally / adjacently tagged unions) and `valueKey` must not appear more than once in the same object. Implementations should reject inputs where they do (see [duplicate keys](#duplicate-keys)).
 - The `tagKey` and `valueKey` are JSON keys. Code generators should convert them to the naming conventions of the target language while keeping the original key when serializing / deserializing.
 
 ### "Discriminator" Schema Form

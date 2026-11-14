@@ -1,0 +1,5 @@
+error: arri field attributes are not supported on newtype structs
+ --> tests/ui/skip_newtype_field.rs:4:19
+  |
+4 | struct Foo(#[arri(skip)] String);
+  |                   ^^^^

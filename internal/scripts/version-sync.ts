@@ -62,21 +62,35 @@ async function main() {
         stdio: 'inherit',
     });
 
-    // RUST client
-    const cargoTomlParts = readFileSync(
+    // RUST crates
+    const cargoTomls = [
         'languages/rust/rust-client/Cargo.toml',
-        { encoding: 'utf-8' },
-    ).split('\n');
-    for (let i = 0; i < cargoTomlParts.length; i++) {
-        const line = cargoTomlParts[i];
-        if (line?.startsWith('version = ')) {
-            cargoTomlParts[i] = `version = "${version}"`;
+        'languages/rust/rust-core/Cargo.toml',
+        'languages/rust/rust-derive/Cargo.toml',
+    ];
+    for (const cargoToml of cargoTomls) {
+        const lines = readFileSync(cargoToml, { encoding: 'utf-8' }).split(
+            '\n',
+        );
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i]!;
+            // the package's own version
+            if (line.startsWith('version = ')) {
+                lines[i] = `version = "${version}"`;
+                continue;
+            }
+            // dependencies on other crates in this repo
+            // e.g. `arri_derive = { path = "../rust-derive", version = "0.1.0", optional = true }`
+            if (line.includes('path = "../rust-')) {
+                lines[i] = line.replace(
+                    /version = "[^"]*"/,
+                    `version = "${version}"`,
+                );
+            }
         }
+        writeFileSync(cargoToml, lines.join('\n'));
     }
-    writeFileSync(
-        'languages/rust/rust-client/Cargo.toml',
-        cargoTomlParts.join('\n'),
-    );
+    // updates Cargo.lock
     execSync(`nx run-many -t cargo -- check`, {
         stdio: 'inherit',
     });

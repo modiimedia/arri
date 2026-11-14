@@ -1,0 +1,5 @@
+error: `Option<T>` can only be used for struct fields. Use `arri::Nullable<T>` for values that can be null
+ --> tests/ui/option_newtype.rs:4:12
+  |
+4 | struct Foo(Option<String>);
+  |            ^^^^^^

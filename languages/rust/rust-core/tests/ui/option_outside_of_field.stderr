@@ -1,0 +1,61 @@
+error[E0277]: `Option<std::string::String>` is not supported by arri
+ --> tests/ui/option_outside_of_field.rs:5:12
+  |
+5 |     items: Vec<Option<String>>,
+  |            ^^^^^^^^^^^^^^^^^^^ `Option<std::string::String>` does not implement `arri::Type`
+  |
+  = help: the trait `arri::Type` is not implemented for `Option<std::string::String>`
+  = note: use `#[derive(Arri)]` on your own types
+  = note: `Option<T>` is only supported as the type of a struct field. Use `arri::Nullable<T>` for values that can be `null`
+  = help: the following other types implement trait `arri::Type`:
+            &T
+            Arc<T>
+            BTreeMap<std::string::String, V>
+            Box<T>
+            Cow<'_, str>
+            Foo
+            HashMap<std::string::String, V, S>
+            Nullable<T>
+          and $N others
+  = note: required for `Vec<Option<std::string::String>>` to implement `arri::Type`
+
+error[E0277]: `Option<std::string::String>` cannot be encoded by arri
+ --> tests/ui/option_outside_of_field.rs:3:10
+  |
+3 | #[derive(Arri)]
+  |          ^^^^ `Option<std::string::String>` does not implement `arri::Encode`
+  |
+  = help: the trait `Encode` is not implemented for `Option<std::string::String>`
+  = note: use `#[derive(Arri)]` on your own types
+  = help: the following other types implement trait `Encode`:
+            &T
+            Arc<T>
+            BTreeMap<std::string::String, V>
+            Box<T>
+            Cow<'_, str>
+            Foo
+            HashMap<std::string::String, V, S>
+            Nullable<T>
+          and $N others
+  = note: required for `Vec<Option<std::string::String>>` to implement `Encode`
+  = note: this error originates in the derive macro `Arri` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: `Option<std::string::String>` cannot be decoded by arri
+ --> tests/ui/option_outside_of_field.rs:5:12
+  |
+5 |     items: Vec<Option<String>>,
+  |            ^^^^^^^^^^^^^^^^^^^ `Option<std::string::String>` does not implement `arri::Decode`
+  |
+  = help: the trait `Decode` is not implemented for `Option<std::string::String>`
+  = note: use `#[derive(Arri)]` on your own types
+  = help: the following other types implement trait `Decode`:
+            Arc<T>
+            BTreeMap<std::string::String, V>
+            Box<T>
+            Box<str>
+            Cow<'_, str>
+            Foo
+            HashMap<std::string::String, V, S>
+            Nullable<T>
+          and $N others
+  = note: required for `Vec<Option<std::string::String>>` to implement `Decode`

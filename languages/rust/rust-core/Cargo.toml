@@ -1,0 +1,47 @@
+[package]
+name = "arri"
+version = "0.86.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Schema generation and encoding / decoding for Arri RPC models"
+license = "MIT"
+homepage = "https://github.com/modiimedia/arri"
+repository = "https://github.com/modiimedia/arri"
+keywords = ["arrirpc", "arri", "rpc", "schema"]
+categories = ["encoding", "web-programming"]
+readme = "README.md"
+include = ["/src", "/README.md"]
+
+[features]
+default = ["derive"]
+# Enables `#[derive(Arri)]`
+derive = ["dep:arri_derive"]
+# Implements the arri traits for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>`
+chrono = ["dep:chrono"]
+# Implements the arri traits for `time::OffsetDateTime` and `time::UtcDateTime`
+time = ["dep:time"]
+# Implements the arri traits for `indexmap::IndexMap<String, V>`
+indexmap = ["dep:indexmap"]
+# Implements serde's `Serialize` / `Deserialize` for arri's own types (Timestamp, Nullable, Value, etc.)
+serde = ["dep:serde"]
+
+[dependencies]
+arri_derive = { path = "../rust-derive", version = "0.86.0", optional = true }
+# fast float to string conversion (also used by serde_json)
+zmij = "1"
+chrono = { version = "0.4", optional = true, default-features = false }
+time = { version = "0.3", optional = true, default-features = false }
+indexmap = { version = "2", optional = true }
+serde = { version = "1", optional = true, default-features = false, features = ["std"] }
+
+[dev-dependencies]
+chrono = { version = "0.4", default-features = false, features = ["serde", "alloc"] }
+criterion = { version = "0.8.2", default-features = false, features = ["cargo_bench_support"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json.workspace = true
+trybuild = "1"
+
+[[bench]]
+name = "json"
+harness = false
+required-features = ["chrono", "serde"]
