@@ -1,75 +1,3 @@
-/**
- * Arri RPC message format (draft)
- *
- * Every message is a sequence of bytes in the following shape:
- *
- * ```txt
- * ARRIRPC/<protocol-version> <MESSAGE_TYPE>[ <rpc-name>]
- * <header-key>: <header-value>
- * <header-key>: <header-value>
- *
- * <body>
- * ```
- *
- * ## Head
- *
- * Everything before the first empty line is the "head".
- *
- * - The head is ASCII. Only tab (0x09), line feed (0x0A), and printable characters (0x20-0x7E) are allowed.
- * - The first line is always present. Only INVOCATION messages include an rpc name.
- * - Lines are delimited by `\n` (`\r\n` is not supported). The end of the head is marked by an empty
- *   line (`\n\n`). The empty line is required even when there is no body.
- * - Header keys are case-insensitive and are always encoded as lowercase. A key may only appear once
- *   per message (compared case-insensitively).
- * - Header values have leading and trailing whitespace removed by both encoders and parsers.
- *   "Whitespace" means space (0x20) and tab (0x09) only.
- *
- * ## Body
- *
- * Everything after the empty line is the body. The body is raw bytes and its format is
- * determined by the content type (see "Content types" below).
- *
- * Because the head can never contain `\n\n`, receivers can locate the body by scanning for the
- * first `\n\n` byte sequence without decoding anything.
- *
- * Bodies are always bytes. Transports should convert to/from bytes exactly once at the transport
- * boundary and avoid round trips through strings.
- *
- * ## Content types
- *
- * - Whenever a content type is not explicitly provided it is `application/json` ({@link DEFAULT_CONTENT_TYPE}).
- * - INVOCATION: `content-type` is the content type of that message's body. `accept` is the content type the
- *   client wants to receive. If `accept` is omitted the server responds using the invocation's content type.
- * - STREAM_START: `content-type` is the content type of every subsequent STREAM_DATA message sent by the same
- *   party with the same `req-id`.
- * - OK / ERROR: `content-type` is the content type of that message's body.
- * - If the server cannot produce the requested content type, or the requested content type is unknown,
- *   ERROR messages fall back to `application/json`.
- *
- * ## Call flows
- *
- * Every call is terminated by exactly one of: server OK, server ERROR, server STREAM_END, or client CANCEL.
- *
- * ```txt
- * unary:          C: INVOCATION                                     S: OK
- * output stream:  C: INVOCATION                                     S: STREAM_START, STREAM_DATA*, STREAM_END
- * input stream:   C: INVOCATION, STREAM_START, STREAM_DATA*, STREAM_END     S: OK
- * bidirectional:  C: INVOCATION, STREAM_START, STREAM_DATA*, STREAM_END     S: STREAM_START, STREAM_DATA*, STREAM_END
- * ```
- *
- * - When a procedure's input is a stream, the INVOCATION has no body. The client does not wait for an
- *   acknowledgement before streaming its input.
- * - The server may send ERROR at any point, which terminates the call. The client must then stop sending,
- *   and the server discards any in-flight client messages for that call.
- * - An ERROR without a `req-id` is a connection-level error (e.g. the server received a message it could
- *   not parse and could not determine which call it belonged to).
- *
- * ## Usage
- *
- * This encoding is used by transports that carry Arri messages directly (e.g. websockets, tcp).
- * Transports such as HTTP translate these messages into their own native constructs instead.
- */
-
 import {
     ArriHeaders,
     isBindingHeader,
@@ -93,10 +21,6 @@ export const PROTOCOL_PREFIX = `ARRIRPC/${PROTOCOL_VERSION}` as const;
  * The content type used whenever a message does not explicitly specify one.
  */
 export const DEFAULT_CONTENT_TYPE = 'application/json' as const;
-
-// ---------------------------------------------------------------------------
-// Message types
-// ---------------------------------------------------------------------------
 
 /**
  * A request id chosen by the client.
@@ -310,10 +234,6 @@ export function isServerMessage(msg: Message): msg is ServerMessage {
     return (SERVER_MESSAGE_TYPES as readonly string[]).includes(msg.type);
 }
 
-// ---------------------------------------------------------------------------
-// Validation
-// ---------------------------------------------------------------------------
-
 const REQ_ID_REGEX = /^[\x21-\x7E]+$/;
 
 /**
@@ -334,10 +254,6 @@ export function isValidRpcName(value: string): boolean {
     return RPC_NAME_REGEX.test(value);
 }
 
-// ---------------------------------------------------------------------------
-// Encoding
-// ---------------------------------------------------------------------------
-
 export class MessageEncodingError extends Error {
     constructor(message: string) {
         super(message);
@@ -346,8 +262,7 @@ export class MessageEncodingError extends Error {
 }
 
 const textEncoder = new TextEncoder();
-// only used after the head has been verified to be ASCII
-const textDecoder = new TextDecoder();
+const verifiedAsciiDecoder = new TextDecoder();
 
 /**
  * Encode a message into the Arri message format.
@@ -443,10 +358,6 @@ export function encodeMessage(msg: Message): Uint8Array {
     return result;
 }
 
-// ---------------------------------------------------------------------------
-// Decoding
-// ---------------------------------------------------------------------------
-
 export type ParseResult<T> =
     | { success: true; value: T }
     | {
@@ -467,30 +378,30 @@ function ok<T>(value: T): ParseResult<T> {
 const LF = 0x0a;
 const TAB = 0x09;
 
-/**
- * Returns the index of the first `\n\n`, or -1 if there isn't one.
- * Also returns -1 for `invalidByteIndex` if every byte before the head end is a valid head byte.
- */
+const NOT_FOUND = -1;
+
+function isValidHeadLineByte(byte: number): boolean {
+    return byte === TAB || (byte >= 0x20 && byte <= 0x7e);
+}
+
 function scanHead(input: Uint8Array): {
-    headEnd: number;
-    invalidByteIndex: number;
+    headEndIndex: number;
+    firstInvalidByteIndex: number;
 } {
-    let invalidByteIndex = -1;
+    let firstInvalidByteIndex = NOT_FOUND;
     for (let i = 0; i < input.length; i++) {
         const byte = input[i]!;
         if (byte === LF) {
-            if (input[i + 1] === LF) return { headEnd: i, invalidByteIndex };
+            if (input[i + 1] === LF) {
+                return { headEndIndex: i, firstInvalidByteIndex };
+            }
             continue;
         }
-        if (
-            invalidByteIndex === -1 &&
-            byte !== TAB &&
-            (byte < 0x20 || byte > 0x7e)
-        ) {
-            invalidByteIndex = i;
+        if (firstInvalidByteIndex === NOT_FOUND && !isValidHeadLineByte(byte)) {
+            firstInvalidByteIndex = i;
         }
     }
-    return { headEnd: -1, invalidByteIndex };
+    return { headEndIndex: NOT_FOUND, firstInvalidByteIndex };
 }
 
 /**
@@ -503,33 +414,32 @@ function scanHead(input: Uint8Array): {
  * custom headers on message types that support them and are ignored otherwise.
  */
 export function parseMessage(input: Uint8Array): ParseResult<Message> {
-    const { headEnd, invalidByteIndex } = scanHead(input);
+    const { headEndIndex, firstInvalidByteIndex } = scanHead(input);
     let reqId: ReqId | undefined;
     const err = (error: string): ParseResult<Message> =>
         reqId === undefined
             ? { success: false, error }
             : { success: false, error, reqId };
 
-    if (headEnd === -1) {
+    if (headEndIndex === NOT_FOUND) {
         reqId = recoverReqId(input, input.length);
         return err('Invalid message. Missing empty line after headers.');
     }
-    if (invalidByteIndex !== -1) {
-        reqId = recoverReqId(input, headEnd);
+    if (firstInvalidByteIndex !== NOT_FOUND) {
+        reqId = recoverReqId(input, headEndIndex);
         return err(
-            `Invalid message. Head contains a non-ASCII or control character at byte ${invalidByteIndex}.`,
+            `Invalid message. Head contains a non-ASCII or control character at byte ${firstInvalidByteIndex}.`,
         );
     }
-    const head = textDecoder.decode(input.subarray(0, headEnd));
+    const head = verifiedAsciiDecoder.decode(input.subarray(0, headEndIndex));
+    const bodyStartIndex = headEndIndex + 2;
     const body =
-        input.length > headEnd + 2 ? input.subarray(headEnd + 2) : undefined;
+        input.length > bodyStartIndex
+            ? input.subarray(bodyStartIndex)
+            : undefined;
     const lines = head.split('\n');
 
-    // headers
-    // (parsed before the first line so that req-id is available for error reporting)
-    // null prototype so that `key in reserved` doesn't match inherited keys like "constructor" or "__proto__"
-    const reserved: Partial<Record<ReservedHeader, string>> =
-        Object.create(null);
+    const reserved = new Map<ReservedHeader, string>();
     const custom = new ArriHeaders();
     let headerError: string | undefined;
     for (let i = 1; i < lines.length; i++) {
@@ -546,21 +456,23 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
         }
         const key = normalizeHeaderKey(rawKey);
         const value = trimHeaderValue(line.substring(sepIndex + 1));
-        if (key in reserved || custom.has(key)) {
+        if (isReservedHeader(key)) {
+            if (reserved.has(key)) {
+                headerError ??= `Duplicate header "${key}".`;
+                continue;
+            }
+            reserved.set(key, value);
+            continue;
+        }
+        if (isBindingHeader(key)) continue;
+        if (custom.has(key)) {
             headerError ??= `Duplicate header "${key}".`;
             continue;
         }
-        if (isReservedHeader(key)) {
-            reserved[key] = value;
-        } else if (isBindingHeader(key)) {
-            // binding headers belong to the transport layer and are never part of a message
-            continue;
-        } else {
-            // key and value have already been validated, so this won't throw
-            custom.set(key, value);
-        }
+        // key and value have already been validated, so this won't throw
+        custom.set(key, value);
     }
-    const rawReqId = reserved['req-id'];
+    const rawReqId = reserved.get('req-id');
     if (rawReqId !== undefined) {
         if (!isValidReqId(rawReqId)) {
             return err(
@@ -571,9 +483,8 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
     }
     if (headerError) return err(headerError);
 
-    // first line
-    const firstLine = lines[0]!.split(' ');
-    const prefix = firstLine[0];
+    const firstLineParts = lines[0]!.split(' ');
+    const prefix = firstLineParts[0];
     if (!prefix?.startsWith('ARRIRPC/')) {
         return err(
             `Invalid message. Expected first line to start with "ARRIRPC/".`,
@@ -584,26 +495,26 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
             `Unsupported protocol version "${prefix.substring(8)}". Expected "${PROTOCOL_VERSION}".`,
         );
     }
-    const msgType = firstLine[1];
+    const msgType = firstLineParts[1];
     if (!msgType || !MESSAGE_TYPES.has(msgType)) {
         return err(`Unsupported message type "${msgType ?? ''}".`);
     }
     let rpcName: string | undefined;
     if (msgType === 'INVOCATION') {
-        rpcName = firstLine[2];
-        if (!rpcName || firstLine.length !== 3) {
+        rpcName = firstLineParts[2];
+        if (!rpcName || firstLineParts.length !== 3) {
             return err(
                 'Invalid INVOCATION message. Expected exactly one rpc name.',
             );
         }
-    } else if (firstLine.length !== 2) {
+    } else if (firstLineParts.length !== 2) {
         return err(
             `Invalid ${msgType} message. Unexpected content in first line.`,
         );
     }
 
     let heartbeatInterval: number | undefined;
-    const rawHeartbeatInterval = reserved['heartbeat-interval'];
+    const rawHeartbeatInterval = reserved.get('heartbeat-interval');
     if (rawHeartbeatInterval !== undefined) {
         if (!/^\d+$/.test(rawHeartbeatInterval)) {
             return err(
@@ -619,10 +530,10 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
                 type: 'INVOCATION',
                 rpcName: rpcName!,
                 reqId,
-                contentType: reserved['content-type'],
-                accept: reserved.accept,
-                clientVersion: reserved['client-version'],
-                lastMsgId: reserved['last-msg-id'],
+                contentType: reserved.get('content-type'),
+                accept: reserved.get('accept'),
+                clientVersion: reserved.get('client-version'),
+                lastMsgId: reserved.get('last-msg-id'),
                 headers: custom,
                 body,
             });
@@ -630,7 +541,7 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
             return ok<OkMessage>({
                 type: 'OK',
                 reqId,
-                contentType: reserved['content-type'],
+                contentType: reserved.get('content-type'),
                 headers: custom,
                 body,
             });
@@ -638,7 +549,7 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
             return ok<ErrorMessage>({
                 type: 'ERROR',
                 reqId,
-                contentType: reserved['content-type'],
+                contentType: reserved.get('content-type'),
                 headers: custom,
                 body,
             });
@@ -646,27 +557,27 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
             return ok<StreamStartMessage>({
                 type: 'STREAM_START',
                 reqId,
-                contentType: reserved['content-type'],
+                contentType: reserved.get('content-type'),
                 headers: custom,
             });
         case 'STREAM_DATA':
             return ok<StreamDataMessage>({
                 type: 'STREAM_DATA',
                 reqId,
-                msgId: reserved['msg-id'],
+                msgId: reserved.get('msg-id'),
                 body,
             });
         case 'STREAM_END':
             return ok<StreamEndMessage>({
                 type: 'STREAM_END',
                 reqId,
-                reason: reserved.reason,
+                reason: reserved.get('reason'),
             });
         case 'CANCEL':
             return ok<CancelMessage>({
                 type: 'CANCEL',
                 reqId,
-                reason: reserved.reason,
+                reason: reserved.get('reason'),
             });
         case 'CONNECTION_START':
             return ok<ConnectionStartMessage>({
@@ -681,33 +592,25 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
         case 'GOAWAY':
             return ok<GoAwayMessage>({
                 type: 'GOAWAY',
-                reason: reserved.reason,
+                reason: reserved.get('reason'),
             });
     }
 }
 
 const REQ_ID_HEADER_PREFIX = 'req-id:';
 
-/**
- * Best effort attempt to find a valid req-id in a message that otherwise failed to parse.
- * Only looks at lines made up entirely of valid head bytes.
- */
-function recoverReqId(input: Uint8Array, end: number): ReqId | undefined {
+function recoverReqId(
+    input: Uint8Array,
+    searchEndIndex: number,
+): ReqId | undefined {
     let lineStart = 0;
-    for (let i = 0; i <= end; i++) {
-        if (i !== end && input[i] !== LF) continue;
+    for (let i = 0; i <= searchEndIndex; i++) {
+        if (i !== searchEndIndex && input[i] !== LF) continue;
         const line = input.subarray(lineStart, i);
         lineStart = i + 1;
         if (line.length <= REQ_ID_HEADER_PREFIX.length) continue;
-        let isAscii = true;
-        for (const byte of line) {
-            if (byte !== TAB && (byte < 0x20 || byte > 0x7e)) {
-                isAscii = false;
-                break;
-            }
-        }
-        if (!isAscii) continue;
-        const text = textDecoder.decode(line);
+        if (!line.every(isValidHeadLineByte)) continue;
+        const text = verifiedAsciiDecoder.decode(line);
         if (
             text.substring(0, REQ_ID_HEADER_PREFIX.length).toLowerCase() !==
             REQ_ID_HEADER_PREFIX

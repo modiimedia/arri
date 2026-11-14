@@ -566,45 +566,29 @@ ${file.content}
     await writeMessageFixtures(outDir);
 }
 
-// ---------------------------------------------------------------------------
-// Arri RPC message fixtures
-// ---------------------------------------------------------------------------
-
-interface ValidMessageFixture {
+interface CanonicalMessageFixture {
     name: string;
     description: string;
     message: Message;
 }
 
-interface RawValidMessageFixture {
+interface NonCanonicalMessageFixture {
     name: string;
     description: string;
-    /**
-     * Raw message bytes that are valid but not in canonical form.
-     * `message` is what they are expected to parse into.
-     */
-    input: string;
-    message: Message;
+    nonCanonicalInput: string;
+    expectedMessage: Message;
 }
 
 interface InvalidMessageFixture {
     name: string;
     description: string;
     input: string | Uint8Array;
-    /**
-     * The req-id that a parser should recover from the invalid message (if any)
-     */
-    reqId?: string;
+    recoverableReqId?: string;
 }
 
 const utf8 = (input: string) => new TextEncoder().encode(input);
 
-/**
- * Valid messages in canonical form.
- *
- * Encoding `message` must produce the fixture's bytes exactly, and parsing the bytes must produce `message`.
- */
-const canonicalMessageFixtures: ValidMessageFixture[] = [
+const canonicalMessageFixtures: CanonicalMessageFixture[] = [
     {
         name: 'Invocation',
         description:
@@ -817,18 +801,14 @@ const canonicalMessageFixtures: ValidMessageFixture[] = [
     },
 ];
 
-/**
- * Valid messages that are not in canonical form. Parsers must accept them.
- *
- * Re-encoding the parsed message produces canonical form, which won't match the input bytes.
- */
-const nonCanonicalMessageFixtures: RawValidMessageFixture[] = [
+const nonCanonicalMessageFixtures: NonCanonicalMessageFixture[] = [
     {
         name: 'Invocation_MixedCaseHeaders',
         description:
             'header keys are case-insensitive and normalized to lowercase',
-        input: 'ARRIRPC/0 INVOCATION users.getUser\nReq-Id: 1\nContent-Type: application/json\nX-Tenant-ID: tenant_1\n\n{"id":"12345"}',
-        message: {
+        nonCanonicalInput:
+            'ARRIRPC/0 INVOCATION users.getUser\nReq-Id: 1\nContent-Type: application/json\nX-Tenant-ID: tenant_1\n\n{"id":"12345"}',
+        expectedMessage: {
             type: 'INVOCATION',
             rpcName: 'users.getUser',
             reqId: '1',
@@ -841,8 +821,9 @@ const nonCanonicalMessageFixtures: RawValidMessageFixture[] = [
         name: 'Invocation_UntrimmedHeaderValues',
         description:
             'leading/trailing spaces and tabs are trimmed from header values, and the space after ":" is optional',
-        input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id:1\naccept: \t application/json\t \nx-foo:\tbar baz  \n\n',
-        message: {
+        nonCanonicalInput:
+            'ARRIRPC/0 INVOCATION users.getUser\nreq-id:1\naccept: \t application/json\t \nx-foo:\tbar baz  \n\n',
+        expectedMessage: {
             type: 'INVOCATION',
             rpcName: 'users.getUser',
             reqId: '1',
@@ -853,8 +834,9 @@ const nonCanonicalMessageFixtures: RawValidMessageFixture[] = [
     {
         name: 'Invocation_HeaderOrder',
         description: 'reserved and custom headers may appear in any order',
-        input: 'ARRIRPC/0 INVOCATION users.getUser\nx-foo: 1\ncontent-type: application/json\nx-bar: 2\nreq-id: 1\n\n{"id":"12345"}',
-        message: {
+        nonCanonicalInput:
+            'ARRIRPC/0 INVOCATION users.getUser\nx-foo: 1\ncontent-type: application/json\nx-bar: 2\nreq-id: 1\n\n{"id":"12345"}',
+        expectedMessage: {
             type: 'INVOCATION',
             rpcName: 'users.getUser',
             reqId: '1',
@@ -869,8 +851,9 @@ const nonCanonicalMessageFixtures: RawValidMessageFixture[] = [
     {
         name: 'Invocation_BindingHeaders',
         description: 'headers starting with "arri-" are ignored',
-        input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\narri-connection-id: abc123\nArri-Foo: bar\n\n',
-        message: {
+        nonCanonicalInput:
+            'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\narri-connection-id: abc123\nArri-Foo: bar\n\n',
+        expectedMessage: {
             type: 'INVOCATION',
             rpcName: 'users.getUser',
             reqId: '1',
@@ -881,8 +864,9 @@ const nonCanonicalMessageFixtures: RawValidMessageFixture[] = [
         name: 'StreamEnd_IgnoredHeaders',
         description:
             'reserved headers that do not apply to the message type, and custom headers on message types without custom headers, are ignored',
-        input: 'ARRIRPC/0 STREAM_END\nreq-id: 1\ncontent-type: application/json\nmsg-id: 5\nx-foo: bar\n\n',
-        message: {
+        nonCanonicalInput:
+            'ARRIRPC/0 STREAM_END\nreq-id: 1\ncontent-type: application/json\nmsg-id: 5\nx-foo: bar\n\n',
+        expectedMessage: {
             type: 'STREAM_END',
             reqId: '1',
         },
@@ -899,7 +883,7 @@ const invalidMessageFixtures: InvalidMessageFixture[] = [
         name: 'MissingHeadEnd',
         description: 'no empty line after the headers',
         input: 'ARRIRPC/0 OK\nreq-id: 1\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'CrlfLineEndings',
@@ -910,44 +894,44 @@ const invalidMessageFixtures: InvalidMessageFixture[] = [
         name: 'NonAsciiHeaderValue',
         description: 'header values must be ASCII',
         input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\nx-name: café\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'ControlCharacterInHead',
         description:
             'the head may not contain control characters other than tab and line feed',
         input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\nx-foo: a\x00b\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'WrongPrefix',
         description: 'first line does not start with "ARRIRPC/"',
         input: 'HTTP/1.1 OK\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'UnsupportedVersion',
         description: 'unsupported protocol version',
         input: 'ARRIRPC/1 OK\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'LowercaseMessageType',
         description: 'message types are case-sensitive',
         input: 'ARRIRPC/0 ok\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'UnknownMessageType',
         description: 'unknown message type',
         input: 'ARRIRPC/0 FOO\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'MissingMessageType',
         description: 'first line has no message type',
         input: 'ARRIRPC/0\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'EmptyFirstLine',
@@ -958,43 +942,43 @@ const invalidMessageFixtures: InvalidMessageFixture[] = [
         name: 'Invocation_MissingRpcName',
         description: 'INVOCATION without an rpc name',
         input: 'ARRIRPC/0 INVOCATION\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'Invocation_ExtraTokens',
         description: 'INVOCATION with more than one rpc name',
         input: 'ARRIRPC/0 INVOCATION users.getUser extra\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'Ok_ExtraTokens',
         description: 'only INVOCATION may have content after the message type',
         input: 'ARRIRPC/0 OK users.getUser\nreq-id: 1\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'DuplicateHeader',
         description: 'header keys may only appear once (case-insensitive)',
         input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\nX-Foo: 1\nx-foo: 2\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'HeaderMissingColon',
         description: 'header line without a ":"',
         input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\nx-foo\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'HeaderEmptyKey',
         description: 'header line with an empty key',
         input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\n: foo\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'HeaderInvalidKey',
         description: 'header keys must be HTTP token characters',
         input: 'ARRIRPC/0 INVOCATION users.getUser\nreq-id: 1\nx foo: bar\n\n',
-        reqId: '1',
+        recoverableReqId: '1',
     },
     {
         name: 'ReqIdWithSpace',
@@ -1028,14 +1012,7 @@ const invalidMessageFixtures: InvalidMessageFixture[] = [
     },
 ];
 
-/**
- * JSON representation of a message used in the fixture manifest.
- *
- * - Headers are `[key, value]` pairs since order is significant when encoding.
- * - Bodies that are valid UTF-8 are stored in `body`. Otherwise they are base64 encoded in `bodyBase64`.
- * - Fields that are not present on the message are omitted.
- */
-function messageToJson(msg: Message): Record<string, unknown> {
+function messageToManifestJson(msg: Message): Record<string, unknown> {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(msg)) {
         if (value === undefined) continue;
@@ -1063,10 +1040,7 @@ function toBytes(input: string | Uint8Array): Uint8Array {
     return typeof input === 'string' ? utf8(input) : input;
 }
 
-/**
- * Human readable version of message bytes for the README
- */
-function escapeMessage(bytes: Uint8Array): string {
+function toReadableEscapedText(bytes: Uint8Array): string {
     let result = '';
     for (const byte of bytes) {
         if (byte === 0x0a) {
@@ -1123,7 +1097,7 @@ async function writeMessageFixtures(outDir: string) {
 ${description}
 
 \`\`\`txt
-${escapeMessage(bytes)}
+${toReadableEscapedText(bytes)}
 \`\`\`
 `);
         return `messages/${filename}`;
@@ -1140,21 +1114,21 @@ ${escapeMessage(bytes)}
             description: fixture.description,
             file,
             canonical: true,
-            message: messageToJson(fixture.message),
+            message: messageToManifestJson(fixture.message),
         });
     }
     for (const fixture of nonCanonicalMessageFixtures) {
         const file = addFile(
             fixture.name,
             fixture.description,
-            toBytes(fixture.input),
+            toBytes(fixture.nonCanonicalInput),
         );
         manifest.valid.push({
             name: fixture.name,
             description: fixture.description,
             file,
             canonical: false,
-            message: messageToJson(fixture.message),
+            message: messageToManifestJson(fixture.expectedMessage),
         });
     }
     for (const fixture of invalidMessageFixtures) {
@@ -1168,7 +1142,9 @@ ${escapeMessage(bytes)}
             description: fixture.description,
             file,
         };
-        if (fixture.reqId !== undefined) entry.reqId = fixture.reqId;
+        if (fixture.recoverableReqId !== undefined) {
+            entry.reqId = fixture.recoverableReqId;
+        }
         manifest.invalid.push(entry);
     }
 

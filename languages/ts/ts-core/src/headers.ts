@@ -15,11 +15,10 @@ export type ReservedHeader = (typeof RESERVED_HEADERS)[number];
 
 const RESERVED_HEADER_SET: ReadonlySet<string> = new Set(RESERVED_HEADERS);
 
-/**
- * @param key a lowercase header key
- */
-export function isReservedHeader(key: string): key is ReservedHeader {
-    return RESERVED_HEADER_SET.has(key);
+export function isReservedHeader(
+    lowercaseKey: string,
+): lowercaseKey is ReservedHeader {
+    return RESERVED_HEADER_SET.has(lowercaseKey);
 }
 
 /**
@@ -32,40 +31,30 @@ export function isReservedHeader(key: string): key is ReservedHeader {
  */
 export const BINDING_HEADER_PREFIX = 'arri-' as const;
 
-/**
- * @param key a lowercase header key
- */
-export function isBindingHeader(key: string): boolean {
-    return key.startsWith(BINDING_HEADER_PREFIX);
+export function isBindingHeader(lowercaseKey: string): boolean {
+    return lowercaseKey.startsWith(BINDING_HEADER_PREFIX);
 }
 
-/**
- * HTTP token characters. Keeping header keys compatible with HTTP allows
- * bindings to map Arri headers to HTTP headers 1-to-1.
- */
-const HEADER_KEY_REGEX = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
+const HTTP_TOKEN_REGEX = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
 
 /**
  * Header keys are case-insensitive. Use {@link normalizeHeaderKey} to get the encoded form.
  */
 export function isValidHeaderKey(key: string): boolean {
-    return HEADER_KEY_REGEX.test(key);
+    return HTTP_TOKEN_REGEX.test(key);
 }
 
 export function normalizeHeaderKey(key: string): string {
     return key.toLowerCase();
 }
 
-/**
- * Printable ASCII and tab
- */
-const HEADER_VALUE_REGEX = /^[\t\x20-\x7E]*$/;
+const PRINTABLE_ASCII_OR_TAB_REGEX = /^[\t\x20-\x7E]*$/;
 
 /**
  * Header values may only contain printable ASCII characters (0x20-0x7E) and tabs.
  */
 export function isValidHeaderValue(value: string): boolean {
-    return HEADER_VALUE_REGEX.test(value);
+    return PRINTABLE_ASCII_OR_TAB_REGEX.test(value);
 }
 
 /**
@@ -75,14 +64,14 @@ export function isValidHeaderValue(value: string): boolean {
 export function trimHeaderValue(value: string): string {
     let start = 0;
     let end = value.length;
-    while (start < end && isWhitespace(value.charCodeAt(start))) start++;
-    while (end > start && isWhitespace(value.charCodeAt(end - 1))) end--;
+    while (start < end && isSpaceOrTab(value.charCodeAt(start))) start++;
+    while (end > start && isSpaceOrTab(value.charCodeAt(end - 1))) end--;
     return start === 0 && end === value.length
         ? value
         : value.substring(start, end);
 }
 
-function isWhitespace(charCode: number): boolean {
+function isSpaceOrTab(charCode: number): boolean {
     return charCode === 0x20 || charCode === 0x09;
 }
 

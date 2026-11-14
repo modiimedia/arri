@@ -11,11 +11,7 @@ import {
 const utf8 = (input: string) => new TextEncoder().encode(input);
 const text = (input: Uint8Array) => new TextDecoder().decode(input);
 
-/**
- * Drop undefined fields, decode the body, and convert headers to plain objects
- * so messages can be compared structurally
- */
-function normalize(msg: Message): Record<string, unknown> {
+function toComparable(msg: Message): Record<string, unknown> {
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(msg)) {
         if (val === undefined) continue;
@@ -167,32 +163,33 @@ describe('round trip', () => {
             const result = parseMessage(utf8(encoded));
             expect(result.success).toBe(true);
             if (!result.success) return;
-            expect(normalize(result.value)).toStrictEqual(normalize(msg));
+            expect(toComparable(result.value)).toStrictEqual(toComparable(msg));
         });
     }
 });
 
 describe('binary bodies', () => {
-    // contains "\n\n", NUL bytes, and invalid UTF-8
-    const binaryBody = new Uint8Array([
+    const nonUtf8BodyContainingHeadTerminator = new Uint8Array([
         0x00, 0x0a, 0x0a, 0xff, 0xfe, 0x0d, 0x0a, 0x0a, 0x80, 0x00,
     ]);
     test('round trips arbitrary bytes', () => {
         const encoded = encodeMessage({
             type: 'STREAM_DATA',
             reqId: '1',
-            body: binaryBody,
+            body: nonUtf8BodyContainingHeadTerminator,
         });
         const result = parseMessage(encoded);
         expect(result.success).toBe(true);
         if (!result.success || result.value.type !== 'STREAM_DATA') return;
-        expect(result.value.body).toStrictEqual(binaryBody);
+        expect(result.value.body).toStrictEqual(
+            nonUtf8BodyContainingHeadTerminator,
+        );
     });
     test('body is a view into the input', () => {
         const encoded = encodeMessage({
             type: 'OK',
             headers: new ArriHeaders(),
-            body: binaryBody,
+            body: nonUtf8BodyContainingHeadTerminator,
         });
         const result = parseMessage(encoded);
         if (!result.success || result.value.type !== 'OK') {

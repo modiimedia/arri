@@ -107,7 +107,9 @@ describe('ArriHeaders', () => {
             for (const key of ['arri-connection-id', 'Arri-Foo', 'ARRI-']) {
                 expect(() => headers.set(key, '1')).toThrow(TypeError);
             }
-            // only the exact prefix is reserved
+        });
+        test('allows keys that only resemble the binding prefix', () => {
+            const headers = new ArriHeaders();
             headers.set('arri', '1');
             headers.set('x-arri-foo', '1');
             headers.set('arrival', '1');

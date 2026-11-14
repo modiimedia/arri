@@ -32,10 +32,7 @@ function readFixture(file: string): Uint8Array {
     return new Uint8Array(readFileSync(path.resolve(testDir, file)));
 }
 
-/**
- * Convert the JSON representation in Messages.json into a Message
- */
-function messageFromJson(input: Record<string, unknown>): Message {
+function messageFromManifestJson(input: Record<string, unknown>): Message {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(input)) {
         switch (key) {
@@ -57,10 +54,7 @@ function messageFromJson(input: Record<string, unknown>): Message {
     return result as unknown as Message;
 }
 
-/**
- * Drop undefined fields so messages can be compared structurally
- */
-function normalize(msg: Message): Record<string, unknown> {
+function toComparable(msg: Message): Record<string, unknown> {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(msg)) {
         if (value === undefined) continue;
@@ -110,13 +104,13 @@ describe('manifest', () => {
 describe('valid messages', () => {
     for (const fixture of manifest.valid) {
         const input = readFixture(fixture.file);
-        const expected = messageFromJson(fixture.message);
+        const expected = messageFromManifestJson(fixture.message);
         describe(fixture.name, () => {
             test('parses', () => {
                 const result = parseMessage(input);
                 if (!result.success) throw new Error(result.error);
-                expect(normalize(result.value)).toStrictEqual(
-                    normalize(expected),
+                expect(toComparable(result.value)).toStrictEqual(
+                    toComparable(expected),
                 );
             });
             if (fixture.canonical) {
@@ -124,19 +118,18 @@ describe('valid messages', () => {
                     expect(encodeMessage(expected)).toStrictEqual(input);
                 });
             } else {
-                test('re-encodes to an equivalent canonical message', () => {
+                test('re-encodes to an equivalent and stable canonical message', () => {
                     const parsed = parseMessage(input);
                     if (!parsed.success) throw new Error(parsed.error);
-                    const encoded = encodeMessage(parsed.value);
-                    expect(encoded).not.toStrictEqual(input);
-                    const reparsed = parseMessage(encoded);
+                    const canonicalEncoding = encodeMessage(parsed.value);
+                    expect(canonicalEncoding).not.toStrictEqual(input);
+                    const reparsed = parseMessage(canonicalEncoding);
                     if (!reparsed.success) throw new Error(reparsed.error);
-                    expect(normalize(reparsed.value)).toStrictEqual(
-                        normalize(expected),
+                    expect(toComparable(reparsed.value)).toStrictEqual(
+                        toComparable(expected),
                     );
-                    // canonical encoding is stable
                     expect(encodeMessage(reparsed.value)).toStrictEqual(
-                        encoded,
+                        canonicalEncoding,
                     );
                 });
             }
