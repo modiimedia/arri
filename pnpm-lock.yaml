@@ -263,6 +263,9 @@ importers:
       '@arrirpc/codegen-utils':
         specifier: workspace:*
         version: link:../../../tooling/codegen-utils
+      '@arrirpc/core':
+        specifier: workspace:*
+        version: link:../ts-core
       '@arrirpc/schema':
         specifier: workspace:*
         version: link:../ts-schema

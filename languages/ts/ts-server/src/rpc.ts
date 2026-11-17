@@ -5,6 +5,7 @@ import {
     type RpcDefinition,
     type RpcHttpMethod,
 } from '@arrirpc/codegen-utils';
+import { Result } from '@arrirpc/core';
 import {
     a,
     ADiscriminatorSchema,
@@ -19,7 +20,6 @@ import {
     isASchema,
     isAStringEnumSchema,
     isAUnionSchema,
-    Result,
     ValueError,
 } from '@arrirpc/schema';
 import {
@@ -352,11 +352,11 @@ export function registerRpc(
             }
             if (typeof response === 'object') {
                 const payload = responseValidator?.serialize(response);
-                if (payload && payload.success !== true) {
+                if (payload && payload.ok !== true) {
                     throw defineError(500, {
                         message:
                             'Failed to serialize response. Response does not match specified schema',
-                        data: payload?.errors,
+                        data: payload?.error,
                     });
                 }
                 setResponseHeader(event, 'Content-Type', 'application/json');
@@ -409,11 +409,11 @@ export async function validateRpcRequestInput(
             const parsedParams = await getValidatedQuery(event, (input) =>
                 validator.coerce(input),
             );
-            if (parsedParams.success) {
+            if (parsedParams.ok) {
                 event.context.params = parsedParams.value;
             } else {
                 const errParts: string[] = [];
-                for (const err of parsedParams.errors) {
+                for (const err of parsedParams.error) {
                     const errPath = err.instancePath?.split('/');
                     errPath?.shift();
                     const propName = errPath?.join('.');
@@ -426,7 +426,7 @@ export async function validateRpcRequestInput(
                 )}]`;
                 throw defineError(400, {
                     message,
-                    data: parsedParams.errors,
+                    data: parsedParams.error,
                 });
             }
             break;
@@ -442,10 +442,10 @@ export async function validateRpcRequestInput(
                 });
             }
             const parsedParams = validator.parse(body);
-            if (!parsedParams?.success) {
+            if (!parsedParams?.ok) {
                 throw defineError(400, {
-                    message: errorMessageFromErrors(parsedParams.errors),
-                    data: parsedParams.errors,
+                    message: errorMessageFromErrors(parsedParams.error),
+                    data: parsedParams.error,
                 });
             }
             event.context.params = parsedParams.value;
@@ -459,9 +459,9 @@ export async function validateRpcRequestInput(
 export type RequestValidator<T = any> = {
     validate: (input: unknown) => input is T;
     errors: (input: unknown) => ValueError[];
-    coerce: (input: unknown) => Result<T>;
-    parse: (input: unknown) => Result<T>;
-    serialize: (input: any) => Result<string>;
+    coerce: (input: unknown) => Result<T, ValueError[]>;
+    parse: (input: unknown) => Result<T, ValueError[]>;
+    serialize: (input: any) => Result<string, ValueError[]>;
 };
 
 let useJitCompiler = true;

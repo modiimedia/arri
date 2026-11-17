@@ -1,4 +1,5 @@
-import { InferType, ResultSuccess, ValueError } from '@arrirpc/schema';
+import { ResultOk } from '@arrirpc/core';
+import { InferType, ValueError } from '@arrirpc/schema';
 import {
     createEventStream,
     eventHandler,
@@ -151,9 +152,10 @@ export class EventStreamConnection<TData> {
                         id: eventId,
                         event: 'message',
                         data: (
-                            this.validator.serialize(
-                                item,
-                            ) as ResultSuccess<string>
+                            this.validator.serialize(item) as ResultOk<
+                                string,
+                                never
+                            >
                         ).value,
                     });
                     results.push({ success: true });
@@ -172,8 +174,9 @@ export class EventStreamConnection<TData> {
             await this.eventStream.push({
                 id: eventId,
                 event: 'message',
-                data: (this.validator.serialize(data) as ResultSuccess<string>)
-                    .value,
+                data: (
+                    this.validator.serialize(data) as ResultOk<string, never>
+                ).value,
             });
             return { success: true };
         }

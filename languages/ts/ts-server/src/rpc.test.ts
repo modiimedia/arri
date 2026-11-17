@@ -240,8 +240,8 @@ describe('validator compilation failures', () => {
             throw new SyntaxError('Invalid left-hand side in assignment');
         });
         const failing = getSchemaValidator('failing', 'params', Params)!;
-        expect(failing.parse({ id: '1' }).success).toBe(true);
-        expect(failing.parse({ id: 1 }).success).toBe(false);
+        expect(failing.parse({ id: '1' }).ok).toBe(true);
+        expect(failing.parse({ id: 1 }).ok).toBe(false);
         expect(warn).toHaveBeenCalledTimes(1);
         expect(warn.mock.calls[0]![0]).toContain('failing');
         expect(warn.mock.calls[0]![0]).toContain(
@@ -265,8 +265,8 @@ describe('validator compilation failures', () => {
         expect(compile).toHaveBeenCalledTimes(1);
         expect(warn).toHaveBeenCalledTimes(1);
         for (const validator of [first, second, third]) {
-            expect(validator.parse({ id: '1' }).success).toBe(true);
-            expect(validator.parse({ id: 1 }).success).toBe(false);
+            expect(validator.parse({ id: '1' }).ok).toBe(true);
+            expect(validator.parse({ id: 1 }).ok).toBe(false);
         }
     });
     it('detects blocked code generation by name since errors can come from another realm', async () => {
@@ -285,7 +285,7 @@ describe('validator compilation failures', () => {
         });
         const validator = getSchemaValidator('first', 'params', Params)!;
         getSchemaValidator('second', 'params', Params);
-        expect(validator.parse({ id: '1' }).success).toBe(true);
+        expect(validator.parse({ id: '1' }).ok).toBe(true);
         expect(compile).toHaveBeenCalledTimes(2);
         expect(warn).toHaveBeenCalledTimes(2);
     });
@@ -303,11 +303,11 @@ describe('validator compilation failures', () => {
             )!;
             expect(compile).not.toHaveBeenCalled();
             expect(warn).not.toHaveBeenCalled();
-            expect(validator.parse({ id: '1' }).success).toBe(true);
-            expect(validator.parse({ id: 1 }).success).toBe(false);
-            expect(validator.coerce({ id: '1' }).success).toBe(true);
+            expect(validator.parse({ id: '1' }).ok).toBe(true);
+            expect(validator.parse({ id: 1 }).ok).toBe(false);
+            expect(validator.coerce({ id: '1' }).ok).toBe(true);
             expect(validator.validate({ id: '1' })).toBe(true);
-            expect(validator.serialize({ id: '1' }).success).toBe(true);
+            expect(validator.serialize({ id: '1' }).ok).toBe(true);
         });
         it('does not affect later procedures that have compilation enabled', async () => {
             const { getSchemaValidator, compile } = await setup();
@@ -379,7 +379,7 @@ describe('validator compilation failures', () => {
                 Params,
                 strict,
             )!;
-            expect(validator.parse({ id: '1' }).success).toBe(true);
+            expect(validator.parse({ id: '1' }).ok).toBe(true);
             expect(warn).toHaveBeenCalledTimes(1);
         });
         it('is passed through from ArriApp', () => {

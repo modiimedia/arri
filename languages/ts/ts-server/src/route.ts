@@ -120,9 +120,9 @@ export function handleRoute(
             if (route.query) {
                 const query = getQuery(event);
                 const parsedQuery = a.coerce(route.query as ASchema, query);
-                if (!parsedQuery.success) {
+                if (!parsedQuery.ok) {
                     const errParts: string[] = [];
-                    for (const err of parsedQuery.errors) {
+                    for (const err of parsedQuery.error) {
                         const errPath = err.instancePath.split('/');
                         errPath.shift();
                         const propName = errPath.join('.');
@@ -148,10 +148,10 @@ export function handleRoute(
             if (route.body && !notAllowedBodyMethods.includes(event.method)) {
                 const body = await readRawBody(event);
                 const parsedBody = a.parse(route.body as ASchema, body);
-                if (!parsedBody.success) {
+                if (!parsedBody.ok) {
                     throw defineError(400, {
-                        message: errorMessageFromErrors(parsedBody.errors),
-                        data: parsedBody.errors,
+                        message: errorMessageFromErrors(parsedBody.error),
+                        data: parsedBody.error,
                     });
                 }
                 event.context.body = parsedBody.value;
