@@ -180,10 +180,12 @@ A message received from the wrong party (e.g. a client receiving `INVOCATION`) i
 
 The `req-id` header identifies which call a message belongs to.
 
+- Every message that belongs to a call (`INVOCATION`, `OK`, `STREAM_*`, and `CANCEL`) must include a request ID. Messages without one are invalid.
+- `ERROR` messages include the request ID of the call that failed. An `ERROR` without a request ID is a [connection-level error](#connection-level-errors).
 - Request IDs are chosen by the client and are opaque. Servers only compare them for equality and never interpret them.
 - A request ID must be unique among the active calls of a single connection. Servers always scope request IDs by connection, so a request ID from one client can never refer to another client's call. A per-connection counter is sufficient, but clients may use any scheme (UUIDs, ULIDs, etc).
 - Request IDs must be 1-128 visible ASCII characters (`0x21`-`0x7E`).
-- Bindings where the transport already associates responses with requests (e.g. a single HTTP request) may omit request IDs. Bindings where multiple calls share a single channel, or where a single call spans multiple requests, require them.
+- Bindings where the transport already pairs responses with requests (e.g. a single HTTP request) may leave request IDs off the wire. When converting the transport's native constructs into messages, such a binding assigns the request ID itself, and it drops the request ID when converting messages back. Bindings where multiple calls share a single channel, or where a single call spans multiple requests, must carry request IDs on the wire.
 - A server that receives an `INVOCATION` with a request ID that is already in use on that connection responds with an `ERROR`.
 
 Request IDs are not intended for tracing. Use the standard W3C `traceparent` header as a custom header for that purpose.
@@ -369,7 +371,7 @@ Every binding must define:
 
 - how connections are established and closed
 - how messages are carried (either directly using the [message format](#message-format) or by translating them into native constructs)
-- whether request IDs are required
+- whether request IDs are carried on the wire or assigned by the binding
 - which custom header names collide with names the transport treats specially
 - any [binding headers](#binding-headers) it uses
 

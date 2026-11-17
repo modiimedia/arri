@@ -1,0 +1,4 @@
+ARRIRPC/0 STREAM_DATA
+msg-id: 1
+
+{"id":"12345"}

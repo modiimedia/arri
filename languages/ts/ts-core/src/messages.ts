@@ -32,8 +32,9 @@ export const DEFAULT_CONTENT_TYPE = 'application/json' as const;
  *
  * Must be 1-128 visible ASCII characters (0x21-0x7E). See {@link isValidReqId}.
  *
- * Bindings where the transport already correlates requests and responses (e.g. a single HTTP request)
- * may omit it.
+ * Every message that belongs to a call has one. Bindings where the transport already pairs responses
+ * with requests (e.g. a single HTTP request) may leave it off the wire and assign one when converting
+ * to and from Arri messages.
  */
 export type ReqId = string;
 
@@ -47,7 +48,7 @@ export const MAX_REQ_ID_LENGTH = 128;
 export interface InvocationMessage {
     type: 'INVOCATION';
     rpcName: string;
-    reqId?: ReqId;
+    reqId: ReqId;
     /**
      * The content type of this message's body. Defaults to `application/json`.
      */
@@ -73,7 +74,7 @@ export interface InvocationMessage {
  */
 export interface OkMessage {
     type: 'OK';
-    reqId?: ReqId;
+    reqId: ReqId;
     /**
      * The content type of this message's body. Defaults to `application/json`.
      */
@@ -110,7 +111,7 @@ export interface ErrorMessage {
  */
 export interface StreamStartMessage {
     type: 'STREAM_START';
-    reqId?: ReqId;
+    reqId: ReqId;
     /**
      * The content type of every subsequent STREAM_DATA message sent by the same party with the same `reqId`.
      * Defaults to `application/json`.
@@ -126,7 +127,7 @@ export interface StreamStartMessage {
  */
 export interface StreamDataMessage {
     type: 'STREAM_DATA';
-    reqId?: ReqId;
+    reqId: ReqId;
     msgId?: string;
     body?: Uint8Array;
 }
@@ -139,7 +140,7 @@ export interface StreamDataMessage {
  */
 export interface StreamEndMessage {
     type: 'STREAM_END';
-    reqId?: ReqId;
+    reqId: ReqId;
     reason?: string;
 }
 
@@ -150,7 +151,7 @@ export interface StreamEndMessage {
  */
 export interface CancelMessage {
     type: 'CANCEL';
-    reqId?: ReqId;
+    reqId: ReqId;
     reason?: string;
 }
 
@@ -524,7 +525,37 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
         heartbeatInterval = Number(rawHeartbeatInterval);
     }
 
-    switch (msgType as MessageType) {
+    const messageType = msgType as MessageType;
+    switch (messageType) {
+        case 'ERROR':
+            return ok<ErrorMessage>({
+                type: 'ERROR',
+                reqId,
+                contentType: reserved.get('content-type'),
+                headers: custom,
+                body,
+            });
+        case 'CONNECTION_START':
+            return ok<ConnectionStartMessage>({
+                type: 'CONNECTION_START',
+                heartbeatInterval,
+            });
+        case 'HEARTBEAT':
+            return ok<HeartbeatMessage>({
+                type: 'HEARTBEAT',
+                heartbeatInterval,
+            });
+        case 'GOAWAY':
+            return ok<GoAwayMessage>({
+                type: 'GOAWAY',
+                reason: reserved.get('reason'),
+            });
+    }
+
+    if (reqId === undefined) {
+        return err(`${messageType} messages require a req-id.`);
+    }
+    switch (messageType) {
         case 'INVOCATION':
             return ok<InvocationMessage>({
                 type: 'INVOCATION',
@@ -540,14 +571,6 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
         case 'OK':
             return ok<OkMessage>({
                 type: 'OK',
-                reqId,
-                contentType: reserved.get('content-type'),
-                headers: custom,
-                body,
-            });
-        case 'ERROR':
-            return ok<ErrorMessage>({
-                type: 'ERROR',
                 reqId,
                 contentType: reserved.get('content-type'),
                 headers: custom,
@@ -577,21 +600,6 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
             return ok<CancelMessage>({
                 type: 'CANCEL',
                 reqId,
-                reason: reserved.get('reason'),
-            });
-        case 'CONNECTION_START':
-            return ok<ConnectionStartMessage>({
-                type: 'CONNECTION_START',
-                heartbeatInterval,
-            });
-        case 'HEARTBEAT':
-            return ok<HeartbeatMessage>({
-                type: 'HEARTBEAT',
-                heartbeatInterval,
-            });
-        case 'GOAWAY':
-            return ok<GoAwayMessage>({
-                type: 'GOAWAY',
                 reason: reserved.get('reason'),
             });
     }

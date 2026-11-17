@@ -22,12 +22,13 @@
     },
     {
       "name": "Invocation_Minimal",
-      "description": "INVOCATION with only an rpc name",
+      "description": "INVOCATION with only an rpc name and req-id",
       "file": "messages/Invocation_Minimal.arrimsg",
       "canonical": true,
       "message": {
         "type": "INVOCATION",
         "rpcName": "users.getUser",
+        "reqId": "1",
         "headers": []
       }
     },
@@ -406,6 +407,36 @@
       "name": "ReqIdTooLong",
       "description": "req-id must be at most 128 characters",
       "file": "messages/Invalid_ReqIdTooLong.arrimsg"
+    },
+    {
+      "name": "Invocation_MissingReqId",
+      "description": "INVOCATION messages require a req-id",
+      "file": "messages/Invalid_Invocation_MissingReqId.arrimsg"
+    },
+    {
+      "name": "Ok_MissingReqId",
+      "description": "OK messages require a req-id",
+      "file": "messages/Invalid_Ok_MissingReqId.arrimsg"
+    },
+    {
+      "name": "StreamStart_MissingReqId",
+      "description": "STREAM_START messages require a req-id",
+      "file": "messages/Invalid_StreamStart_MissingReqId.arrimsg"
+    },
+    {
+      "name": "StreamData_MissingReqId",
+      "description": "STREAM_DATA messages require a req-id",
+      "file": "messages/Invalid_StreamData_MissingReqId.arrimsg"
+    },
+    {
+      "name": "StreamEnd_MissingReqId",
+      "description": "STREAM_END messages require a req-id",
+      "file": "messages/Invalid_StreamEnd_MissingReqId.arrimsg"
+    },
+    {
+      "name": "Cancel_MissingReqId",
+      "description": "CANCEL messages require a req-id",
+      "file": "messages/Invalid_Cancel_MissingReqId.arrimsg"
     },
     {
       "name": "HeartbeatIntervalNotANumber",

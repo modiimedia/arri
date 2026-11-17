@@ -51,9 +51,11 @@ authorization: Bearer abc
         msg: {
             type: 'INVOCATION',
             rpcName: 'ping',
+            reqId: '1',
             headers: new ArriHeaders(),
         },
         encoded: `ARRIRPC/0 INVOCATION ping
+req-id: 1
 
 `,
     },
@@ -188,6 +190,7 @@ describe('binary bodies', () => {
     test('body is a view into the input', () => {
         const encoded = encodeMessage({
             type: 'OK',
+            reqId: '1',
             headers: new ArriHeaders(),
             body: nonUtf8BodyContainingHeadTerminator,
         });
@@ -201,6 +204,7 @@ describe('binary bodies', () => {
         const result = parseMessage(
             encodeMessage({
                 type: 'OK',
+                reqId: '1',
                 headers: new ArriHeaders(),
                 body: new Uint8Array(),
             }),
@@ -216,22 +220,25 @@ describe('encoding', () => {
     test('writes custom headers as normalized by ArriHeaders', () => {
         const encoded = encodeMessage({
             type: 'OK',
+            reqId: '1',
             headers: new ArriHeaders({
                 'X-Foo': ' 1 ',
                 'x-foo': '2',
                 'x-bar': '3',
             }),
         });
-        expect(text(encoded)).toBe('ARRIRPC/0 OK\nx-foo: 1, 2\nx-bar: 3\n\n');
+        expect(text(encoded)).toBe(
+            'ARRIRPC/0 OK\nreq-id: 1\nx-foo: 1, 2\nx-bar: 3\n\n',
+        );
     });
     test('rejects newlines in reserved header values', () => {
         expect(() =>
-            encodeMessage({ type: 'STREAM_END', reason: 'a\r\nb' }),
+            encodeMessage({ type: 'STREAM_END', reqId: '1', reason: 'a\r\nb' }),
         ).toThrow(MessageEncodingError);
     });
     test('rejects non-ASCII reserved header values', () => {
         expect(() =>
-            encodeMessage({ type: 'CANCEL', reason: 'no más' }),
+            encodeMessage({ type: 'CANCEL', reqId: '1', reason: 'no más' }),
         ).toThrow(MessageEncodingError);
     });
     test('trims spaces and tabs from reserved header values', () => {
@@ -264,6 +271,7 @@ describe('encoding', () => {
                 encodeMessage({
                     type: 'INVOCATION',
                     rpcName,
+                    reqId: '1',
                     headers: new ArriHeaders(),
                 }),
             ).toThrow(MessageEncodingError);
@@ -282,18 +290,22 @@ describe('parsing', () => {
         expect(parseMessage(new Uint8Array()).success).toBe(false);
     });
     test('rejects non-ASCII and control characters in the head', () => {
-        expect(parse('ARRIRPC/0 OK\nx-foo: café\n\n').success).toBe(false);
-        expect(parse('ARRIRPC/0 OK\nx-foo: a\rb\n\n').success).toBe(false);
+        expect(parse('ARRIRPC/0 OK\nreq-id: 1\nx-foo: café\n\n').success).toBe(
+            false,
+        );
+        expect(parse('ARRIRPC/0 OK\nreq-id: 1\nx-foo: a\rb\n\n').success).toBe(
+            false,
+        );
         expect(parse('ARRIRPC/0 OK\r\nx-foo: 1\r\n\r\n').success).toBe(false);
         const input = new Uint8Array([
-            ...utf8('ARRIRPC/0 OK\nx-foo: '),
+            ...utf8('ARRIRPC/0 OK\nreq-id: 1\nx-foo: '),
             0xff,
             ...utf8('\n\n'),
         ]);
         expect(parseMessage(input).success).toBe(false);
     });
     test('allows non-ASCII bytes in the body', () => {
-        const result = parse('ARRIRPC/0 OK\n\ncafé');
+        const result = parse('ARRIRPC/0 OK\nreq-id: 1\n\ncafé');
         expect(result.success).toBe(true);
     });
     test('rejects unknown message types', () => {
@@ -315,20 +327,22 @@ describe('parsing', () => {
         });
     });
     test('rejects duplicate headers (case-insensitive)', () => {
-        expect(parse('ARRIRPC/0 OK\nx-foo: 1\nx-foo: 2\n\n').success).toBe(
-            false,
-        );
-        expect(parse('ARRIRPC/0 OK\nX-Foo: 1\nx-foo: 2\n\n').success).toBe(
-            false,
-        );
+        expect(
+            parse('ARRIRPC/0 OK\nreq-id: 1\nx-foo: 1\nx-foo: 2\n\n').success,
+        ).toBe(false);
+        expect(
+            parse('ARRIRPC/0 OK\nreq-id: 1\nX-Foo: 1\nx-foo: 2\n\n').success,
+        ).toBe(false);
     });
     test('allows header keys that collide with Object.prototype properties', () => {
-        const result = parse('ARRIRPC/0 OK\nconstructor: 1\n__proto__: 2\n\n');
+        const result = parse(
+            'ARRIRPC/0 OK\nreq-id: 1\nconstructor: 1\n__proto__: 2\n\n',
+        );
         expect(result).toStrictEqual({
             success: true,
             value: {
                 type: 'OK',
-                reqId: undefined,
+                reqId: '1',
                 contentType: undefined,
                 headers: new ArriHeaders([
                     ['constructor', '1'],
@@ -356,7 +370,7 @@ describe('parsing', () => {
     });
     test('ignores headers reserved for transport bindings', () => {
         const result = parse(
-            'ARRIRPC/0 OK\nArri-Connection-Id: abc\nx-foo: bar\n\n',
+            'ARRIRPC/0 OK\nreq-id: 1\nArri-Connection-Id: abc\nx-foo: bar\n\n',
         );
         if (!result.success || result.value.type !== 'OK') {
             throw new Error('expected OK message');
@@ -372,19 +386,36 @@ describe('parsing', () => {
             value: { type: 'HEARTBEAT', heartbeatInterval: undefined },
         });
     });
+    test('requires a req-id on messages that belong to a call', () => {
+        for (const firstLine of [
+            'INVOCATION foo',
+            'OK',
+            'STREAM_START',
+            'STREAM_DATA',
+            'STREAM_END',
+            'CANCEL',
+        ]) {
+            expect(parse(`ARRIRPC/0 ${firstLine}\n\n`).success).toBe(false);
+        }
+    });
+    test('allows ERROR without a req-id (connection-level error)', () => {
+        expect(parse('ARRIRPC/0 ERROR\n\n').success).toBe(true);
+    });
     test('enforces message direction', () => {
-        expect(parseClientMessage(utf8('ARRIRPC/0 OK\n\n')).success).toBe(
-            false,
-        );
-        expect(parseServerMessage(utf8('ARRIRPC/0 CANCEL\n\n')).success).toBe(
-            false,
-        );
+        expect(
+            parseClientMessage(utf8('ARRIRPC/0 OK\nreq-id: 1\n\n')).success,
+        ).toBe(false);
+        expect(
+            parseServerMessage(utf8('ARRIRPC/0 CANCEL\nreq-id: 1\n\n')).success,
+        ).toBe(false);
         for (const type of ['STREAM_START', 'STREAM_DATA', 'STREAM_END']) {
             expect(
-                parseClientMessage(utf8(`ARRIRPC/0 ${type}\n\n`)).success,
+                parseClientMessage(utf8(`ARRIRPC/0 ${type}\nreq-id: 1\n\n`))
+                    .success,
             ).toBe(true);
             expect(
-                parseServerMessage(utf8(`ARRIRPC/0 ${type}\n\n`)).success,
+                parseServerMessage(utf8(`ARRIRPC/0 ${type}\nreq-id: 1\n\n`))
+                    .success,
             ).toBe(true);
         }
     });

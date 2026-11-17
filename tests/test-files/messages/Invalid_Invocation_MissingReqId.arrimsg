@@ -1,0 +1,4 @@
+ARRIRPC/0 INVOCATION users.getUser
+content-type: application/json
+
+{"id":"12345"}

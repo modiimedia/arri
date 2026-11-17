@@ -10,6 +10,7 @@ This document defines how [Arri RPC](/specifications/arri_rpc.md) messages are c
 - [Connections](#connections)
 - [Routing](#routing)
 - [Header Mapping](#header-mapping)
+- [Request IDs](#request-ids)
 - [Unary Calls](#unary-calls)
 - [Output Streams](#output-streams)
 - [Input and Bidirectional Streams](#input-and-bidirectional-streams)
@@ -38,20 +39,28 @@ Each procedure is invoked at an HTTP path and method described by the [app defin
 
 ## Header Mapping
 
-| Arri                                | HTTP                                                                             |
-| ----------------------------------- | -------------------------------------------------------------------------------- |
-| `content-type`                      | `Content-Type`                                                                   |
-| `accept`                            | `Accept`                                                                         |
-| `msg-id`                            | the SSE `id` field (see [Output Streams](#output-streams))                       |
-| `last-msg-id`                       | `Last-Event-ID` request header                                                   |
-| `req-id`                            | `req-id`. Optional, except for [split calls](#split-calls) where it is required. |
-| `client-version`                    | `client-version`                                                                 |
-| Custom headers                      | passed through unchanged                                                         |
-| [Binding headers](#binding-headers) | `arri-*`                                                                         |
+| Arri                                | HTTP                                                       |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `content-type`                      | `Content-Type`                                             |
+| `accept`                            | `Accept`                                                   |
+| `msg-id`                            | the SSE `id` field (see [Output Streams](#output-streams)) |
+| `last-msg-id`                       | `Last-Event-ID` request header                             |
+| `req-id`                            | `req-id` request header. See [Request IDs](#request-ids).  |
+| `client-version`                    | `client-version`                                           |
+| Custom headers                      | passed through unchanged                                   |
+| [Binding headers](#binding-headers) | `arri-*`                                                   |
 
 Reserved Arri headers with a native HTTP equivalent use that equivalent. Reserved headers without an HTTP equivalent keep their Arri names, which cannot collide with custom headers because they are reserved.
 
 HTTP header names are case-insensitive. HTTP headers that appear more than once are joined with `", "` when converted to Arri headers.
+
+## Request IDs
+
+Each HTTP request carries a single call, so request IDs are optional on the wire:
+
+- If the request includes a `req-id` header, the server uses it as the call's request ID. Otherwise the server assigns one.
+- Responses never include a `req-id` header.
+- [Split calls](#split-calls) are the exception. Every request of a split call must include `req-id`.
 
 ## Unary Calls
 

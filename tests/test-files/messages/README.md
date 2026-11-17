@@ -32,10 +32,11 @@ x-tenant-id: tenant_1\n
 
 ## Invocation_Minimal.arrimsg
 
-INVOCATION with only an rpc name
+INVOCATION with only an rpc name and req-id
 
 ```txt
 ARRIRPC/0 INVOCATION users.getUser\n
+req-id: 1\n
 \n
 
 ```
@@ -553,6 +554,71 @@ req-id must be at most 128 characters
 ```txt
 ARRIRPC/0 OK\n
 req-id: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n
+\n
+
+```
+
+## Invalid_Invocation_MissingReqId.arrimsg
+
+INVOCATION messages require a req-id
+
+```txt
+ARRIRPC/0 INVOCATION users.getUser\n
+content-type: application/json\n
+\n
+{"id":"12345"}
+```
+
+## Invalid_Ok_MissingReqId.arrimsg
+
+OK messages require a req-id
+
+```txt
+ARRIRPC/0 OK\n
+content-type: application/json\n
+\n
+{"id":"12345"}
+```
+
+## Invalid_StreamStart_MissingReqId.arrimsg
+
+STREAM_START messages require a req-id
+
+```txt
+ARRIRPC/0 STREAM_START\n
+content-type: application/json\n
+\n
+
+```
+
+## Invalid_StreamData_MissingReqId.arrimsg
+
+STREAM_DATA messages require a req-id
+
+```txt
+ARRIRPC/0 STREAM_DATA\n
+msg-id: 1\n
+\n
+{"id":"12345"}
+```
+
+## Invalid_StreamEnd_MissingReqId.arrimsg
+
+STREAM_END messages require a req-id
+
+```txt
+ARRIRPC/0 STREAM_END\n
+reason: done\n
+\n
+
+```
+
+## Invalid_Cancel_MissingReqId.arrimsg
+
+CANCEL messages require a req-id
+
+```txt
+ARRIRPC/0 CANCEL\n
 \n
 
 ```

@@ -609,10 +609,11 @@ const canonicalMessageFixtures: CanonicalMessageFixture[] = [
     },
     {
         name: 'Invocation_Minimal',
-        description: 'INVOCATION with only an rpc name',
+        description: 'INVOCATION with only an rpc name and req-id',
         message: {
             type: 'INVOCATION',
             rpcName: 'users.getUser',
+            reqId: '1',
             headers: new ArriHeaders(),
         },
     },
@@ -994,6 +995,36 @@ const invalidMessageFixtures: InvalidMessageFixture[] = [
         name: 'ReqIdTooLong',
         description: 'req-id must be at most 128 characters',
         input: `ARRIRPC/0 OK\nreq-id: ${'a'.repeat(129)}\n\n`,
+    },
+    {
+        name: 'Invocation_MissingReqId',
+        description: 'INVOCATION messages require a req-id',
+        input: 'ARRIRPC/0 INVOCATION users.getUser\ncontent-type: application/json\n\n{"id":"12345"}',
+    },
+    {
+        name: 'Ok_MissingReqId',
+        description: 'OK messages require a req-id',
+        input: 'ARRIRPC/0 OK\ncontent-type: application/json\n\n{"id":"12345"}',
+    },
+    {
+        name: 'StreamStart_MissingReqId',
+        description: 'STREAM_START messages require a req-id',
+        input: 'ARRIRPC/0 STREAM_START\ncontent-type: application/json\n\n',
+    },
+    {
+        name: 'StreamData_MissingReqId',
+        description: 'STREAM_DATA messages require a req-id',
+        input: 'ARRIRPC/0 STREAM_DATA\nmsg-id: 1\n\n{"id":"12345"}',
+    },
+    {
+        name: 'StreamEnd_MissingReqId',
+        description: 'STREAM_END messages require a req-id',
+        input: 'ARRIRPC/0 STREAM_END\nreason: done\n\n',
+    },
+    {
+        name: 'Cancel_MissingReqId',
+        description: 'CANCEL messages require a req-id',
+        input: 'ARRIRPC/0 CANCEL\n\n',
     },
     {
         name: 'HeartbeatIntervalNotANumber',
