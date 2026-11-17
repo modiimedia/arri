@@ -30,21 +30,19 @@ test('Type Inference', () => {
 
 describe('Parsing', () => {
     it('accepts good input', () => {
-        expect(a.parse(NumberRecordSchema, { '1': 1, '2': 2 }).success).toBe(
-            true,
-        );
+        expect(a.parse(NumberRecordSchema, { '1': 1, '2': 2 }).ok).toBe(true);
         expect(
             a.parse(StringRecordSchema, {
                 '1': '1',
                 '2': '2',
                 [`A song titled "Song"`]: `A song titled "Song"`,
-            }).success,
+            }).ok,
         ).toBe(true);
         expect(
             a.parse(ObjectRecordSchema, {
                 a: { id: '12345', type: 'notification' },
                 b: { id: '12345', type: 'alert' },
-            }).success,
+            }).ok,
         ).toBe(true);
         expect(
             a.parse(
@@ -52,21 +50,21 @@ describe('Parsing', () => {
                 JSON.stringify({
                     a: { id: '12345', type: 'notification' },
                 }),
-            ).success,
+            ).ok,
         ).toBe(true);
     });
     it('rejects bad input', () => {
-        expect(
-            a.parse(NumberRecordSchema, { '1': '1', '2': '2' }).success,
-        ).toBe(false);
-        expect(
-            a.parse(StringRecordSchema, { '1': null, '2': '2' }).success,
-        ).toBe(false);
+        expect(a.parse(NumberRecordSchema, { '1': '1', '2': '2' }).ok).toBe(
+            false,
+        );
+        expect(a.parse(StringRecordSchema, { '1': null, '2': '2' }).ok).toBe(
+            false,
+        );
         expect(
             a.parse(ObjectRecordSchema, {
                 a: { id: '12345', type: 'blahasdlfkj' },
                 b: { id: '12345', type: 'alert' },
-            }).success,
+            }).ok,
         ).toBe(false);
     });
 });

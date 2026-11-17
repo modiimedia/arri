@@ -64,7 +64,3 @@ export function isValidationException(
 ): input is ValidationException {
     return input instanceof ValidationException;
 }
-
-export type Result<T> = ResultSuccess<T> | ResultFailure;
-export type ResultSuccess<T> = { success: true; value: T };
-export type ResultFailure = { success: false; errors: ValueError[] };

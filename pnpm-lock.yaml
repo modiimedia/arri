@@ -157,8 +157,13 @@ importers:
         specifier: workspace:*
         version: link:../ts-client
 
+  languages/ts/ts-core: {}
+
   languages/ts/ts-schema:
     dependencies:
+      '@arrirpc/core':
+        specifier: workspace:*
+        version: link:../ts-core
       '@arrirpc/type-defs':
         specifier: workspace:*
         version: link:../../../tooling/type-defs

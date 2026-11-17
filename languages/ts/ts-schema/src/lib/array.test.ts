@@ -87,52 +87,46 @@ describe('Parsing', () => {
     it('accepts good input', () => {
         const numberArr = [1, 2, 3, 4, 5];
         const numberArrResult = a.parse(NumberArray, numberArr);
-        expect(numberArrResult.success).toBe(true);
-        if (numberArrResult.success) {
+        expect(numberArrResult.ok).toBe(true);
+        if (numberArrResult.ok) {
             expect(numberArrResult.value).toStrictEqual(numberArr);
         }
         const numberJsonArrResult = a.parse(
             NumberArray,
             JSON.stringify(numberArr),
         );
-        expect(numberJsonArrResult.success).toBe(true);
-        if (numberJsonArrResult.success) {
+        expect(numberJsonArrResult.ok).toBe(true);
+        if (numberJsonArrResult.ok) {
             expect(numberJsonArrResult.value).toStrictEqual(numberArr);
         }
         const objectArr = [
             { id: '123111', date: new Date() },
             { id: 'alsdkfja', date: new Date() },
         ];
-        expect(a.parse(ObjectArray, objectArr).success).toBe(true);
-        expect(a.parse(ObjectArray, JSON.stringify(objectArr)).success).toBe(
-            true,
-        );
+        expect(a.parse(ObjectArray, objectArr).ok).toBe(true);
+        expect(a.parse(ObjectArray, JSON.stringify(objectArr)).ok).toBe(true);
     });
 
     it('rejects bad input', () => {
         const numberArr = [1, '1', 4];
-        expect(a.parse(NumberArray, numberArr).success).toBe(false);
-        expect(a.parse(NumberArray, JSON.stringify(numberArr)).success).toBe(
-            false,
-        );
+        expect(a.parse(NumberArray, numberArr).ok).toBe(false);
+        expect(a.parse(NumberArray, JSON.stringify(numberArr)).ok).toBe(false);
         const objectArr = [
             { id: '123124', date: 0 },
             { id: '1l3kj431lkj', date: 0 },
         ];
-        expect(a.parse(ObjectArray, objectArr).success).toBe(false);
-        expect(a.parse(ObjectArray, JSON.stringify(objectArr)).success).toBe(
-            false,
-        );
+        expect(a.parse(ObjectArray, objectArr).ok).toBe(false);
+        expect(a.parse(ObjectArray, JSON.stringify(objectArr)).ok).toBe(false);
         const nestedArr = [
             [1, 2, 3],
             [1, 2, 3],
         ];
-        expect(a.parse(NumberArray, nestedArr).success).toBe(false);
+        expect(a.parse(NumberArray, nestedArr).ok).toBe(false);
         const nestedStringArr = [
             ['1', '2', '3'],
             ['1', '2', '3'],
         ];
-        expect(a.parse(StringArray, nestedStringArr).success).toBe(false);
+        expect(a.parse(StringArray, nestedStringArr).ok).toBe(false);
     });
 
     it('parses array of nullable strings', () => {

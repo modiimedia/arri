@@ -54,8 +54,8 @@ export type ArriUser = a.infer<typeof ArriUser>;
 assertType<ArriUser>(goodInput);
 assert(a.validate(ArriUser, goodInput) === true);
 assert(a.validate(ArriUser, badInput) == false);
-assert(a.parse(ArriUser, goodInput).success === true);
-assert(a.parse(ArriUser, badInput).success === false);
+assert(a.parse(ArriUser, goodInput).ok === true);
+assert(a.parse(ArriUser, badInput).ok === false);
 assert($$ArriUser.validate(goodInput) === true);
 assert($$ArriUser.validate(badInput) === false);
 

@@ -11,16 +11,16 @@ test('type inference', () => {
 describe('parsing', () => {
     const parse = (input: unknown) => a.parse(UserRolesSchema, input);
     it('accepts good inputs', () => {
-        expect(parse('admin').success).toBe(true);
-        expect(parse('standard').success).toBe(true);
+        expect(parse('admin').ok).toBe(true);
+        expect(parse('standard').ok).toBe(true);
     });
 
     it('rejects bad inputs', () => {
         const badInput1 = parse('ADMIN');
-        expect(!badInput1.success && badInput1.errors.length > 0).toBe(true);
-        expect(parse('STANDARD').success).toBe(false);
-        expect(parse(0).success).toBe(false);
-        expect(parse('aldskjfa').success).toBe(false);
+        expect(!badInput1.ok && badInput1.error.length > 0).toBe(true);
+        expect(parse('STANDARD').ok).toBe(false);
+        expect(parse(0).ok).toBe(false);
+        expect(parse('aldskjfa').ok).toBe(false);
     });
 });
 

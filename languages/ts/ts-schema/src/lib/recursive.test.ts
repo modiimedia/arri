@@ -280,18 +280,18 @@ describe('parsing', () => {
         a.parseUnsafe(BinaryTree, input);
         const result = a.parse(BinaryTree, input);
         const jsonResult = a.parse(BinaryTree, JSON.stringify(input));
-        if (!result.success) {
-            console.error(result.errors);
+        if (!result.ok) {
+            console.error(result.error);
         }
-        if (!jsonResult.success) {
-            console.error(jsonResult.errors);
+        if (!jsonResult.ok) {
+            console.error(jsonResult.error);
         }
-        expect(result.success).toBe(true);
-        expect(jsonResult.success).toBe(true);
-        if (result.success) {
+        expect(result.ok).toBe(true);
+        expect(jsonResult.ok).toBe(true);
+        if (result.ok) {
             expect(result.value).toStrictEqual(input);
         }
-        if (jsonResult.success) {
+        if (jsonResult.ok) {
             expect(jsonResult.value).toStrictEqual(input);
         }
     });

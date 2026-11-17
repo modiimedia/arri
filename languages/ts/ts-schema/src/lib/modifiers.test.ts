@@ -106,37 +106,33 @@ describe('nullable()', () => {
         const parseNum = (input: unknown) => a.parse(NullableNum, input);
         const parseObject = (input: unknown) => a.parse(NullableObject, input);
         it('accepts good input', () => {
-            expect(parseNum('1').success).toBe(true);
-            expect(parseNum(null).success).toBe(true);
+            expect(parseNum('1').ok).toBe(true);
+            expect(parseNum(null).ok).toBe(true);
             expect(
                 parseObject({
                     id: '12345',
                     name: null,
                     createdAt: new Date(),
-                }).success,
+                }).ok,
             ).toBe(true);
             expect(
                 parseObject({
                     id: '12345',
                     name: 'john doe',
                     createdAt: new Date(),
-                }).success,
+                }).ok,
             ).toBe(true);
-            expect(parseObject(null).success).toBe(true);
+            expect(parseObject(null).ok).toBe(true);
         });
         it('rejects bad input', () => {
             const numResult = parseNum('hello world');
-            expect(!numResult.success && numResult.errors.length > 0).toBe(
-                true,
-            );
+            expect(!numResult.ok && numResult.error.length > 0).toBe(true);
             const objResult = parseObject({
                 id: '12355',
                 name: undefined,
                 createdAt: new Date(),
             });
-            expect(!objResult.success && objResult.errors.length > 0).toBe(
-                true,
-            );
+            expect(!objResult.ok && objResult.error.length > 0).toBe(true);
         });
     });
     describe('standard-schema support', () => {
@@ -326,11 +322,11 @@ describe('undefinable()', () => {
     test('validation', () => {
         for (const input of ObjectSchemaGoodInputs) {
             expect(a.validate(ObjectSchema, input)).toBe(true);
-            expect(a.parse(ObjectSchema, input).success).toBe(true);
+            expect(a.parse(ObjectSchema, input).ok).toBe(true);
         }
         for (const input of ObjectSchemaBadInputs) {
             expect(a.validate(ObjectSchema, input)).toBe(false);
-            expect(a.parse(ObjectSchema, input).success).toBe(false);
+            expect(a.parse(ObjectSchema, input).ok).toBe(false);
         }
     });
 });

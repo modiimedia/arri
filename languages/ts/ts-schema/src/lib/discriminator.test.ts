@@ -41,8 +41,7 @@ describe('Type Inference', () => {
 });
 
 describe('Parsing', () => {
-    const parse = (input: unknown) =>
-        a.parse(DiscriminatorSchema, input).success;
+    const parse = (input: unknown) => a.parse(DiscriminatorSchema, input).ok;
     it('parses compliant objects', () => {
         const createdInput: DiscriminatorSchema = {
             eventType: 'USER_CREATED',

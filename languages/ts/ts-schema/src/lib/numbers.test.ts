@@ -24,9 +24,9 @@ describe('parsing', () => {
             '-1351351.53135',
         ];
         for (const input of goodInputs) {
-            expect(a.parse(a.number(), input).success).toBe(true);
-            expect(a.parse(a.float32(), input).success).toBe(true);
-            expect(a.parse(a.float64(), input).success).toBe(true);
+            expect(a.parse(a.number(), input).ok).toBe(true);
+            expect(a.parse(a.float32(), input).ok).toBe(true);
+            expect(a.parse(a.float64(), input).ok).toBe(true);
         }
         const badInputs = [
             'hello world',
@@ -34,55 +34,55 @@ describe('parsing', () => {
             { helloWorld: 'helloWorld' },
         ];
         for (const input of badInputs) {
-            expect(a.parse(a.number(), input).success).toBe(false);
-            expect(a.parse(a.float32(), input).success).toBe(false);
-            expect(a.parse(a.float64(), input).success).toBe(false);
+            expect(a.parse(a.number(), input).ok).toBe(false);
+            expect(a.parse(a.float32(), input).ok).toBe(false);
+            expect(a.parse(a.float64(), input).ok).toBe(false);
         }
     });
     it('parses int8', () => {
         const goodInputs = [0, -128, 127, 50, 10, '-128', '127', '0'];
         for (const input of goodInputs) {
             const result = a.parse(a.int8(), input);
-            if (!result.success) {
+            if (!result.ok) {
                 console.error('This should pass int8', input);
             }
-            expect(result.success).toBe(true);
+            expect(result.ok).toBe(true);
         }
         const badInputs = [-1000, 200000, 0.5, 'hello world'];
         for (const input of badInputs) {
             const result = a.parse(a.int8(), input);
-            if (result.success) {
+            if (result.ok) {
                 console.error('This should fail int8', input);
             }
-            expect(result.success).toBe(false);
+            expect(result.ok).toBe(false);
         }
     });
     it('parses int16', () => {
         const goodInputs = [0, 32767, -32768, '32767', 500];
         for (const input of goodInputs) {
             const result = a.parse(a.int16(), input);
-            if (!result.success) {
+            if (!result.ok) {
                 console.error('This should pass int16', input);
             }
-            expect(result.success).toBe(true);
+            expect(result.ok).toBe(true);
         }
         const badInputs = [0.5, -32769, 32768, '32767h', 'hello world'];
         for (const input of badInputs) {
             const result = a.parse(a.int16(), input);
-            if (result.success) {
+            if (result.ok) {
                 console.error('This should fail int16', input);
             }
-            expect(result.success).toBe(false);
+            expect(result.ok).toBe(false);
         }
     });
     it('parses int32', () => {
         const goodInputs = [0, -2147483648, 2147483647, '2147483647', '500'];
         for (const input of goodInputs) {
             const result = a.parse(a.int32(), input);
-            if (!result.success) {
+            if (!result.ok) {
                 console.error('This should pass int32', input);
             }
-            expect(result.success).toBe(true);
+            expect(result.ok).toBe(true);
         }
         const badInputs = [
             2147483648,
@@ -95,10 +95,10 @@ describe('parsing', () => {
         ];
         for (const input of badInputs) {
             const result = a.parse(a.int32(), input);
-            if (result.success) {
+            if (result.ok) {
                 console.error('This should fail int32', input);
             }
-            expect(result.success).toBe(false);
+            expect(result.ok).toBe(false);
         }
     });
 });
@@ -125,7 +125,7 @@ describe('int64', () => {
             BigInt('-115191141'),
         ];
         for (const input of inputs) {
-            expect(a.parse(Schema, input).success).toBe(true);
+            expect(a.parse(Schema, input).ok).toBe(true);
         }
     });
     it('rejects invalid inputs', () => {
@@ -139,7 +139,7 @@ describe('int64', () => {
             '14315h',
         ];
         for (const input of inputs) {
-            expect(a.parse(Schema, input).success).toBe(false);
+            expect(a.parse(Schema, input).ok).toBe(false);
         }
     });
     it('serializes to json string', () => {

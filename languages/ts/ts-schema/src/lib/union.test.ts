@@ -52,27 +52,27 @@ describe('external tagging (default)', () => {
                 ARRAY: ['hello', 'world'],
             };
             const objectResult = parse(objectInput);
-            expect(objectResult.success).toBe(true);
-            if (objectResult.success) {
+            expect(objectResult.ok).toBe(true);
+            if (objectResult.ok) {
                 expect(objectResult.value).toStrictEqual({
                     OBJECT: { foo: 'hello world', bar: false },
                 });
             }
             const numberResult = parse(numberInput);
-            expect(numberResult.success).toBe(true);
-            if (numberResult.success) {
+            expect(numberResult.ok).toBe(true);
+            if (numberResult.ok) {
                 expect(numberResult.value).toStrictEqual({ NUMBER: 15 });
             }
             const booleanResult = parse(booleanInput);
-            expect(booleanResult.success).toBe(true);
-            if (booleanResult.success) {
+            expect(booleanResult.ok).toBe(true);
+            if (booleanResult.ok) {
                 expect(booleanResult.value).toStrictEqual({
                     BOOLEAN: true,
                 });
             }
             const arrayResult = parse(arrayInput);
-            expect(arrayResult.success).toBe(true);
-            if (arrayResult.success) {
+            expect(arrayResult.ok).toBe(true);
+            if (arrayResult.ok) {
                 expect(arrayResult.value).toStrictEqual({
                     ARRAY: ['hello', 'world'],
                 });
@@ -83,8 +83,8 @@ describe('external tagging (default)', () => {
                 FOO: 'foo',
             };
             const emptyObject = {};
-            expect(parse(myType).success).toBe(false);
-            expect(parse(emptyObject).success).toBe(false);
+            expect(parse(myType).ok).toBe(false);
+            expect(parse(emptyObject).ok).toBe(false);
         });
     });
 
@@ -300,8 +300,8 @@ describe('internal/adjacent tagging', () => {
                 radius: 15,
             };
             const rectangleResult = parse(rectangleInput);
-            expect(rectangleResult.success).toBe(true);
-            if (rectangleResult.success) {
+            expect(rectangleResult.ok).toBe(true);
+            if (rectangleResult.ok) {
                 expect(rectangleResult.value).toStrictEqual({
                     type: 'rectangle',
                     width: 15.5,
@@ -309,8 +309,8 @@ describe('internal/adjacent tagging', () => {
                 });
             }
             const circleResult = parse(circleInput);
-            expect(circleResult.success).toBe(true);
-            if (circleResult.success) {
+            expect(circleResult.ok).toBe(true);
+            if (circleResult.ok) {
                 expect(circleResult.value).toStrictEqual({
                     type: 'circle',
                     radius: 15,
@@ -327,8 +327,8 @@ describe('internal/adjacent tagging', () => {
                 ],
             };
             const emptyObject = {};
-            expect(parse(polygon).success).toBe(false);
-            expect(parse(emptyObject).success).toBe(false);
+            expect(parse(polygon).ok).toBe(false);
+            expect(parse(emptyObject).ok).toBe(false);
         });
     });
 
@@ -551,24 +551,24 @@ describe('internal/adjacent tagging with value key', () => {
                 },
             };
             const textResult = parse(textInput);
-            expect(textResult.success).toBe(true);
-            if (textResult.success) {
+            expect(textResult.ok).toBe(true);
+            if (textResult.ok) {
                 expect(textResult.value).toStrictEqual({
                     kind: 'text',
                     content: 'hello world',
                 });
             }
             const tagResult = parse(tagInput);
-            expect(tagResult.success).toBe(true);
-            if (tagResult.success) {
+            expect(tagResult.ok).toBe(true);
+            if (tagResult.ok) {
                 expect(tagResult.value).toStrictEqual({
                     kind: 'tags',
                     content: ['tag-1', 'tag-2', 'tag-3'],
                 });
             }
             const imageResult = parse(imageInput);
-            expect(imageResult.success).toBe(true);
-            if (imageResult.success) {
+            expect(imageResult.ok).toBe(true);
+            if (imageResult.ok) {
                 expect(imageResult.value).toStrictEqual({
                     kind: 'image',
                     content: {
@@ -589,8 +589,8 @@ describe('internal/adjacent tagging with value key', () => {
                 ],
             };
             const emptyObject = {};
-            expect(parse(polygon).success).toBe(false);
-            expect(parse(emptyObject).success).toBe(false);
+            expect(parse(polygon).ok).toBe(false);
+            expect(parse(emptyObject).ok).toBe(false);
         });
     });
 

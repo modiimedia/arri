@@ -140,13 +140,13 @@ describe('a.object()', () => {
         };
         const goodJsonInput = JSON.stringify(goodInput);
         const goodInputResult = a.parse(UserSchema, goodInput);
-        expect(goodInputResult.success).toBe(true);
-        if (goodInputResult.success) {
+        expect(goodInputResult.ok).toBe(true);
+        if (goodInputResult.ok) {
             expect(goodInputResult.value).toStrictEqual(goodInput);
         }
         const goodJsonResult = a.parse(UserSchema, goodJsonInput);
-        expect(goodJsonResult.success).toBe(true);
-        if (goodJsonResult.success) {
+        expect(goodJsonResult.ok).toBe(true);
+        if (goodJsonResult.ok) {
             expect(goodJsonResult.value).toStrictEqual(goodInput);
         }
     });
@@ -156,8 +156,8 @@ describe('a.object()', () => {
             name: 'john doe',
         };
         const badJsonInput = JSON.stringify(badInput);
-        expect(a.parse(UserSchema, badInput).success).toBe(false);
-        expect(a.parse(UserSchema, badJsonInput).success).toBe(false);
+        expect(a.parse(UserSchema, badInput).ok).toBe(false);
+        expect(a.parse(UserSchema, badJsonInput).ok).toBe(false);
     });
     test('parses nested objects', () => {
         const badInput = {
@@ -175,11 +175,11 @@ describe('a.object()', () => {
         };
         const badJsonInput = JSON.stringify(badInput);
         const badInputResult = a.parse(PostSchema, badInput);
-        if (badInputResult.success) {
+        if (badInputResult.ok) {
             console.error(badInputResult.value);
         }
-        expect(badInputResult.success).toBe(false);
-        expect(a.parse(PostSchema, badJsonInput).success).toBe(false);
+        expect(badInputResult.ok).toBe(false);
+        expect(a.parse(PostSchema, badJsonInput).ok).toBe(false);
         const goodInput: PostSchema = {
             id: '1234456',
             title: 'Hello World',
@@ -196,13 +196,13 @@ describe('a.object()', () => {
         };
         const goodJsonInput = JSON.stringify(goodInput);
         const result = a.parse(PostSchema, goodInput);
-        expect(result.success).toBe(true);
-        if (result.success) {
+        expect(result.ok).toBe(true);
+        if (result.ok) {
             expect(result.value).toStrictEqual(goodInput);
         }
         const jsonResult = a.parse(PostSchema, goodJsonInput);
-        expect(jsonResult.success).toBe(true);
-        if (jsonResult.success) {
+        expect(jsonResult.ok).toBe(true);
+        if (jsonResult.ok) {
             expect(jsonResult.value).toStrictEqual(goodInput);
         }
     });
@@ -395,11 +395,11 @@ describe('a.object() -> Coersion', () => {
             createdAt: '01/01/2001',
         };
         const simpleResult = coerceSimple(simpleInput);
-        if (!simpleResult.success) {
-            console.error(simpleResult.errors);
+        if (!simpleResult.ok) {
+            console.error(simpleResult.error);
         }
-        expect(simpleResult.success).toBe(true);
-        if (simpleResult.success) {
+        expect(simpleResult.ok).toBe(true);
+        if (simpleResult.ok) {
             expect(simpleResult.value).toStrictEqual({
                 limit: 100.5,
                 isActive: false,
@@ -418,11 +418,11 @@ describe('a.object() -> Coersion', () => {
             },
         };
         const complexResult = coerceComplex(complexInput);
-        if (!complexResult.success) {
-            console.error(complexResult.errors);
+        if (!complexResult.ok) {
+            console.error(complexResult.error);
         }
-        expect(complexResult.success).toBe(true);
-        if (complexResult.success) {
+        expect(complexResult.ok).toBe(true);
+        if (complexResult.ok) {
             expect(complexResult.value).toStrictEqual({
                 limit: 100.5,
                 isActive: false,
@@ -451,8 +451,8 @@ describe('a.pick()', () => {
             email: 'johndoe@gmail.com',
         };
         const result = a.parse(UserSubsetSchema, input);
-        expect(result.success).toBe(true);
-        if (result.success) {
+        expect(result.ok).toBe(true);
+        if (result.ok) {
             expect(result.value).toStrictEqual({
                 name: 'john doe',
                 email: 'johndoe@gmail.com',
@@ -465,7 +465,7 @@ describe('a.pick()', () => {
             email: 'johndoe@gmail.com',
         };
         const result = a.parse(UserSubsetSchema, input);
-        expect(result.success).toBe(false);
+        expect(result.ok).toBe(false);
     });
     it('produces ATD object schema with picked properties', () => {
         expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
@@ -544,10 +544,10 @@ describe('a.omit()', () => {
             createdAt: new Date(),
         };
         const goodResult = parse(subsetInput);
-        if (!goodResult.success) {
-            console.error(goodResult.errors);
+        if (!goodResult.ok) {
+            console.error(goodResult.error);
         }
-        expect(goodResult.success).toBe(true);
+        expect(goodResult.ok).toBe(true);
     });
     it("doesn't parse bad input", () => {
         const unomittedInput: UserSchema = {
@@ -558,10 +558,10 @@ describe('a.omit()', () => {
             createdAt: new Date(),
         };
         const badResult = parse(unomittedInput);
-        if (badResult.success) {
+        if (badResult.ok) {
             console.error(badResult);
         }
-        expect(badResult.success).toBe(false);
+        expect(badResult.ok).toBe(false);
     });
     it('produces ATD schema without omitted properties', () => {
         expect(JSON.parse(JSON.stringify(UserSubsetSchema))).toStrictEqual({
@@ -679,8 +679,8 @@ describe('a.partial()', () => {
     it('parses good input', () => {
         const input1: PartialObject = {};
         const result1 = a.parse(PartialObject, input1);
-        expect(result1.success).toBe(true);
-        if (result1.success) {
+        expect(result1.ok).toBe(true);
+        if (result1.ok) {
             expect(result1.value).toStrictEqual(input1);
         }
         const input2: PartialObject = {
@@ -688,7 +688,7 @@ describe('a.partial()', () => {
             stringEnum: 'b',
         };
         const result2 = a.parse(PartialObject, input2);
-        if (result2.success) {
+        if (result2.ok) {
             expect(result2.value).toStrictEqual(input2);
         }
         const input3: PartialObject = {
@@ -699,7 +699,7 @@ describe('a.partial()', () => {
             stringEnum: 'b',
         };
         const result3 = a.parse(PartialObject, input3);
-        if (result3.success) {
+        if (result3.ok) {
             expect(result3.value).toStrictEqual(input3);
         }
     });
@@ -709,13 +709,13 @@ describe('a.partial()', () => {
             stringEnum: '1',
         };
         const result1 = a.parse(PartialObject, input1);
-        expect(result1.success).toBe(false);
+        expect(result1.ok).toBe(false);
 
         const input2 = {
             count: 'one',
         };
         const result2 = a.parse(PartialObject, input2);
-        expect(result2.success).toBe(false);
+        expect(result2.ok).toBe(false);
     });
 
     it('produces jdt object schema will all optional properties', () => {

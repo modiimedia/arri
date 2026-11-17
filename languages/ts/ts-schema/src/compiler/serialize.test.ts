@@ -23,12 +23,12 @@ for (const key of Object.keys(validationTestSuites)) {
                     }
                 }
                 const parseResult = a.parse(suite.schema, result);
-                if (!parseResult.success) {
-                    console.error(parseResult.errors);
+                if (!parseResult.ok) {
+                    console.error(parseResult.error);
                     console.error(Compiled.compiledCode.serialize);
                     console.error(result, 'SHOULD BE VALID');
                 }
-                expect(parseResult.success).toBe(true);
+                expect(parseResult.ok).toBe(true);
                 expect(result).toBe(a.serializeUnsafe(suite.schema, input));
             } catch (err) {
                 console.error(err);
@@ -56,7 +56,7 @@ for (const key of Object.keys(serializationTestSuites)) {
                     JSON.parse(result);
                 }
                 const parsedResult = Compiled.parse(result);
-                expect(parsedResult.success).toBe(true);
+                expect(parsedResult.ok).toBe(true);
                 expect(result).toBe(a.serializeUnsafe(suite.schema, input));
             } catch (err) {
                 console.error(err);

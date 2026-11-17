@@ -1,3 +1,4 @@
+import { Err, Ok, Result } from '@arrirpc/core';
 import { isSchemaFormEnum, isSchemaFormType, Schema } from '@arrirpc/type-defs';
 import { StandardSchemaV1 } from '@standard-schema/spec';
 
@@ -5,7 +6,7 @@ import { createStandardSchemaProperty } from './adapters';
 import { createParsingTemplate as getSchemaDecodingCode } from './compiler/parse';
 import { createSerializationV2Template as getSchemaSerializationCode } from './compiler/serialize';
 import { createValidationTemplate as getSchemaValidationCode } from './compiler/validate';
-import { Result, ValidationException } from './errors';
+import { ValidationException, ValueError } from './errors';
 import {
     int8Max,
     int8Min,
@@ -59,7 +60,7 @@ export interface CompiledValidator<
     /**
      * Parse a JSON string or the result of JSON.parse(). Returns a Result<T>.
      */
-    parse: (input: unknown) => Result<InferType<TSchema>>;
+    parse: (input: unknown) => Result<InferType<TSchema>, ValueError[]>;
     /**
      * Parse a JSON string or the result of JSON.parse(). Throws an error if parsing fails.
      */
@@ -67,7 +68,7 @@ export interface CompiledValidator<
     /**
      * Coerce an object into <T>. Returns Result<T>.
      */
-    coerce: (input: unknown) => Result<InferType<TSchema>>;
+    coerce: (input: unknown) => Result<InferType<TSchema>, ValueError[]>;
     /**
      * Coerce an object into <T>. Throws an error if coercion fails.
      */
@@ -75,7 +76,7 @@ export interface CompiledValidator<
     /**
      * Serialize to JSON
      */
-    serialize: (input: InferType<TSchema>) => Result<string>;
+    serialize: (input: InferType<TSchema>) => Result<string, ValueError[]>;
     /**
      * Serialize to JSON. Throws an error if it fails.
      */
@@ -146,90 +147,66 @@ export function compile<
     const coercerFn = coercer.fn;
     const serializer = getCompiledSerializer(schema);
     const serializeFn = serializer.fn;
-    const serialize = (input: InferType<TSchema>): Result<string> => {
+    const serialize = (
+        input: InferType<TSchema>,
+    ): Result<string, ValueError[]> => {
         try {
             const result = serializeFn(input);
-            return {
-                success: true,
-                value: result,
-            };
+            return Ok(result);
         } catch (err) {
-            return {
-                success: false,
-                errors: [
-                    {
-                        instancePath: '/',
-                        message: err instanceof Error ? err.message : `${err}`,
-                    },
-                ],
-            };
+            return Err([
+                {
+                    instancePath: '/',
+                    message: err instanceof Error ? err.message : `${err}`,
+                },
+            ]);
         }
     };
     const validate = new Function('input', validateCode) as (
         input: unknown,
     ) => input is InferType<TSchema>;
-    const parse = (input: unknown): Result<InferType<TSchema>> => {
+    const parse = (
+        input: unknown,
+    ): Result<InferType<TSchema>, ValueError[]> => {
         const context = newValidationContext();
         try {
             const result = parserFn(input, context);
             if (context.errors.length) {
-                return {
-                    success: false,
-                    errors: context.errors,
-                };
+                return Err(context.errors);
             }
-            return {
-                success: true,
-                value: result,
-            };
+            return Ok(result);
         } catch (err) {
             if (context.errors.length) {
-                return {
-                    success: false,
-                    errors: context.errors,
-                };
+                return Err(context.errors);
             }
-            return {
-                success: false,
-                errors: [
-                    {
-                        message: err instanceof Error ? err.message : `${err}`,
-                        instancePath: '/',
-                    },
-                ],
-            };
+            return Err([
+                {
+                    message: err instanceof Error ? err.message : `${err}`,
+                    instancePath: '/',
+                },
+            ]);
         }
     };
-    const coerce = (input: unknown): Result<InferType<TSchema>> => {
+    const coerce = (
+        input: unknown,
+    ): Result<InferType<TSchema>, ValueError[]> => {
         const context = newValidationContext();
         try {
             const result = coercerFn(input, context);
             if (context.errors.length) {
-                return {
-                    success: false,
-                    errors: context.errors,
-                };
+                return Err(context.errors);
             }
-            return {
-                success: true,
-                value: result,
-            };
+            return Ok(result);
         } catch (err) {
             if (context.errors.length) {
-                return {
-                    success: false,
-                    errors: context.errors,
-                };
+                return Err(context.errors);
             }
-            return {
-                success: false,
-                errors: [
-                    {
-                        message: err instanceof Error ? err.message : `${err}`,
-                        instancePath: '/',
-                    },
-                ],
-            };
+            return Err([
+                {
+                    message: err instanceof Error ? err.message : `${err}`,
+                    instancePath: '/',
+                },
+            ]);
         }
     };
     const result: CompiledValidatorWithAdapters<TSchema, TIncludeCompiled> = {
@@ -268,8 +245,8 @@ export function compile<
                 : undefined,
         '~standard': createStandardSchemaProperty(validate, (input, ctx) => {
             const result = parse(input);
-            if (!result.success) {
-                ctx.errors = result.errors;
+            if (!result.ok) {
+                ctx.errors = result.error;
                 return undefined;
             }
             return result.value;

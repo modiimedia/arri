@@ -21,7 +21,7 @@ for (const key of Object.keys(validationTestSuites)) {
         }
         for (const input of suite.badInputs) {
             expect(a.validate(suite.schema, input)).toBe(false);
-            expect(a.parse(suite.schema, input).success).toBe(false);
+            expect(a.parse(suite.schema, input).ok).toBe(false);
         }
     });
 }
@@ -34,17 +34,17 @@ describe('parsing test suites', () => {
                 const input = suite.goodInputs[i];
                 const expectedResult = suite.expectedResults[i];
                 const result = a.parse(suite.schema, input);
-                if (!result.success) {
+                if (!result.ok) {
                     console.error('input = ', input);
-                    console.error('error(s) = ', result.errors);
+                    console.error('error(s) = ', result.error);
                 }
-                expect(result.success).toBe(true);
-                if (result.success) {
+                expect(result.ok).toBe(true);
+                if (result.ok) {
                     expect(isEqual(result.value, expectedResult)).toBe(true);
                 }
             }
             for (const input of suite.badInputs) {
-                expect(a.parse(suite.schema, input).success).toBe(false);
+                expect(a.parse(suite.schema, input).ok).toBe(false);
             }
         });
     }
@@ -57,10 +57,10 @@ describe('coercion test suites', () => {
             for (let i = 0; i < suite.goodInputs.length; i++) {
                 const input = suite.goodInputs[i];
                 const result = a.coerce(suite.schema, input);
-                if (!result.success)
-                    console.error('KEY', key, 'INDEX', i, result.errors);
-                expect(result.success).toBe(true);
-                if (result.success) {
+                if (!result.ok)
+                    console.error('KEY', key, 'INDEX', i, result.error);
+                expect(result.ok).toBe(true);
+                if (result.ok) {
                     expect(result.value).toStrictEqual(
                         suite.expectedResults[i],
                     );
@@ -77,11 +77,11 @@ describe('serialization test suites', () => {
             for (const input of suite.inputs) {
                 const result = a.serializeUnsafe(suite.schema, input);
                 const parseResult = a.parse(suite.schema, result);
-                if (!parseResult.success) {
-                    console.error(parseResult.errors);
+                if (!parseResult.ok) {
+                    console.error(parseResult.error);
                     console.log(result);
                 }
-                expect(parseResult.success).toBe(true);
+                expect(parseResult.ok).toBe(true);
                 JSON.parse(result);
             }
         });

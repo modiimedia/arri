@@ -16,9 +16,9 @@ for (const key of Object.keys(validationTestSuites)) {
             test(`${key} -> good input -> ${i + 1}`, () => {
                 const input = suite.goodInputs[i];
                 const result = Compiled.parse(input);
-                if (!result.success) console.log(result.errors);
-                expect(result.success).toBe(true);
-                if (!result.success) return;
+                if (!result.ok) console.log(result.error);
+                expect(result.ok).toBe(true);
+                if (!result.ok) return;
                 // undefined fields and unknown keys get stripped so compare against the non-compiled parser
                 expect(result.value).toStrictEqual(
                     a.parseUnsafe(suite.schema, input),
@@ -34,8 +34,8 @@ for (const key of Object.keys(validationTestSuites)) {
         for (let i = 0; i < suite.badInputs.length; i++) {
             test(`${key} -> bad input -> ${i + 1}`, () => {
                 const input = suite.badInputs[i];
-                expect(Compiled.parse(input).success).toBe(false);
-                expect(a.parse(suite.schema, input).success).toBe(false);
+                expect(Compiled.parse(input).ok).toBe(false);
+                expect(a.parse(suite.schema, input).ok).toBe(false);
             });
         }
     });
@@ -68,23 +68,23 @@ describe('parsing test suites', () => {
                     const input = suite.goodInputs[i];
                     const expectedResult = suite.expectedResults[i];
                     const actualResult = Compiled.parse(input);
-                    if (!actualResult.success) {
+                    if (!actualResult.ok) {
                         console.log(Compiled.compiledCode.parse);
                         console.log(input, 'Should parse');
-                        console.log(actualResult.errors);
+                        console.log(actualResult.error);
                     }
-                    expect(actualResult.success).toBe(true);
-                    if (!actualResult.success) return;
+                    expect(actualResult.ok).toBe(true);
+                    if (!actualResult.ok) return;
                     const serializedResult = Compiled.serialize(
                         actualResult.value,
                     );
-                    if (!serializedResult.success) {
+                    if (!serializedResult.ok) {
                         console.error('code', Compiled.compiledCode.serialize);
                         console.error(`input`, actualResult.value);
-                        console.error('error', serializedResult.errors);
+                        console.error('error', serializedResult.error);
                     }
-                    expect(serializedResult.success).toBe(true);
-                    if (!serializedResult.success) return;
+                    expect(serializedResult.ok).toBe(true);
+                    if (!serializedResult.ok) return;
                     expect(actualResult.value).toStrictEqual(expectedResult);
                     expect(
                         Compiled.parseUnsafe(serializedResult.value),
@@ -98,11 +98,11 @@ describe('parsing test suites', () => {
                 test(`${key} -> bad input -> ${i + 1}`, () => {
                     const input = suite.badInputs[i];
                     const result = Compiled.parse(input);
-                    if (result.success) {
+                    if (result.ok) {
                         console.log(Compiled.compiledCode.parse);
                         console.log(input, 'Should NOT parse');
                     }
-                    expect(result.success).toBe(false);
+                    expect(result.ok).toBe(false);
                 });
             }
         });
@@ -119,22 +119,22 @@ describe('coercion test suites', () => {
                     const input = suite.goodInputs[i];
                     const expectedResult = suite.expectedResults[i];
                     const actualResult = Compiled.coerce(input);
-                    if (!actualResult.success) {
+                    if (!actualResult.ok) {
                         console.log({
                             schema: suite.schema,
                             input: input,
                             inputIndex: i,
-                            errors: actualResult.errors,
+                            errors: actualResult.error,
                         });
                         console.log(input, 'Should coerce');
                     }
-                    expect(actualResult.success).toBe(true);
-                    if (!actualResult.success) return;
+                    expect(actualResult.ok).toBe(true);
+                    if (!actualResult.ok) return;
                     const serializedResult = Compiled.serialize(
                         actualResult.value,
                     );
-                    expect(serializedResult.success).toBe(true);
-                    if (!serializedResult.success) return;
+                    expect(serializedResult.ok).toBe(true);
+                    if (!serializedResult.ok) return;
                     expect(actualResult.value).toStrictEqual(expectedResult);
                     expect(
                         Compiled.coerceUnsafe(serializedResult.value),
@@ -148,7 +148,7 @@ describe('coercion test suites', () => {
                 test(`${key} -> bad input -> ${i}`, () => {
                     const input = suite.badInputs[i];
                     const result = Compiled.coerce(input);
-                    if (result.success) {
+                    if (result.ok) {
                         console.log({
                             schema: suite.schema,
                             input: input,
@@ -157,7 +157,7 @@ describe('coercion test suites', () => {
                         });
                         console.log(input, 'Should NOT coerce');
                     }
-                    expect(result.success).toBe(false);
+                    expect(result.ok).toBe(false);
                 });
             }
         });
@@ -169,17 +169,17 @@ it('parses floats', () => {
     expect(Compiled.parseUnsafe('1')).toBe(1);
     expect(Compiled.parseUnsafe(1)).toBe(1);
     expect(Compiled.parseUnsafe('1500.5')).toBe(1500.5);
-    expect(Compiled.parse('hello world').success).toBe(false);
-    expect(Compiled.parse(true).success).toBe(false);
+    expect(Compiled.parse('hello world').ok).toBe(false);
+    expect(Compiled.parse(true).ok).toBe(false);
 });
 
 it('parses ints', () => {
     const Compiled = a.compile(a.uint32());
     expect(Compiled.parseUnsafe('1')).toBe(1);
     expect(Compiled.parseUnsafe(1)).toBe(1);
-    expect(Compiled.parse('1500.5').success).toBe(false);
-    expect(Compiled.parse(-100).success).toBe(false);
-    expect(Compiled.parse(true).success).toBe(false);
+    expect(Compiled.parse('1500.5').ok).toBe(false);
+    expect(Compiled.parse(-100).ok).toBe(false);
+    expect(Compiled.parse(true).ok).toBe(false);
 });
 
 it('parses timestamps', () => {
@@ -223,10 +223,10 @@ it('respects the strict option', () => {
         name: '',
         description: '',
     };
-    expect(LooseSchema.parse(input).success).toBe(true);
-    expect(LooseSchema.parse(inputWithAdditionalFields).success).toBe(true);
-    expect(StrictSchema.parse(input).success).toBe(true);
-    expect(StrictSchema.parse(inputWithAdditionalFields).success).toBe(false);
+    expect(LooseSchema.parse(input).ok).toBe(true);
+    expect(LooseSchema.parse(inputWithAdditionalFields).ok).toBe(true);
+    expect(StrictSchema.parse(input).ok).toBe(true);
+    expect(StrictSchema.parse(inputWithAdditionalFields).ok).toBe(false);
 });
 
 it('parses discriminated unions', () => {
@@ -307,7 +307,7 @@ it('returns expected amount of errors', () => {
         },
     };
     let result = $$Schema.parse(goodInput);
-    expect(result.success).toBe(true);
+    expect(result.ok).toBe(true);
     const badInput = {
         string: true,
         bool: 'false',
@@ -319,14 +319,14 @@ it('returns expected amount of errors', () => {
         },
     };
     result = $$Schema.parse(badInput);
-    expect(result.success).toBe(false);
-    if (!result.success) {
-        expect(result.errors.length).toBe(6);
-        expect(result.errors[0]?.instancePath).toBe('/string');
-        expect(result.errors[1]?.instancePath).toBe('/bool');
-        expect(result.errors[2]?.instancePath).toBe('/int64');
-        expect(result.errors[3]?.instancePath).toBe('/object/timestamp');
-        expect(result.errors[4]?.instancePath).toBe('/object/bool');
-        expect(result.errors[5]?.instancePath).toBe('/object/array/[i]');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+        expect(result.error.length).toBe(6);
+        expect(result.error[0]?.instancePath).toBe('/string');
+        expect(result.error[1]?.instancePath).toBe('/bool');
+        expect(result.error[2]?.instancePath).toBe('/int64');
+        expect(result.error[3]?.instancePath).toBe('/object/timestamp');
+        expect(result.error[4]?.instancePath).toBe('/object/bool');
+        expect(result.error[5]?.instancePath).toBe('/object/array/[i]');
     }
 });
