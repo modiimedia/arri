@@ -7,7 +7,7 @@ Don't depend on this crate directly. Use `arri`, which re-exports the macro (thr
 
 ```toml
 [dependencies]
-arri = "0.85"
+arri = "0.86"
 ```
 
 ```rust,ignore

@@ -9,7 +9,7 @@ serde is not required.
 
 ```toml
 [dependencies]
-arri = "0.85"
+arri = "0.86"
 ```
 
 ## Example
