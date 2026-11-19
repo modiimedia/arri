@@ -12,8 +12,8 @@ use ::serde::{
 };
 
 use crate::{
-    Metadata, Nullable, Number, Primitive, Timestamp, TypeDef, Value, decode::MAX_PREALLOCATE,
-    to_value,
+    AppDef, Metadata, Nullable, Number, Primitive, Timestamp, TypeDef, Value,
+    decode::MAX_PREALLOCATE, to_value,
 };
 
 /// Serialized as an RFC 3339 string (the same representation arri uses for JSON)
@@ -203,6 +203,15 @@ impl<'de> Deserialize<'de> for Value {
 impl Serialize for TypeDef {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         // reuse the `Encode` implementation so the two representations can never drift apart
+        to_value(self)
+            .map_err(S::Error::custom)?
+            .serialize(serializer)
+    }
+}
+
+/// Serialized with the same shape as [`AppDef::to_json`]
+impl Serialize for AppDef {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         to_value(self)
             .map_err(S::Error::custom)?
             .serialize(serializer)

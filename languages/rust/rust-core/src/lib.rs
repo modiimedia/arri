@@ -54,7 +54,7 @@
 //! | `chrono`   | no      | arri traits for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>` |
 //! | `time`     | no      | arri traits for `time::OffsetDateTime` and `time::UtcDateTime` |
 //! | `indexmap` | no      | arri traits for `indexmap::IndexMap<String, V>` |
-//! | `serde`    | no      | serde `Serialize` / `Deserialize` for arri's own types ([`Timestamp`], [`Nullable`], [`Value`], [`Number`], [`Primitive`]) and `Serialize` for [`TypeDef`] / [`Metadata`] |
+//! | `serde`    | no      | serde `Serialize` / `Deserialize` for arri's own types ([`Timestamp`], [`Nullable`], [`Value`], [`Number`], [`Primitive`]) and `Serialize` for [`TypeDef`] / [`Metadata`] / [`AppDef`] |
 
 // allows the derive macro output (which references `::arri`) to be used inside this crate
 extern crate self as arri;
@@ -64,6 +64,7 @@ extern crate self as arri;
 #[doc = include_str!("../README.md")]
 struct ReadmeDoctests;
 
+mod app_def;
 mod decode;
 mod encode;
 mod impls;
@@ -77,16 +78,7 @@ mod value;
 #[doc(hidden)]
 pub mod __private;
 
-pub use decode::{Decode, DecodeError, DecodeErrorKind, Decoder, PathSegment};
-pub use encode::{Encode, EncodeError, Encoder};
-pub use nullable::Nullable;
-/// The variants of [`Nullable`] are exported so they can be used without a prefix (like `Some` and `None`)
-pub use nullable::Nullable::{Null, Present};
-pub use schema::{SchemaCollision, SchemaContext, SchemaError, Type, definitions_of, type_def_of};
-pub use timestamp::{Timestamp, TimestampError};
-pub use type_def::{Form, Metadata, Primitive, Properties, TypeDef, Union};
-pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value};
-
+pub use app_def::{AppDef, AppDefBuilder, AppInfo, ExternalDocs, SCHEMA_VERSION};
 /// Derives [`Type`], [`Encode`], and [`Decode`] for a struct or enum.
 ///
 /// # Mapping
@@ -189,6 +181,15 @@ pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value}
 /// ```
 #[cfg(feature = "derive")]
 pub use arri_derive::Arri;
+pub use decode::{Decode, DecodeError, DecodeErrorKind, Decoder, PathSegment};
+pub use encode::{Encode, EncodeError, Encoder};
+pub use nullable::Nullable;
+/// The variants of [`Nullable`] are exported so they can be used without a prefix (like `Some` and `None`)
+pub use nullable::Nullable::{Null, Present};
+pub use schema::{SchemaCollision, SchemaContext, SchemaError, Type, definitions_of, type_def_of};
+pub use timestamp::{Timestamp, TimestampError};
+pub use type_def::{Form, Metadata, Primitive, Properties, TypeDef, Union};
+pub use value::{Number, Value, ValueDecoder, ValueEncoder, from_value, to_value};
 
 /// Marker trait for types that can describe, encode, and decode themselves.
 ///

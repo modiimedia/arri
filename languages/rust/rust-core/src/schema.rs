@@ -107,6 +107,9 @@ pub struct SchemaContext {
     collisions: Vec<SchemaCollision>,
 }
 
+/// Used in place of a Rust type name for definitions added with [`SchemaContext::add_definition`]
+const MANUAL_DEFINITION: &str = "<manually added definition>";
+
 #[derive(Debug)]
 struct Definition {
     id: String,
@@ -164,6 +167,33 @@ impl SchemaContext {
         def
     }
 
+    /// Add a hand-written definition.
+    ///
+    /// `metadata.id` is set to `id` so the definition matches the types built with [`SchemaContext::named`].
+    /// Named types nested inside `def` are not added as definitions of their own.
+    ///
+    /// If a definition with the same id already exists and its schema is different, a collision is
+    /// reported by [`SchemaContext::into_definitions`].
+    pub fn add_definition(&mut self, id: impl Into<String>, mut def: TypeDef) {
+        let id = id.into();
+        def.metadata.id = Some(id.clone());
+        if !self.index.contains_key(&id) {
+            self.index.insert(id.clone(), self.definitions.len());
+            self.definitions.push(Definition {
+                id,
+                rust_type: MANUAL_DEFINITION,
+                def: Some(def),
+            });
+            return;
+        }
+        let entry = &self.definitions[self.index[&id]];
+        let first = entry.rust_type;
+        match &entry.def {
+            Some(existing) if same_definition(existing, &def) => {}
+            _ => self.add_collision(&id, first, MANUAL_DEFINITION),
+        }
+    }
+
     fn record(&mut self, id: &str, rust_type: &'static str, def: &TypeDef) {
         let entry = &mut self.definitions[self.index[id]];
         let first = entry.rust_type;
@@ -214,9 +244,10 @@ impl SchemaContext {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SchemaCollision {
     pub id: String,
-    /// The Rust type that first used the id (as reported by [`std::any::type_name`])
+    /// The Rust type that first used the id (as reported by [`std::any::type_name`]), or
+    /// `"<manually added definition>"` for definitions added with [`SchemaContext::add_definition`]
     pub first_type: &'static str,
-    /// The Rust type that used the id with a different schema
+    /// The Rust type that used the id with a different schema (same format as `first_type`)
     pub second_type: &'static str,
 }
 
