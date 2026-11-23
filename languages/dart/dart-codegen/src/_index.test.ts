@@ -55,9 +55,9 @@ dev_dependencies:
   test: ^1.25.14`;
 
 describe('dartFormatCommand()', () => {
-    test('pins the language version to 3.7 by default', () => {
+    test('lets dart format infer the language version by default', () => {
         expect(dartFormatCommand('/foo/client.g.dart', {})).toBe(
-            'dart format --language-version=3.7 /foo/client.g.dart',
+            'dart format /foo/client.g.dart',
         );
     });
     test('uses the configured language version', () => {

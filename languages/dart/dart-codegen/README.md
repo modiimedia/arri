@@ -20,14 +20,14 @@ export default defineConfig({
 
 **Options:**
 
-| Name                  | Description                                                    |
-| --------------------- | -------------------------------------------------------------- |
-| outputFile (required) | Path to the file that will be created by the generator         |
-| clientName            | The name of the generated client class (Defaults to "Client")  |
-| format                | Run `dart format` on the generated file (Defaults to `true`)   |
-| formatLanguageVersion | Language version passed to `dart format` (Defaults to `"3.7"`) |
-| typePrefix            | Add a prefix to the generated class names                      |
-| rootService           | The root service of the generated client                       |
+| Name                  | Description                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| outputFile (required) | Path to the file that will be created by the generator                                                        |
+| clientName            | The name of the generated client class (Defaults to "Client")                                                 |
+| format                | Run `dart format` on the generated file (Defaults to `true`)                                                  |
+| formatLanguageVersion | Language version passed to `dart format`. When unset, `dart format` infers it from the nearest package config |
+| typePrefix            | Add a prefix to the generated class names                                                                     |
+| rootService           | The root service of the generated client                                                                      |
 
 ### 2) Install the Dart client library
 
