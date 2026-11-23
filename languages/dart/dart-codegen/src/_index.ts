@@ -55,10 +55,23 @@ export interface DartClientGeneratorOptions {
      */
     typePrefix?: string;
     format?: boolean;
+    /**
+     * The language version passed to `dart format` (Defaults to "3.7")
+     */
+    formatLanguageVersion?: string;
     rootService?: string;
 }
 
-const dartFormatLanguageVersion = '3.7';
+const defaultDartFormatLanguageVersion = '3.7';
+
+export function dartFormatCommand(
+    destination: string,
+    options: Pick<DartClientGeneratorOptions, 'formatLanguageVersion'>,
+) {
+    const languageVersion =
+        options.formatLanguageVersion ?? defaultDartFormatLanguageVersion;
+    return `dart format --language-version=${languageVersion} ${destination}`;
+}
 
 export const dartClientGenerator = defineGeneratorPlugin(
     (options: DartClientGeneratorOptions) => {
@@ -77,9 +90,7 @@ export const dartClientGenerator = defineGeneratorPlugin(
                     if (options.format !== false) {
                         // Formatting style depends on the language version, which otherwise comes from
                         // the nearest package config. Pinning it keeps the output the same on every machine.
-                        execSync(
-                            `dart format --language-version=${dartFormatLanguageVersion} ${destination}`,
-                        );
+                        execSync(dartFormatCommand(destination, options));
                     }
                 } catch (err) {
                     console.error(err);

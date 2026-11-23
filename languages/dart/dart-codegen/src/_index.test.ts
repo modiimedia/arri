@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import { normalizeWhitespace } from '@arrirpc/codegen-utils';
 import path from 'pathe';
 
-import { createDartClient } from './_index';
+import { createDartClient, dartFormatCommand } from './_index';
 
 const tempDir = path.resolve(__dirname, '../.temp');
 beforeAll(async () => {
@@ -53,3 +53,18 @@ dependencies:
 dev_dependencies:
   lints: ^5.1.1
   test: ^1.25.14`;
+
+describe('dartFormatCommand()', () => {
+    test('pins the language version to 3.7 by default', () => {
+        expect(dartFormatCommand('/foo/client.g.dart', {})).toBe(
+            'dart format --language-version=3.7 /foo/client.g.dart',
+        );
+    });
+    test('uses the configured language version', () => {
+        expect(
+            dartFormatCommand('/foo/client.g.dart', {
+                formatLanguageVersion: '3.10',
+            }),
+        ).toBe('dart format --language-version=3.10 /foo/client.g.dart');
+    });
+});
