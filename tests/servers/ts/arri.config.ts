@@ -49,6 +49,7 @@ export default defineConfig({
                 __dirname,
                 '../../clients/dart/lib/test_client.g.dart',
             ),
+            formatLanguageVersion: '3.7',
         }),
         generators.dartClient({
             clientName: 'TestClientPrefixed',
@@ -56,6 +57,7 @@ export default defineConfig({
                 __dirname,
                 '../../clients/dart/lib/test_client_prefixed.g.dart',
             ),
+            formatLanguageVersion: '3.7',
             typePrefix: 'Foo',
             rootService: 'tests',
         }),

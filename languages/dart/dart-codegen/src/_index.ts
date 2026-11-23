@@ -55,10 +55,22 @@ export interface DartClientGeneratorOptions {
      */
     typePrefix?: string;
     format?: boolean;
+    /**
+     * The language version passed to `dart format`. When unset, `dart format` infers it from the nearest package config.
+     */
+    formatLanguageVersion?: string;
     rootService?: string;
 }
 
-const dartFormatLanguageVersion = '3.7';
+export function dartFormatCommand(
+    destination: string,
+    options: Pick<DartClientGeneratorOptions, 'formatLanguageVersion'>,
+) {
+    if (options.formatLanguageVersion) {
+        return `dart format --language-version=${options.formatLanguageVersion} ${destination}`;
+    }
+    return `dart format ${destination}`;
+}
 
 export const dartClientGenerator = defineGeneratorPlugin(
     (options: DartClientGeneratorOptions) => {
@@ -75,11 +87,7 @@ export const dartClientGenerator = defineGeneratorPlugin(
                     const destination = path.resolve(options.outputFile);
                     await fs.writeFile(destination, result);
                     if (options.format !== false) {
-                        // Formatting style depends on the language version, which otherwise comes from
-                        // the nearest package config. Pinning it keeps the output the same on every machine.
-                        execSync(
-                            `dart format --language-version=${dartFormatLanguageVersion} ${destination}`,
-                        );
+                        execSync(dartFormatCommand(destination, options));
                     }
                 } catch (err) {
                     console.error(err);
