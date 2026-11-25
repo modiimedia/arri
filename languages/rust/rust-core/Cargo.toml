@@ -24,6 +24,12 @@ time = ["dep:time"]
 indexmap = ["dep:indexmap"]
 # Implements serde's `Serialize` / `Deserialize` for arri's own types (Timestamp, Nullable, Value, etc.)
 serde = ["dep:serde"]
+# Implements sqlx's `Type`, `Encode`, and `Decode` for `arri::sqlx::Json<T>`, `Value`, `Nullable<T>`, and `Timestamp` on PostgreSQL
+sqlx-postgres = ["dep:sqlx-core", "dep:sqlx-postgres"]
+# Implements sqlx's `Type`, `Encode`, and `Decode` for `arri::sqlx::Json<T>`, `Value`, `Nullable<T>`, and `Timestamp` on MySQL
+sqlx-mysql = ["dep:sqlx-core", "dep:sqlx-mysql"]
+# Implements sqlx's `Type`, `Encode`, and `Decode` for `arri::sqlx::Json<T>`, `Value`, `Nullable<T>`, and `Timestamp` on SQLite
+sqlx-sqlite = ["dep:sqlx-core", "dep:sqlx-sqlite"]
 
 [dependencies]
 arri_derive = { path = "../rust-derive", version = "0.86.1", optional = true }
@@ -33,12 +39,18 @@ chrono = { version = "0.4", optional = true, default-features = false }
 time = { version = "0.3", optional = true, default-features = false }
 indexmap = { version = "2", optional = true }
 serde = { version = "1", optional = true, default-features = false, features = ["std"] }
+sqlx-core = { version = "0.8", optional = true, default-features = false }
+sqlx-postgres = { version = "0.8", optional = true, default-features = false }
+sqlx-mysql = { version = "0.8", optional = true, default-features = false }
+sqlx-sqlite = { version = "0.8", optional = true, default-features = false, features = ["bundled"] }
 
 [dev-dependencies]
 chrono = { version = "0.4", default-features = false, features = ["serde", "alloc"] }
 criterion = { version = "0.8.2", default-features = false, features = ["cargo_bench_support"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json.workspace = true
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "sqlite", "derive"] }
+tokio = { version = "1", features = ["macros", "rt"] }
 trybuild = "1"
 
 [[bench]]

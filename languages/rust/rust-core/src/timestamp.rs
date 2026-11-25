@@ -151,6 +151,81 @@ impl Timestamp {
         }
     }
 
+    /// Construct a timestamp from validated calendar components and a UTC offset in minutes.
+    #[cfg(any(
+        feature = "sqlx-postgres",
+        feature = "sqlx-mysql",
+        feature = "sqlx-sqlite"
+    ))]
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn from_date_time(
+        year: i64,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        nanos: u32,
+        offset_minutes: i16,
+    ) -> Result<Self, TimestampError> {
+        if !(0..=9999).contains(&year) {
+            return Err(TimestampError::out_of_range());
+        }
+        if !(1..=12).contains(&month) {
+            return Err(TimestampError::invalid_format(
+                "month must be between 01 and 12",
+            ));
+        }
+        if day < 1 || day > days_in_month(year, month) {
+            return Err(TimestampError::invalid_format(
+                "day is out of range for the month",
+            ));
+        }
+        if hour > 23 || minute > 59 || second > 59 {
+            return Err(TimestampError::invalid_format("time is out of range"));
+        }
+        if nanos >= NANOS_PER_SEC {
+            return Err(TimestampError::new(
+                "nanoseconds must be less than 1,000,000,000",
+            ));
+        }
+        if !(-MAX_OFFSET_MINUTES..=MAX_OFFSET_MINUTES).contains(&offset_minutes) {
+            return Err(TimestampError::new(
+                "UTC offset must be between -23:59 and +23:59",
+            ));
+        }
+        let local = days_from_civil(year, month, day) * SECS_PER_DAY
+            + hour as i64 * 3600
+            + minute as i64 * 60
+            + second as i64;
+        let secs = local - offset_minutes as i64 * 60;
+        if !(MIN_SECS..=MAX_SECS).contains(&secs) || !(MIN_SECS..=MAX_SECS).contains(&local) {
+            return Err(TimestampError::out_of_range());
+        }
+        Ok(Self {
+            secs,
+            nanos,
+            offset_minutes,
+        })
+    }
+
+    /// Calendar components in UTC: `(year, month, day, hour, minute, second, nanos)`.
+    #[cfg(feature = "sqlx-mysql")]
+    pub(crate) fn utc_components(&self) -> (i64, u32, u32, u32, u32, u32, u32) {
+        let days = self.secs.div_euclid(SECS_PER_DAY);
+        let secs_of_day = self.secs.rem_euclid(SECS_PER_DAY) as u32;
+        let (year, month, day) = civil_from_days(days);
+        (
+            year,
+            month,
+            day,
+            secs_of_day / 3600,
+            secs_of_day / 60 % 60,
+            secs_of_day % 60,
+            self.nanos,
+        )
+    }
+
     /// Parse an [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) timestamp.
     ///
     /// Example: `2001-01-01T16:00:00.000Z` or `2001-01-01T08:00:00-08:00`

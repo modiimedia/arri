@@ -46,6 +46,24 @@ impl JsonEncoder {
         self.needs_comma = false;
     }
 
+    #[cfg(feature = "sqlx-postgres")]
+    pub(crate) fn encode_into<T: crate::Encode + ?Sized>(
+        value: &T,
+        out: &mut Vec<u8>,
+    ) -> Result<(), EncodeError> {
+        let start = out.len();
+        let mut encoder = Self {
+            buf: std::mem::take(out),
+            needs_comma: false,
+        };
+        let result = value.encode(&mut encoder);
+        *out = encoder.buf;
+        if result.is_err() {
+            out.truncate(start);
+        }
+        result
+    }
+
     #[inline]
     fn begin_value(&mut self) {
         if self.needs_comma {
