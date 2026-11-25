@@ -20,7 +20,7 @@ import { Middleware } from './middleware';
 import { MessageReceiver } from './receiver';
 import { Rpc } from './rpc';
 import { TransportAdapter } from './transport';
-import { MaybePromise, textDecoder, textEncoder } from './utils';
+import { textDecoder, textEncoder } from './utils';
 
 export class ArriApp {
     private procedures: Map<string, Rpc<any, any>> = new Map();
@@ -33,7 +33,7 @@ export class ArriApp {
         if (input instanceof TransportAdapter) {
             input.init(
                 new AppMessageReceiver(input.name, (transportId, msg) =>
-                    this.receive(transportId, msg),
+                    Promise.resolve(this.receive(transportId, msg)),
                 ),
             );
             this.transports.set(input.name, input);
@@ -155,86 +155,66 @@ export class ArriApp {
         call.meta = rpc.meta ?? {};
         switch (rpc.type) {
             case 'unary': {
-                try {
-                    const input = this.parseBody(
-                        rpc.input,
-                        msg.contentType,
-                        msg.body,
-                    );
-                    if (!input.ok) {
-                        const errorBody: ArriErrorPayload = {
-                            code: 'INVALID_INPUT',
-                            type: 'invalid_input',
-                            data: input.error,
-                            message: errorMessageFromErrors(input.error),
-                        };
+                const input = this.parseBody(
+                    rpc.input,
+                    msg.contentType,
+                    msg.body,
+                );
+                if (!input.ok) {
+                    const errorBody: ArriErrorPayload = {
+                        code: 'INVALID_INPUT',
+                        type: 'invalid_input',
+                        data: input.error,
+                        message: errorMessageFromErrors(input.error),
+                    };
+                    await transport.send({
+                        type: 'ERROR',
+                        reqId: msg.reqId,
+                        headers: new ArriHeaders(),
+                        body: textEncoder.encode(JSON.stringify(errorBody)),
+                    });
+                    return;
+                }
+                const output = await rpc.handler(input.value, call);
+                const payload = this.serializeBody(
+                    rpc.output,
+                    call.contentType,
+                    output,
+                );
+
+                switch (payload.ok) {
+                    case true:
+                        await transport.send({
+                            type: 'OK',
+                            reqId: msg.reqId,
+                            contentType: call.contentType,
+                            headers: new ArriHeaders(),
+                            body: payload.value,
+                        });
+                        return;
+                    case false: {
+                        const errorBody = this.serializeError(
+                            call.contentType,
+                            {
+                                code: 'INVALID_RESPONSE',
+                                type: 'invalid_response',
+                                data: payload.error,
+                                message: errorMessageFromErrors(payload.error),
+                            },
+                        );
                         await transport.send({
                             type: 'ERROR',
                             reqId: msg.reqId,
+                            contentType: call.contentType,
                             headers: new ArriHeaders(),
-                            body: textEncoder.encode(JSON.stringify(errorBody)),
+                            body: errorBody,
                         });
                         return;
                     }
-                    const output = await rpc.handler(input.value, call);
-                    const payload = this.serializeBody(
-                        rpc.output,
-                        call.contentType,
-                        output,
-                    );
-
-                    switch (payload.ok) {
-                        case true:
-                            await transport.send({
-                                type: 'OK',
-                                reqId: msg.reqId,
-                                contentType: call.contentType,
-                                headers: new ArriHeaders(),
-                                body: payload.value,
-                            });
-                            return;
-                        case false: {
-                            const errorBody = this.serializeError(
-                                call.contentType,
-                                {
-                                    code: 'INVALID_RESPONSE',
-                                    type: 'invalid_response',
-                                    data: payload.error,
-                                    message: errorMessageFromErrors(
-                                        payload.error,
-                                    ),
-                                },
-                            );
-                            await transport.send({
-                                type: 'ERROR',
-                                reqId: msg.reqId,
-                                contentType: call.contentType,
-                                headers: new ArriHeaders(),
-                                body: errorBody,
-                            });
-                            return;
-                        }
-                        default:
-                            payload satisfies never;
-                            return;
-                    }
-                } catch (err) {
-                    let finalErr: ArriError;
-                    if (err instanceof ArriError) {
-                        finalErr = err;
-                    } else {
-                        finalErr = ArriError.fromUnknown(err);
-                    }
-                    await transport.send(
-                        finalErr.toMessage({
-                            reqId: msg.reqId,
-                            contentType: msg.contentType,
-                        }),
-                    );
-                } finally {
-                    // todo
+                    default:
+                        payload satisfies never;
+                        return;
                 }
-                break;
             }
             case 'in_stream': {
                 break;
@@ -253,21 +233,37 @@ export class ArriApp {
     private async receive(transportId: string, msg: ClientMessage) {
         const transport = this.transports.get(transportId);
         if (!transport) return; // handle this somehow
-        switch (msg.type) {
-            case 'INVOCATION': {
-                return this.handleInvocation(transport, msg);
+        try {
+            switch (msg.type) {
+                case 'INVOCATION': {
+                    await this.handleInvocation(transport, msg);
+                    return;
+                }
+                case 'STREAM_START':
+                    break;
+                case 'STREAM_DATA':
+                    break;
+                case 'STREAM_END':
+                    break;
+                case 'CANCEL':
+                    break;
+                default: {
+                    msg satisfies never;
+                }
             }
-            case 'STREAM_START':
-                break;
-            case 'STREAM_DATA':
-                break;
-            case 'STREAM_END':
-                break;
-            case 'CANCEL':
-                break;
-            default: {
-                msg satisfies never;
+        } catch (err) {
+            let finalErr: ArriError;
+            if (err instanceof ArriError) {
+                finalErr = err;
+            } else {
+                finalErr = ArriError.fromUnknown(err);
             }
+            await transport.send(
+                finalErr.toMessage({
+                    reqId: msg.reqId,
+                    contentType: 'application/json',
+                }),
+            );
         }
     }
 
@@ -291,12 +287,9 @@ export class ArriApp {
 class AppMessageReceiver implements MessageReceiver {
     constructor(
         readonly transportId: string,
-        readonly receiveFn: (
-            transportId: string,
-            msg: ClientMessage,
-        ) => MaybePromise<void>,
+        readonly receiveFn: (transportId: string, msg: ClientMessage) => void,
     ) {}
-    async receive(msg: ClientMessage): Promise<void> {
-        await this.receiveFn(this.transportId, msg);
+    receive(msg: ClientMessage): void {
+        this.receiveFn(this.transportId, msg);
     }
 }

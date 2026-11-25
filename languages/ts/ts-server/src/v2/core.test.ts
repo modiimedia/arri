@@ -1,4 +1,4 @@
-import { ArriHeaders, ServerMessage } from '@arrirpc/core';
+import { ArriHeaders, Message, ServerMessage } from '@arrirpc/core';
 import { a } from '@arrirpc/schema';
 
 import { ArriApp } from './core';
@@ -37,6 +37,105 @@ class SimulatedAsyncStore<T> {
     }
 }
 
+class ReqResponseStore {
+    private connectionMessages: ServerMessage[] = [];
+    private messages: Map<string, ServerMessage[]> = new Map();
+    get length(): number {
+        let len = 0;
+        for (const val of this.messages.values()) {
+            len += val.length;
+        }
+        return len;
+    }
+    push(msg: ServerMessage) {
+        const id = reqId(msg);
+        if (!id) {
+            this.connectionMessages.push(msg);
+            return;
+        }
+        const items = this.messages.get(id) ?? [];
+        items.push(msg);
+        this.messages.set(id, items);
+    }
+    get(reqId: string | undefined) {
+        if (!reqId) {
+            return this.connectionMessages;
+        }
+        return this.messages.get(reqId);
+    }
+
+    waitForResponse(
+        reqId: string,
+        expectedMessageTypes: ServerMessage['type'][] = [
+            'OK',
+            'STREAM_END',
+            'ERROR',
+        ],
+        timeoutMs = 10_000,
+    ) {
+        const startTime = new Date().getTime();
+        const wait = (
+            res: (_: unknown) => void,
+            rej: (err: unknown) => void,
+        ) => {
+            const now = new Date().getTime();
+            if (now - startTime > timeoutMs) {
+                return rej('timeout exceeded');
+            }
+            const items = this.messages.get(reqId);
+            if (typeof items !== 'undefined' && items.length > 0) {
+                for (const item of items) {
+                    if (expectedMessageTypes.includes(item.type)) {
+                        return res(undefined);
+                    }
+                }
+            }
+            setTimeout(() => {
+                return wait(res, rej);
+            }, 1);
+        };
+        return new Promise((res, rej) => {
+            return wait(res, rej);
+        });
+    }
+
+    async waitForResponses(
+        reqIds: string[],
+        expectedMessageTypes: ServerMessage['type'][] = [
+            'OK',
+            'STREAM_END',
+            'ERROR',
+        ],
+        timeoutMs = 10_000,
+    ) {
+        await Promise.all(
+            reqIds.map((reqId) =>
+                this.waitForResponse(reqId, expectedMessageTypes, timeoutMs),
+            ),
+        );
+    }
+}
+
+function reqId(msg: Message): string | undefined {
+    switch (msg.type) {
+        case 'HEARTBEAT':
+        case 'CONNECTION_START':
+        case 'GOAWAY':
+            return undefined;
+        case 'CANCEL':
+        case 'ERROR':
+        case 'INVOCATION':
+        case 'OK':
+        case 'STREAM_DATA':
+        case 'STREAM_END':
+        case 'STREAM_START':
+            return msg.reqId;
+        default:
+            msg satisfies never;
+            return undefined;
+    }
+}
+
 test('simulate transport send/receive', async () => {
     const app = new ArriApp();
 
@@ -51,6 +150,7 @@ test('simulate transport send/receive', async () => {
     type UserRef = a.infer<typeof UserRef>;
 
     const users = new SimulatedAsyncStore<User>();
+    const messages = new ReqResponseStore();
 
     app.rpc(
         'users.getUser',
@@ -88,24 +188,33 @@ test('simulate transport send/receive', async () => {
     );
 
     const transport = new TestAdapter((msg) => {
-        serverMessages.push(msg);
+        messages.push(msg);
     });
     app.use(transport);
 
-    const serverMessages: ServerMessage[] = [];
     transport.receive({
         type: 'INVOCATION',
         rpcName: 'users.getUser',
         contentType: 'application/json',
-        reqId: '1',
+        reqId: 'get_user_1',
         headers: new ArriHeaders(),
         body: jsonEncode({ userId: 'user:1' } satisfies UserRef),
     });
+    await messages.waitForResponse('get_user_1');
+    transport.receive({
+        type: 'INVOCATION',
+        rpcName: 'users.deleteUser',
+        contentType: 'application/json',
+        reqId: 'delete_user_1',
+        headers: new ArriHeaders(),
+        body: jsonEncode({ userId: 'user:1' } satisfies UserRef),
+    });
+    await messages.waitForResponse('delete_user_1');
     transport.receive({
         type: 'INVOCATION',
         rpcName: 'users.setUser',
         contentType: 'application/json',
-        reqId: '2',
+        reqId: 'set_user_1',
         headers: new ArriHeaders(),
         body: jsonEncode({
             id: 'user:1',
@@ -113,19 +222,36 @@ test('simulate transport send/receive', async () => {
             email: null,
         } satisfies User),
     });
+    await messages.waitForResponse('set_user_1');
     transport.receive({
         type: 'INVOCATION',
         rpcName: 'users.getUser',
-        reqId: '3',
+        reqId: 'get_user_2',
         headers: new ArriHeaders(),
         body: jsonEncode({ userId: 'user:1' } satisfies UserRef),
     });
-    await waitFor(20);
-    expect(serverMessages.length).toBe(3);
-    expect(serverMessages).toStrictEqual([
+    await messages.waitForResponse('get_user_2');
+    transport.receive({
+        type: 'INVOCATION',
+        rpcName: 'users.deleteUser',
+        reqId: 'delete_user_2',
+        headers: new ArriHeaders(),
+        body: jsonEncode({ userId: 'user:1' } satisfies UserRef),
+    });
+    await messages.waitForResponse('delete_user_2');
+    transport.receive({
+        type: 'INVOCATION',
+        rpcName: 'users.getUser',
+        reqId: 'get_user_3',
+        headers: new ArriHeaders(),
+        body: jsonEncode({ userId: 'user:1' } satisfies UserRef),
+    });
+    await messages.waitForResponse('get_user_3');
+    expect(messages.length).toBe(6);
+    expect(messages.get('get_user_1')).toStrictEqual([
         {
             type: 'ERROR',
-            reqId: '1',
+            reqId: 'get_user_1',
             headers: new ArriHeaders(),
             contentType: 'application/json',
             body: jsonEncode({
@@ -134,20 +260,20 @@ test('simulate transport send/receive', async () => {
                 data: undefined,
             }),
         },
+    ] satisfies ServerMessage[]);
+    expect(messages.get('delete_user_1')).toStrictEqual([
         {
             type: 'OK',
-            reqId: '2',
+            reqId: 'delete_user_1',
             headers: new ArriHeaders(),
             contentType: 'application/json',
-            body: jsonEncode({
-                id: 'user:1',
-                name: 'John Doe',
-                email: null,
-            } satisfies User),
+            body: new Uint8Array(),
         },
+    ] satisfies ServerMessage[]);
+    expect(messages.get('set_user_1')).toStrictEqual([
         {
             type: 'OK',
-            reqId: '3',
+            reqId: 'set_user_1',
             headers: new ArriHeaders(),
             contentType: 'application/json',
             body: jsonEncode({
@@ -157,10 +283,30 @@ test('simulate transport send/receive', async () => {
             } satisfies User),
         },
     ] satisfies ServerMessage[]);
+    expect(messages.get('get_user_2')).toStrictEqual([
+        {
+            type: 'OK',
+            reqId: 'get_user_2',
+            headers: new ArriHeaders(),
+            contentType: 'application/json',
+            body: jsonEncode({
+                id: 'user:1',
+                name: 'John Doe',
+                email: null,
+            } satisfies User),
+        },
+    ] satisfies ServerMessage[]);
+    expect(messages.get('get_user_3')).toStrictEqual([
+        {
+            type: 'ERROR',
+            reqId: 'get_user_3',
+            headers: new ArriHeaders(),
+            contentType: 'application/json',
+            body: jsonEncode({
+                code: 'NOT_FOUND',
+                message: 'NOT_FOUND',
+                data: undefined,
+            }),
+        },
+    ] satisfies ServerMessage[]);
 });
-
-function waitFor(ms: number) {
-    return new Promise((res, _) => {
-        setTimeout(() => res(undefined), ms);
-    });
-}
