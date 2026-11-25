@@ -32,8 +32,8 @@ export function connectMessageTransport(
     return {
         receiveBytes(bytes) {
             const result = parseClientMessage(bytes);
-            if (result.success) connection.receive(result.value);
-            else connection.receiveInvalid(result);
+            if (result.ok) connection.receive(result.value);
+            else connection.receiveInvalid(result.error);
         },
         closed: () => connection.closed(),
     };

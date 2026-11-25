@@ -8,6 +8,7 @@ import {
     ReservedHeader,
     trimHeaderValue,
 } from './headers';
+import { Err, Ok, Result } from './result';
 
 /**
  * Version of the wire protocol. This is versioned independently from the app definition schema.
@@ -359,23 +360,6 @@ export function encodeMessage(msg: Message): Uint8Array {
     return result;
 }
 
-export type ParseResult<T> =
-    | { success: true; value: T }
-    | {
-          success: false;
-          error: string;
-          /**
-           * When a message fails to parse but its `req-id` could still be determined,
-           * it is included here so the receiver can respond with an ERROR for that call
-           * instead of leaving the call hanging.
-           */
-          reqId?: ReqId;
-      };
-
-function ok<T>(value: T): ParseResult<T> {
-    return { success: true, value };
-}
-
 const LF = 0x0a;
 const TAB = 0x09;
 
@@ -405,6 +389,18 @@ function scanHead(input: Uint8Array): {
     return { headEndIndex: NOT_FOUND, firstInvalidByteIndex };
 }
 
+type ParseError = {
+    message: string;
+    /**
+     * When a message fails to parse but its `req-id` could still be determined,
+     * it is included here so the receiver can respond with an ERROR for that call
+     * instead of leaving the call hanging.
+     */
+    reqId: string | undefined;
+};
+
+type ParseResult<T> = Result<T, ParseError>;
+
 /**
  * Parse a message from the Arri message format.
  *
@@ -418,9 +414,7 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
     const { headEndIndex, firstInvalidByteIndex } = scanHead(input);
     let reqId: ReqId | undefined;
     const err = (error: string): ParseResult<Message> =>
-        reqId === undefined
-            ? { success: false, error }
-            : { success: false, error, reqId };
+        Err({ message: error, reqId });
 
     if (headEndIndex === NOT_FOUND) {
         reqId = recoverReqId(input, input.length);
@@ -528,7 +522,7 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
     const messageType = msgType as MessageType;
     switch (messageType) {
         case 'ERROR':
-            return ok<ErrorMessage>({
+            return Ok<ErrorMessage>({
                 type: 'ERROR',
                 reqId,
                 contentType: reserved.get('content-type'),
@@ -536,17 +530,17 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
                 body,
             });
         case 'CONNECTION_START':
-            return ok<ConnectionStartMessage>({
+            return Ok<ConnectionStartMessage>({
                 type: 'CONNECTION_START',
                 heartbeatInterval,
             });
         case 'HEARTBEAT':
-            return ok<HeartbeatMessage>({
+            return Ok<HeartbeatMessage>({
                 type: 'HEARTBEAT',
                 heartbeatInterval,
             });
         case 'GOAWAY':
-            return ok<GoAwayMessage>({
+            return Ok<GoAwayMessage>({
                 type: 'GOAWAY',
                 reason: reserved.get('reason'),
             });
@@ -557,7 +551,7 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
     }
     switch (messageType) {
         case 'INVOCATION':
-            return ok<InvocationMessage>({
+            return Ok<InvocationMessage>({
                 type: 'INVOCATION',
                 rpcName: rpcName!,
                 reqId,
@@ -569,7 +563,7 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
                 body,
             });
         case 'OK':
-            return ok<OkMessage>({
+            return Ok<OkMessage>({
                 type: 'OK',
                 reqId,
                 contentType: reserved.get('content-type'),
@@ -577,27 +571,27 @@ export function parseMessage(input: Uint8Array): ParseResult<Message> {
                 body,
             });
         case 'STREAM_START':
-            return ok<StreamStartMessage>({
+            return Ok<StreamStartMessage>({
                 type: 'STREAM_START',
                 reqId,
                 contentType: reserved.get('content-type'),
                 headers: custom,
             });
         case 'STREAM_DATA':
-            return ok<StreamDataMessage>({
+            return Ok<StreamDataMessage>({
                 type: 'STREAM_DATA',
                 reqId,
                 msgId: reserved.get('msg-id'),
                 body,
             });
         case 'STREAM_END':
-            return ok<StreamEndMessage>({
+            return Ok<StreamEndMessage>({
                 type: 'STREAM_END',
                 reqId,
                 reason: reserved.get('reason'),
             });
         case 'CANCEL':
-            return ok<CancelMessage>({
+            return Ok<CancelMessage>({
                 type: 'CANCEL',
                 reqId,
                 reason: reserved.get('reason'),
@@ -640,15 +634,15 @@ export function parseClientMessage(
     input: Uint8Array,
 ): ParseResult<ClientMessage> {
     const result = parseMessage(input);
-    if (!result.success) return result;
+    if (!result.ok) return result as any;
     if (!isClientMessage(result.value)) {
-        return {
+        return Err({
             success: false,
-            error: `${result.value.type} cannot be sent by a client.`,
+            message: `${result.value.type} cannot be sent by a client.`,
             reqId: 'reqId' in result.value ? result.value.reqId : undefined,
-        };
+        });
     }
-    return ok(result.value);
+    return Ok(result.value);
 }
 
 /**
@@ -658,13 +652,13 @@ export function parseServerMessage(
     input: Uint8Array,
 ): ParseResult<ServerMessage> {
     const result = parseMessage(input);
-    if (!result.success) return result;
+    if (!result.ok) return result as any;
     if (!isServerMessage(result.value)) {
-        return {
+        return Err({
             success: false,
-            error: `${result.value.type} cannot be sent by a server.`,
+            message: `${result.value.type} cannot be sent by a server.`,
             reqId: 'reqId' in result.value ? result.value.reqId : undefined,
-        };
+        });
     }
-    return ok(result.value);
+    return Ok(result.value);
 }

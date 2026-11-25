@@ -109,7 +109,7 @@ class ServerConnection implements ConnectionHandle {
         this.calls.get(msg.reqId)?.receive(msg);
     }
 
-    receiveInvalid(failure: { error: string; reqId?: ReqId }): void {
+    receiveInvalid(failure: { message: string; reqId?: ReqId }): void {
         if (this.isClosed) return;
         const call =
             failure.reqId === undefined
@@ -117,7 +117,7 @@ class ServerConnection implements ConnectionHandle {
                 : this.calls.get(failure.reqId);
         const payload: ArriErrorPayload = {
             code: 'PROTOCOL_ERROR',
-            message: failure.error,
+            message: failure.message,
         };
         if (call) {
             void call.fail(payload);

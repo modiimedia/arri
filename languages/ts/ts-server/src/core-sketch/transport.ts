@@ -36,7 +36,7 @@ export interface ConnectionHandle {
      * Report a message that failed to parse. The core responds with a PROTOCOL_ERROR for the
      * call identified by `reqId`, or a connection-level error if there is no `reqId`.
      */
-    receiveInvalid(failure: { error: string; reqId?: ReqId }): void;
+    receiveInvalid(failure: { message: string; reqId?: ReqId }): void;
     /**
      * The transport connection is gone. Every call on it is aborted.
      */

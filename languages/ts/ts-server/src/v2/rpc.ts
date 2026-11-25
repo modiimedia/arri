@@ -1,7 +1,7 @@
 import { ASchema, InferSubType } from '@arrirpc/schema';
-import { MaybePromise } from 'bun';
 
 import { RpcCall, RpcMeta } from './context';
+import { MaybePromise } from './utils';
 
 export type Rpc<TIn, TOut> =
     | UnaryRpc<TIn, TOut>

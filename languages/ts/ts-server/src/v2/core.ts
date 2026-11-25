@@ -15,22 +15,27 @@ import {
 } from '@arrirpc/schema';
 
 import { RpcCall } from './context';
+import { ArriError } from './errors';
 import { Middleware } from './middleware';
+import { MessageReceiver } from './receiver';
 import { Rpc } from './rpc';
 import { TransportAdapter } from './transport';
-
-const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
+import { MaybePromise, textDecoder, textEncoder } from './utils';
 
 export class ArriApp {
-    procedures: Map<string, Rpc<any, any>> = new Map();
-    middlewares: Middleware[] = [];
-    transports: Map<string, TransportAdapter> = new Map();
+    private procedures: Map<string, Rpc<any, any>> = new Map();
+    private middlewares: Middleware[] = [];
+    private transports: Map<string, TransportAdapter> = new Map();
 
     use(middleware: Middleware): void;
     use(transport: TransportAdapter): void;
     use(input: Middleware | TransportAdapter) {
         if (input instanceof TransportAdapter) {
+            input.init(
+                new AppMessageReceiver(input.name, (transportId, msg) =>
+                    this.receive(transportId, msg),
+                ),
+            );
             this.transports.set(input.name, input);
             return;
         }
@@ -81,7 +86,10 @@ export class ArriApp {
                 case 'application/json':
                 case undefined: {
                     const result = a.serialize(schema, content);
-                    return result.map((val) => textEncoder.encode(val));
+                    const mappedResult = result.map((val) =>
+                        textEncoder.encode(val),
+                    );
+                    return mappedResult;
                 }
                 default:
                     return Err([
@@ -168,12 +176,13 @@ export class ArriApp {
                         });
                         return;
                     }
-                    const output = await rpc.handler(input, call);
+                    const output = await rpc.handler(input.value, call);
                     const payload = this.serializeBody(
-                        rpc.input,
+                        rpc.output,
                         call.contentType,
                         output,
                     );
+
                     switch (payload.ok) {
                         case true:
                             await transport.send({
@@ -209,8 +218,19 @@ export class ArriApp {
                             payload satisfies never;
                             return;
                     }
-                } catch (_) {
-                    // todo
+                } catch (err) {
+                    let finalErr: ArriError;
+                    if (err instanceof ArriError) {
+                        finalErr = err;
+                    } else {
+                        finalErr = ArriError.fromUnknown(err);
+                    }
+                    await transport.send(
+                        finalErr.toMessage({
+                            reqId: msg.reqId,
+                            contentType: msg.contentType,
+                        }),
+                    );
                 } finally {
                     // todo
                 }
@@ -230,7 +250,7 @@ export class ArriApp {
         }
     }
 
-    async input(transportId: string, msg: ClientMessage) {
+    private async receive(transportId: string, msg: ClientMessage) {
         const transport = this.transports.get(transportId);
         if (!transport) return; // handle this somehow
         switch (msg.type) {
@@ -249,5 +269,34 @@ export class ArriApp {
                 msg satisfies never;
             }
         }
+    }
+
+    rpc<TIn, TOut>(name: string, rpc: Rpc<TIn, TOut>) {
+        this.procedures.set(name, rpc);
+    }
+
+    async start() {
+        for (const transport of this.transports.values()) {
+            await transport.start();
+        }
+    }
+
+    async stop() {
+        for (const transport of this.transports.values()) {
+            await transport.stop();
+        }
+    }
+}
+
+class AppMessageReceiver implements MessageReceiver {
+    constructor(
+        readonly transportId: string,
+        readonly receiveFn: (
+            transportId: string,
+            msg: ClientMessage,
+        ) => MaybePromise<void>,
+    ) {}
+    async receive(msg: ClientMessage): Promise<void> {
+        await this.receiveFn(this.transportId, msg);
     }
 }

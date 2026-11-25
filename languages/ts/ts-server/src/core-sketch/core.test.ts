@@ -111,7 +111,7 @@ function connectTestClient(core: ArriServerCore) {
         info: { name: 'test' },
         sendBytes: (bytes) => {
             const result = parseServerMessage(bytes);
-            if (!result.success) throw new Error(result.error);
+            if (!result.ok) throw new Error(result.error.message);
             received.push(result.value);
         },
         close: () => received.end(),
