@@ -53,8 +53,11 @@
 //! | `derive`   | yes     | `#[derive(Arri)]` |
 //! | `chrono`   | no      | arri traits for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>` |
 //! | `time`     | no      | arri traits for `time::OffsetDateTime` and `time::UtcDateTime` |
-//! | `indexmap` | no      | arri traits for `indexmap::IndexMap<String, V>` |
-//! | `serde`    | no      | serde `Serialize` / `Deserialize` for arri's own types ([`Timestamp`], [`Nullable`], [`Value`], [`Number`], [`Primitive`]) and `Serialize` for [`TypeDef`] / [`Metadata`] / [`AppDef`] |
+//! | `indexmap`      | no      | arri traits for `indexmap::IndexMap<String, V>` |
+//! | `serde`         | no      | serde `Serialize` / `Deserialize` for arri's own types ([`Timestamp`], [`Nullable`], [`Value`], [`Number`], [`Primitive`]) and `Serialize` for [`TypeDef`] / [`Metadata`] / [`AppDef`] |
+//! | `sqlx-postgres` | no      | `sqlx` `Type` / `Encode` / `Decode` (and `PgHasArrayType`) for [`sqlx::Json`], [`Value`], [`Nullable`], and [`Timestamp`] on PostgreSQL |
+//! | `sqlx-mysql`    | no      | `sqlx` `Type` / `Encode` / `Decode` for [`sqlx::Json`], [`Value`], [`Nullable`], and [`Timestamp`] on MySQL |
+//! | `sqlx-sqlite`   | no      | `sqlx` `Type` / `Encode` / `Decode` for [`sqlx::Json`], [`Value`], [`Nullable`], and [`Timestamp`] on SQLite |
 
 // allows the derive macro output (which references `::arri`) to be used inside this crate
 extern crate self as arri;
@@ -71,6 +74,12 @@ mod impls;
 pub mod json;
 mod nullable;
 mod schema;
+#[cfg(any(
+    feature = "sqlx-postgres",
+    feature = "sqlx-mysql",
+    feature = "sqlx-sqlite"
+))]
+pub mod sqlx;
 mod timestamp;
 mod type_def;
 mod value;

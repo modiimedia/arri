@@ -96,8 +96,11 @@ every attribute.
 | `derive`   | yes     | `#[derive(Arri)]`                                                       |
 | `chrono`   | no      | support for `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>`      |
 | `time`     | no      | support for `time::OffsetDateTime` and `time::UtcDateTime`                   |
-| `indexmap` | no      | support for `indexmap::IndexMap<String, V>`                                  |
-| `serde`    | no      | serde `Serialize` / `Deserialize` for arri's own types (`Timestamp`, `Nullable`, `Value`, etc.) |
+| `indexmap`      | no      | support for `indexmap::IndexMap<String, V>`                                                                  |
+| `serde`         | no      | serde `Serialize` / `Deserialize` for arri's own types (`Timestamp`, `Nullable`, `Value`, etc.)              |
+| `sqlx-postgres` | no      | `sqlx` `Type` / `Encode` / `Decode` (and `PgHasArrayType`) for `sqlx::Json`, `Value`, `Nullable`, `Timestamp` on PostgreSQL |
+| `sqlx-mysql`    | no      | `sqlx` `Type` / `Encode` / `Decode` for `sqlx::Json`, `Value`, `Nullable`, and `Timestamp` on MySQL          |
+| `sqlx-sqlite`   | no      | `sqlx` `Type` / `Encode` / `Decode` for `sqlx::Json`, `Value`, `Nullable`, and `Timestamp` on SQLite         |
 
 ## Minimum supported Rust version
 
